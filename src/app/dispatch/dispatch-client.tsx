@@ -13,9 +13,9 @@ import type { OptimizeTaxiDispatchOutput } from '@/ai/flows/optimize-taxi-dispat
 import { Loader2, Zap, Clock, Users } from 'lucide-react';
 
 const formSchema = z.object({
-  demandData: z.string().min(10, 'Please provide more details on demand.'),
-  trafficConditions: z.string().min(10, 'Please provide more details on traffic.'),
-  driverAvailability: z.string().min(10, 'Please provide more details on driver availability.'),
+  demandData: z.string().min(10, 'Forneça mais detalhes sobre a demanda.'),
+  trafficConditions: z.string().min(10, 'Forneça mais detalhes sobre o trânsito.'),
+  driverAvailability: z.string().min(10, 'Forneça mais detalhes sobre a disponibilidade de motoristas.'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -28,9 +28,9 @@ export default function DispatchClient() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      demandData: 'High demand in downtown and airport areas. Low demand in residential suburbs.',
-      trafficConditions: 'Heavy traffic on the main highway. Moderate congestion in the city center.',
-      driverAvailability: '50 drivers available. Most are currently in the southern part of the city.',
+      demandData: 'Alta demanda no centro da cidade e áreas do aeroporto. Baixa demanda em subúrbios residenciais.',
+      trafficConditions: 'Trânsito intenso na rodovia principal. Congestionamento moderado no centro da cidade.',
+      driverAvailability: '50 motoristas disponíveis. A maioria está atualmente na parte sul da cidade.',
     },
   });
 
@@ -52,9 +52,9 @@ export default function DispatchClient() {
       <div>
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="font-headline text-xl">Dispatch Parameters</CardTitle>
+            <CardTitle className="font-headline text-xl">Parâmetros de Despacho</CardTitle>
             <CardDescription>
-              Enter real-time information to generate an optimized plan.
+              Insira informações em tempo real para gerar um plano otimizado.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -65,10 +65,10 @@ export default function DispatchClient() {
                   name="demandData"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Demand Data</FormLabel>
+                      <FormLabel>Dados de Demanda</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="e.g., High demand at the stadium due to a game."
+                          placeholder="Ex: Alta demanda no estádio devido a um jogo."
                           className="min-h-[100px]"
                           {...field}
                         />
@@ -82,10 +82,10 @@ export default function DispatchClient() {
                   name="trafficConditions"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Traffic Conditions</FormLabel>
+                      <FormLabel>Condições do Trânsito</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="e.g., Accident on the main bridge causing delays."
+                          placeholder="Ex: Acidente na ponte principal causando atrasos."
                           className="min-h-[100px]"
                           {...field}
                         />
@@ -99,10 +99,10 @@ export default function DispatchClient() {
                   name="driverAvailability"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Driver Availability</FormLabel>
+                      <FormLabel>Disponibilidade de Motoristas</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="e.g., 20 drivers finishing shifts in the next hour."
+                          placeholder="Ex: 20 motoristas terminando turnos na próxima hora."
                           className="min-h-[100px]"
                           {...field}
                         />
@@ -115,12 +115,12 @@ export default function DispatchClient() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Optimizing...
+                      Otimizando...
                     </>
                   ) : (
                     <>
                       <Zap className="mr-2 h-4 w-4" />
-                      Generate Dispatch Plan
+                      Gerar Plano de Despacho
                     </>
                   )}
                 </Button>
@@ -133,13 +133,13 @@ export default function DispatchClient() {
         {isLoading && (
           <div className="flex flex-col items-center justify-center h-full space-y-4">
             <Loader2 className="h-16 w-16 animate-spin text-primary" />
-            <p className="text-muted-foreground">AI is crunching the numbers...</p>
+            <p className="text-muted-foreground">A IA está processando os dados...</p>
           </div>
         )}
         {error && (
             <Card className="bg-destructive/10 border-destructive text-destructive-foreground">
                 <CardHeader>
-                    <CardTitle className="font-headline">Error</CardTitle>
+                    <CardTitle className="font-headline">Erro</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <p>{error}</p>
@@ -152,8 +152,8 @@ export default function DispatchClient() {
               <CardHeader className="flex flex-row items-center gap-4">
                  <div className="p-3 rounded-full bg-primary/10 text-primary"><Zap className="h-6 w-6"/></div>
                 <div>
-                    <CardTitle className="font-headline text-xl">Optimized Dispatch Plan</CardTitle>
-                    <CardDescription>AI-generated recommendations for taxi allocation.</CardDescription>
+                    <CardTitle className="font-headline text-xl">Plano de Despacho Otimizado</CardTitle>
+                    <CardDescription>Recomendações geradas por IA para alocação de táxis.</CardDescription>
                 </div>
               </CardHeader>
               <CardContent className="whitespace-pre-wrap font-mono text-sm bg-muted/50 p-4 rounded-md">
@@ -164,7 +164,7 @@ export default function DispatchClient() {
                 <CardHeader className="flex flex-row items-center gap-4">
                     <div className="p-3 rounded-full bg-primary/10 text-primary"><Clock className="h-6 w-6"/></div>
                     <div>
-                        <CardTitle className="font-headline text-xl">Estimated Wait Times</CardTitle>
+                        <CardTitle className="font-headline text-xl">Tempos de Espera Estimados</CardTitle>
                     </div>
                 </CardHeader>
               <CardContent className="whitespace-pre-wrap font-mono text-sm bg-muted/50 p-4 rounded-md">
@@ -175,7 +175,7 @@ export default function DispatchClient() {
                 <CardHeader className="flex flex-row items-center gap-4">
                      <div className="p-3 rounded-full bg-primary/10 text-primary"><Users className="h-6 w-6"/></div>
                     <div>
-                        <CardTitle className="font-headline text-xl">Driver Utilization</CardTitle>
+                        <CardTitle className="font-headline text-xl">Utilização de Motoristas</CardTitle>
                     </div>
                 </CardHeader>
               <CardContent className="whitespace-pre-wrap font-mono text-sm bg-muted/50 p-4 rounded-md">

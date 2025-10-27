@@ -9,15 +9,28 @@ import Link from 'next/link';
 
 function getStatusVariant(status: Taxi['status']) {
   switch (status) {
-    case 'Active':
+    case 'Ativo':
       return 'default';
-    case 'Inactive':
+    case 'Inativo':
       return 'secondary';
-    case 'Maintenance':
+    case 'Manutenção':
       return 'destructive';
     default:
       return 'outline';
   }
+}
+
+function translateStatus(status: Taxi['status']): string {
+    switch (status) {
+        case 'Active':
+            return 'Ativo';
+        case 'Inactive':
+            return 'Inativo';
+        case 'Maintenance':
+            return 'Manutenção';
+        default:
+            return status;
+    }
 }
 
 export default function TaxisPage() {
@@ -26,33 +39,33 @@ export default function TaxisPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
             <h1 className="text-3xl font-bold tracking-tight font-headline">
-                Taxi Fleet Management
+                Gerenciamento da Frota de Táxis
             </h1>
-            <p className="text-muted-foreground">View, manage, and register taxis.</p>
+            <p className="text-muted-foreground">Veja, gerencie e cadastre táxis.</p>
         </div>
         <Link href="/taxis/register">
           <Button className="bg-accent hover:bg-accent/90">
             <PlusCircle className="mr-2 h-4 w-4" />
-            Register New Taxi
+            Cadastrar Novo Táxi
           </Button>
         </Link>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Taxi Fleet</CardTitle>
-          <CardDescription>A list of all registered taxis in the system.</CardDescription>
+          <CardTitle>Frota de Táxis</CardTitle>
+          <CardDescription>Uma lista de todos os táxis cadastrados no sistema.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>License Plate</TableHead>
-                <TableHead>Driver</TableHead>
-                <TableHead className="hidden md:table-cell">Vehicle</TableHead>
+                <TableHead>Placa</TableHead>
+                <TableHead>Motorista</TableHead>
+                <TableHead className="hidden md:table-cell">Veículo</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Rating</TableHead>
-                <TableHead className="text-right">Rides Today</TableHead>
+                <TableHead className="text-right">Avaliação</TableHead>
+                <TableHead className="text-right">Corridas Hoje</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -64,7 +77,7 @@ export default function TaxisPage() {
                     {taxi.vehicleModel}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(taxi.status)}>{taxi.status}</Badge>
+                    <Badge variant={getStatusVariant(translateStatus(taxi.status) as any)}>{translateStatus(taxi.status)}</Badge>
                   </TableCell>
                   <TableCell className="text-right flex justify-end items-center gap-1">
                     {taxi.rating.toFixed(1)}

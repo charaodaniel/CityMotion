@@ -3,7 +3,7 @@ export type Driver = {
   name: string;
   vehicleModel: string;
   licensePlate: string;
-  status: 'Verified' | 'Pending' | 'Rejected';
+  status: 'Verificado' | 'Pendente' | 'Rejeitado' | 'Verified' | 'Pending' | 'Rejected';
   rating: number;
   rides: number;
 };
@@ -13,7 +13,7 @@ export type Taxi = {
   driverName: string;
   vehicleModel: string;
   licensePlate: string;
-  status: 'Active' | 'Inactive' | 'Maintenance';
+  status: 'Ativo' | 'Inativo' | 'Manutenção' | 'Active' | 'Inactive' | 'Maintenance';
   rating: number;
   ridesToday: number;
 };

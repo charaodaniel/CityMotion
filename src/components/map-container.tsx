@@ -23,17 +23,17 @@ export function MapContainer({ apiKey, geofences }: MapContainerProps) {
                     <CardHeader>
                         <CardTitle className="flex items-center justify-center gap-2 font-headline">
                             <AlertCircle className="text-destructive" />
-                            Configuration Needed
+                            Configuração Necessária
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p>
-                            Please provide a Google Maps API key to display the map. Create a{' '}
-                            <code className="bg-primary/10 text-primary p-1 rounded-sm">.env.local</code> file at the root of your project
-                            and add your key:
+                            Por favor, forneça uma chave de API do Google Maps para exibir o mapa. Crie um arquivo{' '}
+                            <code className="bg-primary/10 text-primary p-1 rounded-sm">.env.local</code> na raiz do seu projeto
+                            e adicione sua chave:
                         </p>
                         <pre className="mt-4 p-2 bg-slate-800 text-white rounded-md text-sm">
-                            GOOGLE_MAPS_API_KEY=your_api_key_here
+                            GOOGLE_MAPS_API_KEY=sua_chave_de_api_aqui
                         </pre>
                     </CardContent>
                 </Card>
@@ -56,10 +56,10 @@ export function MapContainer({ apiKey, geofences }: MapContainerProps) {
                      <Polygon
                         key={fence.id}
                         paths={fence.path}
-                        strokeColor={'var(--color-accent)'}
+                        strokeColor={'hsl(var(--accent))'}
                         strokeOpacity={0.8}
                         strokeWeight={2}
-                        fillColor={'var(--color-accent)'}
+                        fillColor={'hsl(var(--accent))'}
                         fillOpacity={0.35}
                     />
                 ))}

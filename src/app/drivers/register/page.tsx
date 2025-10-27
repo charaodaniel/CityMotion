@@ -11,13 +11,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
-  fullName: z.string().min(2, "Full name must be at least 2 characters."),
-  email: z.string().email("Please enter a valid email address."),
-  phone: z.string().min(10, "Phone number seems too short."),
-  vehicleModel: z.string().min(3, "Vehicle model is required."),
-  licensePlate: z.string().min(3, "License plate is required."),
-  drivingLicense: z.any().refine(files => files?.length == 1, "Driving license is required."),
-  vehicleRegistration: z.any().refine(files => files?.length == 1, "Vehicle registration is required."),
+  fullName: z.string().min(2, "O nome completo deve ter pelo menos 2 caracteres."),
+  email: z.string().email("Por favor, insira um endereço de e-mail válido."),
+  phone: z.string().min(10, "O número de telefone parece muito curto."),
+  vehicleModel: z.string().min(3, "O modelo do veículo é obrigatório."),
+  licensePlate: z.string().min(3, "A placa do veículo é obrigatória."),
+  drivingLicense: z.any().refine(files => files?.length == 1, "A carteira de motorista é obrigatória."),
+  vehicleRegistration: z.any().refine(files => files?.length == 1, "O registro do veículo é obrigatório."),
 });
 
 export default function RegisterDriverPage() {
@@ -38,8 +38,8 @@ export default function RegisterDriverPage() {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
     toast({
-      title: "Registration Submitted",
-      description: "Your registration is pending verification.",
+      title: "Cadastro Enviado",
+      description: "Seu cadastro está pendente de verificação.",
     });
     router.push('/drivers');
   };
@@ -48,20 +48,20 @@ export default function RegisterDriverPage() {
     <div className="container mx-auto p-4 sm:p-8 max-w-3xl">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">Driver Registration</CardTitle>
-          <CardDescription>Fill out the form below to register as a new driver.</CardDescription>
+          <CardTitle className="font-headline text-2xl">Cadastro de Motorista</CardTitle>
+          <CardDescription>Preencha o formulário abaixo para se cadastrar como um novo motorista.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <h3 className="font-headline text-lg font-semibold">Personal Information</h3>
+              <h3 className="font-headline text-lg font-semibold">Informações Pessoais</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="fullName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel>Nome Completo</FormLabel>
                       <FormControl>
                         <Input placeholder="John Doe" {...field} />
                       </FormControl>
@@ -74,7 +74,7 @@ export default function RegisterDriverPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <FormLabel>Endereço de E-mail</FormLabel>
                       <FormControl>
                         <Input type="email" placeholder="john.doe@example.com" {...field} />
                       </FormControl>
@@ -87,7 +87,7 @@ export default function RegisterDriverPage() {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
+                      <FormLabel>Número de Telefone</FormLabel>
                       <FormControl>
                         <Input placeholder="(123) 456-7890" {...field} />
                       </FormControl>
@@ -97,14 +97,14 @@ export default function RegisterDriverPage() {
                 />
               </div>
 
-              <h3 className="font-headline text-lg font-semibold">Vehicle Information</h3>
+              <h3 className="font-headline text-lg font-semibold">Informações do Veículo</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="vehicleModel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Vehicle Model</FormLabel>
+                      <FormLabel>Modelo do Veículo</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., Toyota Prius 2023" {...field} />
                       </FormControl>
@@ -117,7 +117,7 @@ export default function RegisterDriverPage() {
                   name="licensePlate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>License Plate</FormLabel>
+                      <FormLabel>Placa do Veículo</FormLabel>
                       <FormControl>
                         <Input placeholder="ABC-1234" {...field} />
                       </FormControl>
@@ -127,14 +127,14 @@ export default function RegisterDriverPage() {
                 />
               </div>
 
-              <h3 className="font-headline text-lg font-semibold">Documentation</h3>
+              <h3 className="font-headline text-lg font-semibold">Documentação</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="drivingLicense"
                   render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <FormLabel>Driving License</FormLabel>
+                      <FormLabel>Carteira de Motorista</FormLabel>
                       <FormControl>
                         <Input type="file" accept="image/*,application/pdf" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
                       </FormControl>
@@ -147,7 +147,7 @@ export default function RegisterDriverPage() {
                   name="vehicleRegistration"
                   render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <FormLabel>Vehicle Registration</FormLabel>
+                      <FormLabel>Registro do Veículo</FormLabel>
                       <FormControl>
                         <Input type="file" accept="image/*,application/pdf" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
                       </FormControl>
@@ -156,7 +156,7 @@ export default function RegisterDriverPage() {
                   )}
                 />
               </div>
-              <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">Submit Registration</Button>
+              <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">Enviar Cadastro</Button>
             </form>
           </Form>
         </CardContent>

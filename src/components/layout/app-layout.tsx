@@ -18,11 +18,11 @@ import { LayoutDashboard, Send, Car, User, MapPin, Menu } from 'lucide-react';
 import { Button } from '../ui/button';
 
 const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dispatch', label: 'Dispatch', icon: Send },
-  { href: '/drivers', label: 'Drivers', icon: User },
-  { href: '/taxis', label: 'Taxis', icon: Car },
-  { href: '/geofencing', label: 'Geofencing', icon: MapPin },
+  { href: '/', label: 'Painel', icon: LayoutDashboard },
+  { href: '/dispatch', label: 'Despacho', icon: Send },
+  { href: '/drivers', label: 'Motoristas', icon: User },
+  { href: '/taxis', label: 'Táxis', icon: Car },
+  { href: '/geofencing', label: 'Cercas Virtuais', icon: MapPin },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {

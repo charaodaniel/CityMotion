@@ -11,11 +11,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
-  driverName: z.string().min(2, "Driver name must be at least 2 characters."),
-  vehicleModel: z.string().min(3, "Vehicle model is required."),
-  licensePlate: z.string().min(3, "License plate must be a valid taxi plate.").regex(/^TAXI-\d{3,}/, "Format must be TAXI-XXX"),
-  taxiPermit: z.any().refine(files => files?.length == 1, "Taxi permit is required."),
-  vehicleInspection: z.any().refine(files => files?.length == 1, "Vehicle inspection document is required."),
+  driverName: z.string().min(2, "O nome do motorista deve ter pelo menos 2 caracteres."),
+  vehicleModel: z.string().min(3, "O modelo do veículo é obrigatório."),
+  licensePlate: z.string().min(3, "A placa deve ser uma placa de táxi válida.").regex(/^TAXI-\d{3,}/, "O formato deve ser TAXI-XXX"),
+  taxiPermit: z.any().refine(files => files?.length == 1, "A permissão de táxi é obrigatória."),
+  vehicleInspection: z.any().refine(files => files?.length == 1, "O documento de inspeção do veículo é obrigatório."),
 });
 
 export default function RegisterTaxiPage() {
@@ -34,8 +34,8 @@ export default function RegisterTaxiPage() {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
     toast({
-      title: "Taxi Registration Submitted",
-      description: "The taxi registration is pending verification.",
+      title: "Cadastro de Táxi Enviado",
+      description: "O cadastro do táxi está pendente de verificação.",
     });
     router.push('/taxis');
   };
@@ -44,20 +44,20 @@ export default function RegisterTaxiPage() {
     <div className="container mx-auto p-4 sm:p-8 max-w-3xl">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">Taxi Registration</CardTitle>
-          <CardDescription>Fill out the form below to register a new taxi in the fleet.</CardDescription>
+          <CardTitle className="font-headline text-2xl">Cadastro de Táxi</CardTitle>
+          <CardDescription>Preencha o formulário abaixo para cadastrar um novo táxi na frota.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <h3 className="font-headline text-lg font-semibold">Taxi & Driver Information</h3>
+              <h3 className="font-headline text-lg font-semibold">Informações do Táxi e Motorista</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="driverName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Driver's Full Name</FormLabel>
+                      <FormLabel>Nome Completo do Motorista</FormLabel>
                       <FormControl>
                         <Input placeholder="Carlos Silva" {...field} />
                       </FormControl>
@@ -70,7 +70,7 @@ export default function RegisterTaxiPage() {
                   name="licensePlate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Taxi License Plate</FormLabel>
+                      <FormLabel>Placa do Táxi</FormLabel>
                       <FormControl>
                         <Input placeholder="TAXI-123" {...field} />
                       </FormControl>
@@ -83,7 +83,7 @@ export default function RegisterTaxiPage() {
                   name="vehicleModel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Vehicle Model</FormLabel>
+                      <FormLabel>Modelo do Veículo</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., Fiat Cronos 2023" {...field} />
                       </FormControl>
@@ -93,14 +93,14 @@ export default function RegisterTaxiPage() {
                 />
               </div>
 
-              <h3 className="font-headline text-lg font-semibold">Documentation</h3>
+              <h3 className="font-headline text-lg font-semibold">Documentação</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="taxiPermit"
                   render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <FormLabel>Taxi Permit Document</FormLabel>
+                      <FormLabel>Documento de Permissão do Táxi</FormLabel>
                       <FormControl>
                         <Input type="file" accept="image/*,application/pdf" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
                       </FormControl>
@@ -113,7 +113,7 @@ export default function RegisterTaxiPage() {
                   name="vehicleInspection"
                   render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <FormLabel>Vehicle Inspection Certificate</FormLabel>
+                      <FormLabel>Certificado de Inspeção do Veículo</FormLabel>
                       <FormControl>
                         <Input type="file" accept="image/*,application/pdf" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
                       </FormControl>
@@ -122,7 +122,7 @@ export default function RegisterTaxiPage() {
                   )}
                 />
               </div>
-              <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">Submit Registration</Button>
+              <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">Enviar Cadastro</Button>
             </form>
           </Form>
         </CardContent>

@@ -6,13 +6,13 @@ export default function GeofencingPage() {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
     return (
-        <div className="container mx-auto p-4 sm:p-8 h-full flex flex-col">
+        <div className="container mx-auto p-4 sm-p-8 h-full flex flex-col">
              <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight font-headline">
-                        Geofencing
+                        Cercas Virtuais
                     </h1>
-                    <p className="text-muted-foreground">Create and manage geofences for specific areas in the city.</p>
+                    <p className="text-muted-foreground">Crie e gerencie cercas virtuais para áreas específicas da cidade.</p>
                 </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
@@ -22,8 +22,8 @@ export default function GeofencingPage() {
                 <div className="lg:col-span-1">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="font-headline">Active Geofences</CardTitle>
-                            <CardDescription>These are the currently monitored zones.</CardDescription>
+                            <CardTitle className="font-headline">Cercas Virtuais Ativas</CardTitle>
+                            <CardDescription>Estas são as zonas monitoradas atualmente.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <ul className="space-y-4">
