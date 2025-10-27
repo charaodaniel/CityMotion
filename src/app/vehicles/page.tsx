@@ -1,17 +1,19 @@
 import { vehicles } from '@/lib/data';
-import type { Vehicle } from '@/lib/types';
+import type { Vehicle, VehicleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Wrench } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 
-function getStatusVariant(status: Vehicle['status']) {
+function getStatusVariant(status: VehicleStatus) {
   switch (status) {
     case 'Em Serviço':
       return 'default';
-    case 'Na Sede':
+    case 'Em Viagem':
+      return 'outline';
+    case 'Disponível':
       return 'secondary';
     case 'Manutenção':
       return 'destructive';
@@ -64,7 +66,11 @@ export default function VehiclesPage() {
                     {vehicle.vehicleModel}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(vehicle.status)}>{vehicle.status}</Badge>
+                    <Badge variant={getStatusVariant(vehicle.status)}>
+                      {vehicle.status}
+                      {vehicle.status === 'Em Viagem' && vehicle.destination && ` - ${vehicle.destination}`}
+                      {vehicle.status === 'Em Serviço' && vehicle.destination && ` - ${vehicle.destination}`}
+                    </Badge>
                   </TableCell>
                    <TableCell className="hidden md:table-cell">{vehicle.sector}</TableCell>
                   <TableCell className="text-right">{vehicle.mileage.toLocaleString('pt-BR')} km</TableCell>

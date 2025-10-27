@@ -9,12 +9,15 @@ export type Driver = {
   rides: number;
 };
 
+export type VehicleStatus = 'Disponível' | 'Em Serviço' | 'Em Viagem' | 'Manutenção';
+
 export type Vehicle = {
   id: string;
   driverName: string;
   vehicleModel: string;
   licensePlate: string;
-  status: 'Na Sede' | 'Em Serviço' | 'Manutenção';
+  status: VehicleStatus;
+  destination?: string;
   mileage: number;
   sector: string;
 };
