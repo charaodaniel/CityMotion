@@ -1,19 +1,21 @@
 import { drivers } from '@/lib/data';
-import type { Driver } from '@/lib/types';
+import type { Driver, DriverStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Star } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 
-function getStatusVariant(status: Driver['status']) {
+function getStatusVariant(status: DriverStatus) {
   switch (status) {
-    case 'Verificado':
-      return 'default';
-    case 'Pendente':
+    case 'Disponível':
       return 'secondary';
-    case 'Rejeitado':
+    case 'Em Serviço':
+      return 'default';
+    case 'Em Viagem':
+      return 'outline';
+    case 'Afastado':
       return 'destructive';
     default:
       return 'outline';
@@ -30,7 +32,7 @@ export default function DriversPage() {
             </h1>
             <p className="text-muted-foreground">Veja, gerencie e cadastre os motoristas da prefeitura.</p>
         </div>
-        <Link href="/drivers/register">
+        <Link href="/motoristas/register">
           <Button className="bg-accent hover:bg-accent/90">
             <PlusCircle className="mr-2 h-4 w-4" />
             Cadastrar Novo Motorista
@@ -48,27 +50,22 @@ export default function DriversPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
-                <TableHead className="hidden md:table-cell">Veículo</TableHead>
+                <TableHead className="hidden md:table-cell">Setor</TableHead>
+                <TableHead>Veículo Designado</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Avaliação</TableHead>
-                <TableHead className="text-right">Viagens</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {drivers.map((driver) => (
                 <TableRow key={driver.id}>
                   <TableCell className="font-medium">{driver.name}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {driver.vehicleModel} ({driver.licensePlate})
+                  <TableCell className="hidden md:table-cell">{driver.sector}</TableCell>
+                  <TableCell>
+                    {driver.vehicleModel ? `${driver.vehicleModel} (${driver.licensePlate})` : 'N/A'}
                   </TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(driver.status)}>{driver.status}</Badge>
                   </TableCell>
-                  <TableCell className="text-right flex justify-end items-center gap-1">
-                    {driver.rating.toFixed(1)}
-                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-400" />
-                  </TableCell>
-                  <TableCell className="text-right">{driver.rides}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

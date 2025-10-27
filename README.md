@@ -1,150 +1,150 @@
 # 🚘 CityMotion - Sistema de Gerenciamento de Frota Municipal
 
-O **CityMotion** é um sistema moderno desenvolvido para o **gerenciamento de frotas municipais**.  
-Ele permite **monitorar veículos e motoristas**, **registrar deslocamentos oficiais**, **controlar escalas de viagem** e **acompanhar em tempo real** o status da frota da prefeitura.
+O **CityMotion** é um sistema web desenvolvido para prefeituras que desejam gerenciar de forma organizada e eficiente suas frotas de veículos oficiais, motoristas e setores municipais.
 
-Ideal para **secretarias municipais, departamentos de transporte e logística pública**, o sistema oferece uma interface simples, intuitiva e eficiente.
+A plataforma permite controlar viagens, escalas e status dos veículos, além de gerar relatórios mensais sobre a utilização da frota.
 
----
+## 🧭 Objetivo
 
-## 🧭 **Objetivo do Projeto**
+O **CityMotion** foi criado para centralizar o gerenciamento da frota municipal em um único sistema, possibilitando:
 
-O **CityMotion** tem como objetivo centralizar o **controle operacional da frota da prefeitura**, garantindo:
-- **Transparência** no uso de veículos públicos;
-- **Eficiência** na alocação de motoristas e rotas;
-- **Registro completo** de viagens, horários e destinos;
-- **Redução de tempo ocioso** e **melhor uso dos recursos**.
+- Acompanhar em tempo real quais veículos estão disponíveis, em manutenção ou em viagem.
+- Agendar e registrar viagens, informando origem, destino, motorista e setor responsável.
+- Gerenciar motoristas e setores da prefeitura, com controle de vínculo e histórico de viagens.
+- Emitir relatórios mensais sobre quilometragem, utilização e deslocamentos.
 
 ---
 
-## 🚗 **Funcionalidades Principais**
+## ⚙️ Funcionalidades Principais
 
-### 1. **Painel Principal (`/`)**
-O painel apresenta uma visão geral e em tempo real de toda a frota:
-- **Resumo da frota:** total de veículos, motoristas ativos, veículos em serviço e disponíveis;
-- **Gráficos e indicadores:** relatórios de uso mensal, quilometragem e frequência de deslocamentos;
-- **Status ao vivo:** mostra quais veículos estão na sede, em percurso ou em manutenção.
+### 🏠 1. Painel Principal (/)
+Exibe visão geral da frota e viagens em andamento.
+- Indicadores com totais de veículos, motoristas e escalas do mês.
+- Gráficos simples de uso da frota por setor e viagens concluídas.
 
----
+### 🏢 2. Gestão de Setores (`/setores`)
+- Cadastro e listagem dos setores municipais (ex: Saúde, Educação, Obras, Administração).
+- Cada setor pode ter veículos e motoristas vinculados.
+- Possibilidade de desativar ou editar setores quando necessário.
 
-### 2. **Gestão de Motoristas (`/drivers`)**
-Gerencie todos os motoristas vinculados à prefeitura:
-- **Listagem completa:** nome, cargo, setor, CNH, veículo designado e status (Ativo, Em Serviço, Afastado);
-- **Cadastro de novos motoristas:** formulário com informações pessoais, documentos e vínculo de trabalho;
-- **Histórico de viagens:** cada motorista tem um histórico de deslocamentos e serviços realizados.
+### 👨‍✈️ 3. Gestão de Motoristas (`/motoristas`)
+- Cadastro de motoristas com dados pessoais, CNH, categoria e setor vinculado.
+- Controle de status: disponível, em viagem, afastado.
+- Histórico de viagens realizadas pelo motorista.
 
----
+### 🚗 4. Gestão de Veículos (`/veiculos`)
+Listagem completa da frota municipal com informações como:
+- **Placa**
+- **Modelo**
+- **Setor responsável**
+- **Status:** Disponível, Em Viagem, Manutenção
+- Registro de quilometragem atual e datas de manutenção.
+- Upload de documentos do veículo (licenciamento, seguro, inspeção).
 
-### 3. **Gestão de Veículos (`/vehicles`)**
-Controle detalhado da frota municipal:
-- **Cadastro de veículos:** marca, modelo, placa, quilometragem, setor responsável e status (Na sede, Em serviço, Manutenção);
-- **Tabela de frota:** exibe todos os veículos cadastrados com filtros e busca rápida;
-- **Documentos e manutenção:** upload de CRLV, comprovantes de vistoria e registros de manutenção.
+### 🧭 5. Escalas e Viagens (`/escalas`)
+Criação e agendamento de viagens oficiais, com informações de:
+- Setor solicitante
+- Motorista responsável
+- Veículo designado
+- Origem e destino
+- Data, hora de saída e retorno previsto
+- Controle de status da viagem:
+  - Aguardando
+  - Em andamento
+  - Concluída
+- Registro de quilometragem inicial e final.
+- Histórico completo de deslocamentos por período e setor.
 
----
-
-### 4. **Escala e Agendamento de Viagens (`/schedule`)**
-Ferramenta central para organizar os deslocamentos dos veículos públicos:
-- **Criação de viagens:** defina veículo, motorista, destino, motivo e horário de saída/retorno;
-- **Status de viagem:** Em andamento, Concluída ou Cancelada;
-- **Rastreamento interno:** exibe no painel a localização e o status do veículo em tempo real;
-- **Histórico:** registro completo de todas as viagens realizadas.
-
-Exemplo:
-```
-Motorista: Maria Silva
-Veículo: Fiat Strada - Placa XYZ-1234
-Rota: Prefeitura → Escola Municipal São José
-Horário: 09:00 às 10:30
-Status: Em percurso
-Motivo: Entrega de materiais escolares
-```
-
----
-
-### 5. **Relatórios e Indicadores**
-Geração automática de relatórios administrativos:
-- Quilometragem mensal por veículo;
-- Frequência de uso por setor;
-- Tempo total em deslocamento;
-- Registros de manutenção e viagens.
-
-Todos os relatórios podem ser exportados em **PDF ou CSV** para auditorias e prestações de contas.
+### 📊 6. Relatórios (`/relatorios`)
+Geração de relatórios mensais em PDF, contendo:
+- Total de viagens realizadas por setor
+- Quilometragem total percorrida
+- Veículos mais utilizados
+- Viagens por motorista
+- Filtros por data, setor ou veículo.
 
 ---
 
-## 🧩 **Arquitetura e Estrutura do Projeto**
-
-```
-src/
-├── app/              # Páginas e rotas principais
-│   ├── page.tsx      # Painel principal
-│   ├── drivers/      # Gestão de motoristas
-│   ├── vehicles/     # Gestão de veículos
-│   └── schedule/     # Escala e agendamento de viagens
-├── components/       # Componentes reutilizáveis (UI, tabelas, formulários, gráficos)
-├── lib/              # Funções utilitárias, dados e tipos
-└── styles/           # Estilização global (Tailwind CSS)
-```
+### 🧠 Perfis de Usuário
+- **Administrador:** acesso total ao sistema (cadastros, relatórios, configurações).
+- **Gestor de Setor:** pode visualizar e criar viagens apenas para o seu setor.
+- **Motorista:** visualiza suas escalas e registra início/término das viagens.
 
 ---
 
-## 🛠️ **Tecnologias Utilizadas**
+### 🧰 Tecnologias Utilizadas
 
-| Categoria | Tecnologia |
+| Função | Tecnologia |
 |------------|-------------|
 | **Framework** | [Next.js](https://nextjs.org/) (App Router) |
 | **Linguagem** | [TypeScript](https://www.typescriptlang.org/) |
 | **Estilização** | [Tailwind CSS](https://tailwindcss.com/) |
-| **UI Components** | [ShadCN UI](https://ui.shadcn.com/) |
+| **Componentes de UI** | [ShadCN UI](https://ui.shadcn.com/) |
 | **Gráficos** | [Recharts](https://recharts.org/) |
+| **Formulários** | [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) |
+| **Relatórios PDF** | [jsPDF](https://github.com/parallax/jsPDF) |
 | **Ícones** | [Lucide React](https://lucide.dev/) |
-| **Formulários** | [React Hook Form](https://react-hook-form.com/) |
-| **Validação** | [Zod](https://zod.dev/) |
 
 ---
 
-## ⚙️ **Instalação e Execução**
+### 📂 Estrutura do Projeto
 
-### 📋 Pré-requisitos
-- Node.js 18+  
-- npm ou yarn  
+```
+src/
+ ├── app/
+ │    ├── page.tsx                # Painel principal
+ │    ├── setores/                # Páginas de gestão de setores
+ │    ├── motoristas/             # Páginas de gestão de motoristas
+ │    ├── veiculos/               # Páginas de gestão de veículos
+ │    ├── escalas/                # Agendamento e registro de viagens
+ │    ├── relatorios/             # Relatórios e exportações
+ │    └── api/                    # Endpoints de integração com backend
+ │
+ ├── components/                  # Componentes de UI reutilizáveis
+ ├── lib/                         # Funções utilitárias e dados mockados
+ ├── styles/                      # Estilos globais
+ └── types/                       # Tipagens e modelos de dados
+```
 
-### 🚀 Passos para rodar o projeto
+---
+
+### 🧾 Fluxo de Uso
+1. O usuário acessa o sistema e faz login.
+2. No painel principal, visualiza o status da frota e das viagens.
+3. Gestores e administradores podem:
+   - Criar setores, motoristas e veículos.
+   - Agendar novas viagens (escala).
+   - Acompanhar veículos em percurso.
+4. Ao final do mês, é possível gerar relatórios em PDF para controle administrativo.
+
+---
+
+### 🖥️ Instalação e Execução (Frontend)
+
 ```bash
 # Clonar o repositório
-git clone https://github.com/seuusuario/citymotion.git
-
-# Entrar na pasta do projeto
-cd citymotion
+git clone https://github.com/seuusuario/citymotion-frota.git
+cd citymotion-frota
 
 # Instalar dependências
 npm install
 
-# Iniciar o servidor de desenvolvimento
+# Executar em modo de desenvolvimento
 npm run dev
 ```
-
-Acesse em:  
-👉 [http://localhost:3000](http://localhost:3000)
+Acesse em: `http://localhost:3000`
 
 ---
 
-## 📈 **Futuras Implementações**
+### 🌐 Hospedagem
+O sistema pode ser hospedado:
+- Em servidores locais da prefeitura (intranet).
+- Em VPS Linux (como DigitalOcean ou Contabo).
 
-- Mapa de localização dos veículos (integração com GPS);
-- Controle de combustível e manutenção preventiva;
-- Sistema de notificações para revisões e vencimentos de documentos;
-- Aplicativo mobile para motoristas registrarem viagens;
-- Dashboard de eficiência por setor.
-
----
-
-## 📄 **Licença**
-
-Este projeto está licenciado sob a **MIT License**.  
-Você pode usar, modificar e distribuir livremente, desde que mantenha os créditos originais.
+O backend (API) pode ser implementado em Node.js, Python ou PHP, dependendo da infraestrutura disponível.
 
 ---
 
-**CityMotion — Mobilidade, transparência e eficiência para a frota pública municipal.**
+### 🧾 Licença
+Este projeto é de uso institucional e administrativo, voltado para gestão pública municipal.
+Distribuição e uso comercial não são permitidos sem autorização prévia.

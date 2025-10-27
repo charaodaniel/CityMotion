@@ -12,59 +12,59 @@ import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
-  driverName: z.string().min(2, "O nome do motorista é obrigatório."),
-  vehicleModel: z.string().min(3, "O modelo do veículo é obrigatório."),
-  licensePlate: z.string().min(7, "A placa deve ter o formato ABC-1234.").max(8),
-  sector: z.string().min(3, "O setor responsável é obrigatório."),
-  mileage: z.coerce.number().min(0, "A quilometragem não pode ser negativa."),
-  vehicleRegistration: z.any().refine(files => files?.length == 1, "O CRLV é obrigatório."),
-  vehicleInspection: z.any().refine(files => files?.length == 1, "O documento de inspeção é obrigatório."),
+  fullName: z.string().min(2, "O nome completo deve ter pelo menos 2 caracteres."),
+  cnh: z.string().min(9, "O número da CNH é obrigatório."),
+  sector: z.string().min(3, "O setor é obrigatório."),
+  vehicleModel: z.string().optional(),
+  licensePlate: z.string().optional(),
+  idPhoto: z.any().refine(files => files?.length == 1, "A foto 3x4 é obrigatória."),
+  cnhPhoto: z.any().refine(files => files?.length == 1, "A foto da CNH é obrigatória."),
 });
 
-export default function RegisterVehiclePage() {
+export default function RegisterDriverPage() {
   const { toast } = useToast();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-        driverName: '',
-        vehicleModel: '',
-        licensePlate: '',
-        sector: '',
-        mileage: 0,
+      fullName: '',
+      cnh: '',
+      sector: '',
+      vehicleModel: '',
+      licensePlate: '',
     },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
     toast({
-      title: "Cadastro de Veículo Enviado",
-      description: "O novo veículo foi adicionado à frota e está pendente de verificação.",
+      title: "Cadastro Enviado",
+      description: "O cadastro do motorista foi realizado com sucesso.",
     });
-    router.push('/vehicles');
+    router.push('/motoristas');
   };
 
   return (
     <div className="container mx-auto p-4 sm:p-8 max-w-3xl">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">Cadastro de Veículo</CardTitle>
-          <CardDescription>Preencha o formulário para adicionar um novo veículo à frota municipal.</CardDescription>
+          <CardTitle className="font-headline text-2xl">Cadastro de Motorista</CardTitle>
+          <CardDescription>Preencha o formulário para cadastrar um novo motorista da prefeitura.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <h3 className="font-headline text-lg font-semibold">Informações do Veículo e Motorista</h3>
+              <h3 className="font-headline text-lg font-semibold">Informações Pessoais</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name="vehicleModel"
+                  name="fullName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Modelo do Veículo</FormLabel>
+                      <FormLabel>Nome Completo</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Fiat Strada 2023" {...field} />
+                        <Input placeholder="Nome do motorista" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -72,25 +72,12 @@ export default function RegisterVehiclePage() {
                 />
                  <FormField
                   control={form.control}
-                  name="licensePlate"
+                  name="cnh"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Placa do Veículo</FormLabel>
+                      <FormLabel>Nº da CNH</FormLabel>
                       <FormControl>
-                        <Input placeholder="ABC-1234" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="driverName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome do Motorista Principal</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Carlos Silva" {...field} />
+                        <Input placeholder="0123456789" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -101,7 +88,7 @@ export default function RegisterVehiclePage() {
                   name="sector"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Setor Responsável</FormLabel>
+                      <FormLabel>Setor de Lotação</FormLabel>
                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -120,14 +107,31 @@ export default function RegisterVehiclePage() {
                     </FormItem>
                   )}
                 />
-                 <FormField
+              </div>
+
+              <h3 className="font-headline text-lg font-semibold">Veículo Designado (Opcional)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
                   control={form.control}
-                  name="mileage"
+                  name="vehicleModel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Quilometragem Inicial</FormLabel>
+                      <FormLabel>Modelo do Veículo</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
+                        <Input placeholder="e.g., Fiat Strada 2023" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="licensePlate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Placa do Veículo</FormLabel>
+                      <FormControl>
+                        <Input placeholder="ABC-1234" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -139,12 +143,12 @@ export default function RegisterVehiclePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name="vehicleRegistration"
+                  name="idPhoto"
                   render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <FormLabel>CRLV do Veículo</FormLabel>
+                      <FormLabel>Foto 3x4</FormLabel>
                       <FormControl>
-                        <Input type="file" accept="image/*,application/pdf" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
+                        <Input type="file" accept="image/*" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -152,10 +156,10 @@ export default function RegisterVehiclePage() {
                 />
                 <FormField
                   control={form.control}
-                  name="vehicleInspection"
+                  name="cnhPhoto"
                   render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <FormLabel>Certificado de Inspeção</FormLabel>
+                      <FormLabel>Foto da CNH</FormLabel>
                       <FormControl>
                         <Input type="file" accept="image/*,application/pdf" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
                       </FormControl>

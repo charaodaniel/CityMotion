@@ -1,12 +1,13 @@
+export type DriverStatus = 'Disponível' | 'Em Viagem' | 'Afastado' | 'Em Serviço';
+
 export type Driver = {
   id: string;
   name: string;
-  category: 'Veículo da Prefeitura';
-  vehicleModel: string;
-  licensePlate: string;
-  status: 'Verificado' | 'Pendente' | 'Rejeitado';
-  rating: number;
-  rides: number;
+  status: DriverStatus;
+  vehicleModel?: string;
+  licensePlate?: string;
+  sector: string;
+  cnh: string;
 };
 
 export type VehicleStatus = 'Disponível' | 'Em Serviço' | 'Em Viagem' | 'Manutenção';

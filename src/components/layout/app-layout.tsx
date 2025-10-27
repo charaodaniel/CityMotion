@@ -14,14 +14,13 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Send, Car, User, Menu } from 'lucide-react';
+import { LayoutDashboard, Car, User, Menu } from 'lucide-react';
 import { Button } from '../ui/button';
 
 const navItems = [
   { href: '/', label: 'Painel', icon: LayoutDashboard },
-  { href: '/dispatch', label: 'Despacho', icon: Send },
-  { href: '/drivers', label: 'Motoristas', icon: User },
-  { href: '/vehicles', label: 'Veículos', icon: Car },
+  { href: '/motoristas', label: 'Motoristas', icon: User },
+  { href: '/veiculos', label: 'Veículos', icon: Car },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -45,7 +44,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href}
+                    isActive={pathname.startsWith(item.href) && (item.href !== '/' || pathname === '/')}
                     tooltip={item.label}
                   >
                     <a href={item.href}>

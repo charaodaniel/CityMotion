@@ -1,12 +1,12 @@
 import type { Driver, Vehicle } from './types';
 
 export const drivers: Driver[] = [
-  { id: '1', name: 'João da Silva', category: 'Veículo da Prefeitura', vehicleModel: 'Fiat Strada', licensePlate: 'PM-001', status: 'Verificado', rating: 4.8, rides: 125 },
-  { id: '2', name: 'Maria Oliveira', category: 'Veículo da Prefeitura', vehicleModel: 'VW Gol', licensePlate: 'PM-002', status: 'Pendente', rating: 4.9, rides: 88 },
-  { id: '3', name: 'Pedro Santos', category: 'Veículo da Prefeitura', vehicleModel: 'Renault Kwid', licensePlate: 'PM-003', status: 'Verificado', rating: 4.5, rides: 210 },
-  { id: '4', name: 'Ana Souza', category: 'Veículo da Prefeitura', vehicleModel: 'Chevrolet Onix', licensePlate: 'PM-004', status: 'Rejeitado', rating: 3.2, rides: 42 },
-  { id: '5', name: 'Carlos Pereira', category: 'Veículo da Prefeitura', vehicleModel: 'Fiat Mobi', licensePlate: 'PM-005', status: 'Verificado', rating: 5.0, rides: 301 },
-  { id: '6', name: 'Lúcia Ferreira', category: 'Veículo da Prefeitura', vehicleModel: 'VW Nivus', licensePlate: 'PM-006', status: 'Verificado', rating: 4.7, rides: 150 },
+  { id: '1', name: 'João da Silva', cnh: '123456789', sector: 'Secretaria de Obras', vehicleModel: 'Fiat Strada', licensePlate: 'PM-001', status: 'Em Serviço' },
+  { id: '2', name: 'Maria Oliveira', cnh: '987654321', sector: 'Secretaria de Saúde', vehicleModel: 'VW Gol', licensePlate: 'PM-002', status: 'Disponível' },
+  { id: '3', name: 'Pedro Santos', cnh: '112233445', sector: 'Administração', vehicleModel: 'Renault Kwid', licensePlate: 'PM-003', status: 'Disponível' },
+  { id: '4', name: 'Ana Souza', cnh: '556677889', sector: 'Secretaria de Educação', vehicleModel: 'Chevrolet Onix', licensePlate: 'PM-004', status: 'Afastado' },
+  { id: '5', name: 'Carlos Pereira', cnh: '998877665', sector: 'Vigilância Sanitária', vehicleModel: 'Fiat Mobi', licensePlate: 'PM-005', status: 'Em Viagem' },
+  { id: '6', name: 'Lúcia Ferreira', cnh: '123123123', sector: 'Secretaria de Saúde', vehicleModel: 'VW Nivus', licensePlate: 'PM-006', status: 'Disponível' },
 ];
 
 export const vehicles: Vehicle[] = [

@@ -32,7 +32,7 @@ export default function VehiclesPage() {
             </h1>
             <p className="text-muted-foreground">Veja, gerencie e cadastre os veículos da prefeitura.</p>
         </div>
-        <Link href="/vehicles/register">
+        <Link href="/veiculos/register">
           <Button className="bg-accent hover:bg-accent/90">
             <PlusCircle className="mr-2 h-4 w-4" />
             Cadastrar Novo Veículo
