@@ -14,7 +14,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Send, Car, User, MapPin, Menu } from 'lucide-react';
+import { LayoutDashboard, Send, Car, User, Menu } from 'lucide-react';
 import { Button } from '../ui/button';
 
 const navItems = [
@@ -22,7 +22,6 @@ const navItems = [
   { href: '/dispatch', label: 'Despacho', icon: Send },
   { href: '/drivers', label: 'Motoristas', icon: User },
   { href: '/taxis', label: 'Táxis', icon: Car },
-  { href: '/geofencing', label: 'Cercas Virtuais', icon: MapPin },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {

@@ -46,8 +46,3 @@ export const timeToDestination = [
   { zone: 'D', time: 7 },
   { zone: 'E', time: 10 },
 ];
-
-export const geofences = [
-    { id: 'airport', name: 'Zona do Aeroporto', path: [{ lat: -23.4355556, lng: -46.4730556 }, { lat: -23.43, lng: -46.47 }, { lat: -23.43, lng: -46.46 }, { lat: -23.4355556, lng: -46.4630556 }] },
-    { id: 'downtown', name: 'Centro da Cidade', path: [{ lat: -23.5505, lng: -46.6333 }, { lat: -23.54, lng: -46.63 }, { lat: -23.54, lng: -46.62 }, { lat: -23.55, lng: -46.62 }] },
-];
