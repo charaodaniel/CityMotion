@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
@@ -14,6 +15,7 @@ const formSchema = z.object({
   fullName: z.string().min(2, "O nome completo deve ter pelo menos 2 caracteres."),
   email: z.string().email("Por favor, insira um endereço de e-mail válido."),
   phone: z.string().min(10, "O número de telefone parece muito curto."),
+  category: z.enum(['Taxista', 'Autônomo', 'Veículo da Prefeitura'], { required_error: "A categoria é obrigatória."}),
   vehicleModel: z.string().min(3, "O modelo do veículo é obrigatório."),
   licensePlate: z.string().min(3, "A placa do veículo é obrigatória."),
   drivingLicense: z.any().refine(files => files?.length == 1, "A carteira de motorista é obrigatória."),
@@ -91,6 +93,28 @@ export default function RegisterDriverPage() {
                       <FormControl>
                         <Input placeholder="(123) 456-7890" {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Categoria</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione a categoria" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Taxista">Taxista</SelectItem>
+                          <SelectItem value="Autônomo">Autônomo (tipo Uber)</SelectItem>
+                          <SelectItem value="Veículo da Prefeitura">Veículo da Prefeitura</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

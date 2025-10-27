@@ -61,6 +61,7 @@ export default function DriversPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
+                <TableHead>Categoria</TableHead>
                 <TableHead className="hidden md:table-cell">Veículo</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Avaliação</TableHead>
@@ -71,6 +72,7 @@ export default function DriversPage() {
               {drivers.map((driver) => (
                 <TableRow key={driver.id}>
                   <TableCell className="font-medium">{driver.name}</TableCell>
+                  <TableCell>{driver.category}</TableCell>
                   <TableCell className="hidden md:table-cell">
                     {driver.vehicleModel} ({driver.licensePlate})
                   </TableCell>

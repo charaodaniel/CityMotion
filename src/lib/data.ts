@@ -1,12 +1,12 @@
 import type { Driver, Taxi } from './types';
 
 export const drivers: Driver[] = [
-  { id: '1', name: 'John Doe', vehicleModel: 'Toyota Prius', licensePlate: 'ABC-123', status: 'Verificado', rating: 4.8, rides: 125 },
-  { id: '2', name: 'Jane Smith', vehicleModel: 'Honda Civic', licensePlate: 'XYZ-789', status: 'Pendente', rating: 4.9, rides: 88 },
-  { id: '3', name: 'Peter Jones', vehicleModel: 'Ford Focus', licensePlate: 'FGH-456', status: 'Verificado', rating: 4.5, rides: 210 },
-  { id: '4', name: 'Mary Johnson', vehicleModel: 'Chevrolet Bolt', licensePlate: 'JKL-101', status: 'Rejeitado', rating: 3.2, rides: 42 },
-  { id: '5', name: 'Chris Lee', vehicleModel: 'Tesla Model 3', licensePlate: 'TES-333', status: 'Verificado', rating: 5.0, rides: 301 },
-  { id: '6', name: 'Patricia Williams', vehicleModel: 'Nissan Leaf', licensePlate: 'LEF-200', status: 'Verificado', rating: 4.7, rides: 150 },
+  { id: '1', name: 'John Doe', category: 'Taxista', vehicleModel: 'Toyota Prius', licensePlate: 'ABC-123', status: 'Verificado', rating: 4.8, rides: 125 },
+  { id: '2', name: 'Jane Smith', category: 'Autônomo', vehicleModel: 'Honda Civic', licensePlate: 'XYZ-789', status: 'Pendente', rating: 4.9, rides: 88 },
+  { id: '3', name: 'Peter Jones', category: 'Taxista', vehicleModel: 'Ford Focus', licensePlate: 'FGH-456', status: 'Verificado', rating: 4.5, rides: 210 },
+  { id: '4', name: 'Mary Johnson', category: 'Veículo da Prefeitura', vehicleModel: 'Chevrolet Bolt', licensePlate: 'JKL-101', status: 'Rejeitado', rating: 3.2, rides: 42 },
+  { id: '5', name: 'Chris Lee', category: 'Autônomo', vehicleModel: 'Tesla Model 3', licensePlate: 'TES-333', status: 'Verificado', rating: 5.0, rides: 301 },
+  { id: '6', name: 'Patricia Williams', category: 'Veículo da Prefeitura', vehicleModel: 'Nissan Leaf', licensePlate: 'LEF-200', status: 'Verificado', rating: 4.7, rides: 150 },
 ];
 
 export const taxis: Taxi[] = [
