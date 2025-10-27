@@ -1,56 +1,190 @@
-# CityMotion - Sistema de Gestão de Frota
 
-Bem-vindo ao CityMotion, um sistema moderno e inteligente para a gestão de frotas de táxis e motoristas de uma prefeitura. Esta aplicação foi desenvolvida para otimizar operações, melhorar a eficiência e fornecer insights valiosos através de um painel de controle intuitivo e funcionalidades baseadas em Inteligência Artificial.
+🚘 CityMotion - Sistema Inteligente de Gestão de Frota Municipal
 
-## ✨ Funcionalidades Principais
+O CityMotion é um sistema completo e moderno para gestão de frotas, táxis, motoristas de aplicativo e veículos municipais.
+Desenvolvido para prefeituras e cooperativas urbanas, ele oferece controle operacional, agendamento de viagens e relatórios detalhados, tudo em uma interface intuitiva e responsiva.
 
-O sistema é dividido em quatro seções principais:
+🧭 Objetivo do Projeto
 
-### 1. Painel Principal (`/`)
+O CityMotion foi criado para centralizar e simplificar o gerenciamento da frota urbana, permitindo:
 
-O painel oferece uma visão geral e em tempo real das operações da frota, exibindo:
-- **Cartões de Resumo:** Métricas essenciais como total de motoristas, táxis ativos, número de corridas e tempo médio de espera.
-- **Gráfico de Visão Geral:** Um gráfico de barras comparando o número de corridas e o total de motoristas ao longo dos meses.
-- **Gráfico de Atividade:** Um gráfico de linhas que mostra a atividade dos motoristas (ativos vs. em corrida) ao longo do dia.
+Monitorar veículos em tempo real (locais e trajetos);
 
-### 2. Despacho com IA (`/dispatch`)
+Agendar viagens e rotas com motoristas designados;
 
-Uma ferramenta poderosa que utiliza IA generativa para otimizar o despacho de táxis. Os operadores podem inserir dados em tempo real sobre:
-- Demanda de passageiros em diferentes áreas.
-- Condições atuais do trânsito.
-- Disponibilidade e localização dos motoristas.
+Registrar ganhos de motoristas de táxi e aplicativos;
 
-Com base nessas informações, a IA gera um **plano de despacho otimizado** que visa minimizar o tempo de espera dos cidadãos e maximizar a utilização dos motoristas.
+Manter histórico de deslocamentos da frota municipal;
 
-### 3. Gestão de Motoristas (`/drivers`)
+Gerar relatórios de desempenho e utilização.
 
-Esta seção permite o gerenciamento completo dos motoristas da frota:
-- **Listagem de Motoristas:** Uma tabela exibe todos os motoristas cadastrados com informações como nome, categoria, veículo, status (Verificado, Pendente, Rejeitado), avaliação e total de corridas.
-- **Cadastro de Novo Motorista:** Um formulário detalhado para registrar novos motoristas, incluindo informações pessoais, dados do veículo e upload de documentos. As categorias de motorista são:
-    - Taxista
-    - Autônomo (tipo Uber)
-    - Veículo da Prefeitura
+A plataforma busca trazer transparência, eficiência e organização ao transporte urbano, tanto público quanto privado.
 
-### 4. Gestão de Táxis (`/taxis`)
+🚗 Tipos de Veículos e Casos de Uso
 
-Funcionalidades dedicadas ao gerenciamento da frota de veículos:
-- **Listagem da Frota:** Uma tabela apresenta todos os táxis, incluindo placa, nome do motorista associado, modelo, status (Ativo, Inativo, Manutenção), avaliação e corridas do dia.
-- **Cadastro de Novo Táxi:** Um formulário para adicionar novos táxis ao sistema, com campos para informações do veículo e upload de documentos de permissão e inspeção.
+O sistema abrange três categorias principais de motoristas e veículos:
 
-## 🚀 Tecnologias Utilizadas
+1. 🟡 Taxistas
 
-- **Framework:** [Next.js](https://nextjs.org/) (com App Router)
-- **Linguagem:** [TypeScript](https://www.typescriptlang.org/)
-- **Estilização:** [Tailwind CSS](https://tailwindcss.com/)
-- **Componentes de UI:** [ShadCN UI](https://ui.shadcn.com/)
-- **Gráficos:** [Recharts](https://recharts.org/)
-- **Inteligência Artificial:** [Google Genkit](https://firebase.google.com/docs/genkit)
-- **Ícones:** [Lucide React](https://lucide.dev/)
-- **Formulários:** [React Hook Form](https://react-hook-form.com/) com [Zod](https://zod.dev/) para validação.
+Registram corridas e ganhos diários;
 
-## 📂 Estrutura do Projeto
+Visualizam relatórios de desempenho e produtividade mensal;
 
-- `src/app`: Contém as rotas e páginas da aplicação.
-- `src/components`: Componentes React reutilizáveis, incluindo a UI (gerada pelo ShadCN) e componentes de layout.
-- `src/lib`: Funções utilitárias, dados mockados e definições de tipos.
-- `src/ai`: Lógica relacionada à Inteligência Artificial, incluindo os "flows" do Genkit.
+Gerenciam histórico de corridas e avaliações.
+
+2. 🔵 Motoristas de Aplicativo (Autônomos)
+
+Podem controlar ganhos, despesas e número de viagens;
+
+Acompanham estatísticas individuais e gráficos comparativos;
+
+Ideal para cooperativas de transporte urbano.
+
+3. 🟢 Veículos Municipais / Prefeitura
+
+Focados em controle de localização e status em tempo real;
+
+Indicam se o veículo está na sede, em deslocamento ou em serviço externo (exemplo: “Prefeitura → ESF2”);
+
+Registram rotas, horários e destinos;
+
+Melhoram a gestão de frota pública e transparência administrativa.
+
+✨ Principais Funcionalidades
+1. Painel Principal (/)
+
+Interface inicial que exibe uma visão geral da frota:
+
+Cartões de resumo: número total de motoristas, táxis ativos, viagens concluídas e tempo médio de espera;
+
+Gráfico de visão geral: comparativo mensal de motoristas e viagens;
+
+Gráfico de atividade: monitoramento do status dos motoristas (ativos, em corrida, parados).
+
+2. Escala e Agendamento de Viagens (/schedule)
+
+Ferramenta para criar e gerenciar escalas de viagem:
+
+Permite agendar deslocamentos com horário, motorista e veículo específicos;
+
+Visualiza viagens em andamento, concluídas e pendentes;
+
+Possibilita cancelamento ou reagendamento rápido;
+
+Facilita o controle da frota municipal em serviços internos e externos.
+
+Exemplo de uso:
+
+Motorista: João Pereira
+Veículo: VW Gol - Placa ABC-1234
+Rota: Prefeitura → ESF2
+Horário: 08:30 - 10:00
+Status: Em percurso
+
+3. Gestão de Motoristas (/drivers)
+
+Controle completo dos motoristas cadastrados:
+
+Listagem completa com nome, categoria, veículo e status (Ativo, Inativo, Pendente);
+
+Formulário de cadastro com dados pessoais, CNH, veículo e documentos;
+
+Filtro por categoria: Taxista, Autônomo, Prefeitura;
+
+Avaliação e desempenho: sistema de notas e histórico de viagens.
+
+4. Gestão de Veículos (/taxis)
+
+Gerenciamento central da frota:
+
+Listagem de veículos: placa, motorista, modelo, status (Ativo, Inativo, Manutenção);
+
+Cadastro de novos veículos: com upload de documentos e inspeções;
+
+Monitoramento de uso: identifica se está na sede, em rota ou em serviço;
+
+Histórico de viagens: relatórios automáticos por veículo.
+
+5. Relatórios e Indicadores
+
+O sistema gera relatórios automáticos de:
+
+Ganhos diários, semanais e mensais;
+
+Deslocamentos realizados pela frota municipal;
+
+Utilização de veículos e tempo ocioso;
+
+Desempenho de motoristas.
+
+🧩 Arquitetura e Estrutura do Projeto
+src/
+├── app/              # Páginas e rotas principais do sistema
+│   ├── page.tsx      # Painel principal
+│   ├── drivers/      # Gestão de motoristas
+│   ├── taxis/        # Gestão de veículos
+│   └── schedule/     # Escala e agendamento de viagens
+├── components/       # Componentes reutilizáveis (UI, tabelas, formulários, gráficos)
+├── lib/              # Funções auxiliares, tipos, dados mockados
+└── styles/           # Arquivos de estilização global (Tailwind)
+
+🛠️ Tecnologias Utilizadas
+Categoria	Tecnologia
+Framework	Next.js
+ com App Router
+Linguagem	TypeScript
+
+Estilização	Tailwind CSS
+
+UI Components	ShadCN UI
+
+Gráficos	Recharts
+
+Ícones	Lucide React
+
+Formulários	React Hook Form
+
+Validação	Zod
+⚙️ Requisitos de Instalação
+📦 Dependências
+
+Node.js 18 ou superior
+
+npm ou yarn
+
+🧰 Instalação
+# Clonar o repositório
+git clone https://github.com/seuusuario/citymotion.git
+
+# Acessar a pasta do projeto
+cd citymotion
+
+# Instalar dependências
+npm install
+
+# Rodar em modo desenvolvimento
+npm run dev
+
+🌐 Acesso
+
+Abra no navegador:
+http://localhost:3000
+
+🧾 Possíveis Extensões Futuras
+
+Integração com GPS em tempo real (para frota municipal);
+
+Relatórios exportáveis em PDF e Excel;
+
+Controle de combustível e manutenção preventiva;
+
+Aplicativo mobile para motoristas (Android/iOS);
+
+Painel administrativo com permissões de acesso por nível.
+
+📄 Licença
+
+Este projeto está sob a licença MIT.
+Sinta-se livre para usar, modificar e distribuir conforme necessário.
+
+CityMotion — Mobilidade e gestão inteligente para o transporte urbano municipal.
