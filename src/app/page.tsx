@@ -1,8 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Line, LineChart, ResponsiveContainer } from 'recharts';
-import { chartData, driverActivity, timeToDestination } from '@/lib/data';
 import { Car, Route, Users, Clock } from 'lucide-react';
+import { OverviewChart } from '@/components/overview-chart';
+import { DriverActivityChart } from '@/components/driver-activity-chart';
 
 export default function DashboardPage() {
   return (
@@ -63,21 +62,7 @@ export default function DashboardPage() {
             <CardTitle className="font-headline">Overview</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <ChartContainer config={{}} className="h-[350px] w-full">
-              <BarChart data={chartData}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="month"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="rides" fill="var(--color-chart-1)" radius={4} />
-                <Bar dataKey="drivers" fill="var(--color-chart-2)" radius={4} />
-              </BarChart>
-            </ChartContainer>
+            <OverviewChart />
           </CardContent>
         </Card>
 
@@ -86,19 +71,7 @@ export default function DashboardPage() {
             <CardTitle className="font-headline">Driver Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={{}} className="h-[350px] w-full">
-            <LineChart
-              data={driverActivity}
-              margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-              <XAxis dataKey="time" />
-              <YAxis />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Line type="monotone" dataKey="activeDrivers" stroke="var(--color-chart-1)" strokeWidth={2} />
-              <Line type="monotone" dataKey="onRide" stroke="var(--color-chart-2)" strokeWidth={2}/>
-            </LineChart>
-            </ChartContainer>
+            <DriverActivityChart />
           </CardContent>
         </Card>
       </div>
