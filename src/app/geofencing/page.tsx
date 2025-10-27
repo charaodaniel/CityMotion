@@ -1,12 +1,18 @@
-import { MapContainer } from '@/components/map-container';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { geofences } from '@/lib/data';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Carregamento dinâmico do mapa para evitar problemas com SSR
+const Map = dynamic(() => import('@/components/map-container').then((mod) => mod.MapContainer), {
+    ssr: false,
+    loading: () => <Skeleton className="h-full w-full" />
+});
+
 
 export default function GeofencingPage() {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-
     return (
-        <div className="container mx-auto p-4 sm-p-8 h-full flex flex-col">
+        <div className="container mx-auto p-4 sm:p-8 h-full flex flex-col">
              <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight font-headline">
@@ -16,8 +22,8 @@ export default function GeofencingPage() {
                 </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
-                <div className="lg:col-span-2 h-[60vh] lg:h-auto rounded-lg overflow-hidden shadow-lg">
-                    <MapContainer apiKey={apiKey} geofences={geofences} />
+                <div className="lg:col-span-2 h-[60vh] lg:h-auto rounded-lg overflow-hidden shadow-lg border">
+                    <Map geofences={geofences} />
                 </div>
                 <div className="lg:col-span-1">
                     <Card>
