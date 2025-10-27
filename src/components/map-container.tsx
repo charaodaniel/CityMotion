@@ -1,8 +1,9 @@
 'use client';
 
-import { APIProvider, Map, Polygon } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, useMap } from '@vis.gl/react-google-maps';
 import { AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { useEffect } from 'react';
 
 type Geofence = {
     id: string;
@@ -14,6 +15,36 @@ interface MapContainerProps {
     apiKey?: string;
     geofences: Geofence[];
 }
+
+function GeofencePolygons({ geofences }: { geofences: Geofence[] }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!map) return;
+
+        const polygons = geofences.map(fence => {
+            const polygon = new google.maps.Polygon({
+                paths: fence.path,
+                strokeColor: 'hsl(var(--accent))',
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: 'hsl(var(--accent))',
+                fillOpacity: 0.35,
+            });
+            polygon.setMap(map);
+            return polygon;
+        });
+
+        // Cleanup function to remove polygons when component unmounts or geofences change
+        return () => {
+            polygons.forEach(p => p.setMap(null));
+        };
+
+    }, [map, geofences]);
+
+    return null;
+}
+
 
 export function MapContainer({ apiKey, geofences }: MapContainerProps) {
     if (!apiKey) {
@@ -44,7 +75,7 @@ export function MapContainer({ apiKey, geofences }: MapContainerProps) {
     const position = { lat: -23.55052, lng: -46.633308 };
 
     return (
-        <APIProvider apiKey={apiKey}>
+        <APIProvider apiKey={apiKey} libraries={['maps']}>
             <Map
                 defaultCenter={position}
                 defaultZoom={11}
@@ -52,17 +83,7 @@ export function MapContainer({ apiKey, geofences }: MapContainerProps) {
                 gestureHandling={'greedy'}
                 disableDefaultUI={true}
             >
-                {geofences.map(fence => (
-                     <Polygon
-                        key={fence.id}
-                        paths={fence.path}
-                        strokeColor={'hsl(var(--accent))'}
-                        strokeOpacity={0.8}
-                        strokeWeight={2}
-                        fillColor={'hsl(var(--accent))'}
-                        fillOpacity={0.35}
-                    />
-                ))}
+                <GeofencePolygons geofences={geofences} />
             </Map>
         </APIProvider>
     );
