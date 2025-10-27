@@ -2,13 +2,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Car, Route, Users, Clock } from 'lucide-react';
 import { OverviewChart } from '@/components/overview-chart';
 import { DriverActivityChart } from '@/components/driver-activity-chart';
+import { Separator } from '@/components/ui/separator';
 
 export default function DashboardPage() {
   return (
-    <div className="flex-1 space-y-4 p-4 sm:p-8 pt-6">
-      <h1 className="text-3xl font-bold tracking-tight font-headline">
-        Painel da Frota
-      </h1>
+    <div className="flex-1 space-y-8 p-4 sm:p-8 pt-6">
+      <div className="flex items-center justify-between space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Painel da Frota
+        </h1>
+      </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -56,19 +59,21 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      <Separator />
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+        <Card className="col-span-4 border-none shadow-none">
           <CardHeader>
-            <CardTitle className="font-headline">Visão Geral de Deslocamentos</CardTitle>
+            <CardTitle>Visão Geral de Deslocamentos</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
             <OverviewChart />
           </CardContent>
         </Card>
 
-        <Card className="col-span-4 lg:col-span-3">
+        <Card className="col-span-4 lg:col-span-3 border-none shadow-none">
           <CardHeader>
-            <CardTitle className="font-headline">Atividade dos Motoristas</CardTitle>
+            <CardTitle>Atividade dos Motoristas</CardTitle>
           </CardHeader>
           <CardContent>
             <DriverActivityChart />

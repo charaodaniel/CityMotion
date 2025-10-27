@@ -1,7 +1,7 @@
-import { Car } from 'lucide-react';
+import { CarFront } from 'lucide-react';
 
 export const Logo = () => (
-    <div className="bg-primary text-primary-foreground p-1.5 rounded-md">
-        <Car className="h-5 w-5" />
+    <div className="bg-foreground text-background p-1.5 rounded-md">
+        <CarFront className="h-5 w-5" />
     </div>
 );

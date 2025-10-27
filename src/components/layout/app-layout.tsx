@@ -12,16 +12,23 @@ import {
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, User, Menu } from 'lucide-react';
+import { LayoutDashboard, Car, User, Menu, Settings, LifeBuoy } from 'lucide-react';
 import { Button } from '../ui/button';
+import { Separator } from '../ui/separator';
 
 const navItems = [
   { href: '/', label: 'Painel', icon: LayoutDashboard },
   { href: '/motoristas', label: 'Motoristas', icon: User },
   { href: '/veiculos', label: 'Veículos', icon: Car },
 ];
+
+const bottomNavItems = [
+    { href: '/settings', label: 'Configurações', icon: Settings },
+    { href: '/support', label: 'Suporte', icon: LifeBuoy },
+]
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -33,7 +40,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <SidebarHeader>
             <div className="flex items-center gap-2">
               <Logo />
-              <span className="text-lg font-semibold tracking-tighter font-headline">
+              <span className="text-lg font-semibold tracking-tighter">
                 CityMotion
               </span>
             </div>
@@ -56,11 +63,30 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               ))}
             </SidebarMenu>
           </SidebarContent>
+          <SidebarFooter className='mt-auto'>
+            <Separator className='mb-2' />
+             <SidebarMenu>
+                {bottomNavItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={pathname.startsWith(item.href)}
+                        tooltip={item.label}
+                    >
+                        <a href={item.href}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                        </a>
+                    </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+          </SidebarFooter>
         </Sidebar>
 
         <SidebarInset>
-            <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-                <SidebarTrigger asChild>
+            <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+                <SidebarTrigger asChild className='sm:hidden'>
                     <Button variant="outline" size="icon">
                         <Menu />
                     </Button>
