@@ -1,20 +1,20 @@
-import type { Driver, Taxi } from './types';
+import type { Driver, Vehicle } from './types';
 
 export const drivers: Driver[] = [
-  { id: '1', name: 'John Doe', category: 'Taxista', vehicleModel: 'Toyota Prius', licensePlate: 'ABC-123', status: 'Verificado', rating: 4.8, rides: 125 },
-  { id: '2', name: 'Jane Smith', category: 'Autônomo', vehicleModel: 'Honda Civic', licensePlate: 'XYZ-789', status: 'Pendente', rating: 4.9, rides: 88 },
-  { id: '3', name: 'Peter Jones', category: 'Taxista', vehicleModel: 'Ford Focus', licensePlate: 'FGH-456', status: 'Verificado', rating: 4.5, rides: 210 },
-  { id: '4', name: 'Mary Johnson', category: 'Veículo da Prefeitura', vehicleModel: 'Chevrolet Bolt', licensePlate: 'JKL-101', status: 'Rejeitado', rating: 3.2, rides: 42 },
-  { id: '5', name: 'Chris Lee', category: 'Autônomo', vehicleModel: 'Tesla Model 3', licensePlate: 'TES-333', status: 'Verificado', rating: 5.0, rides: 301 },
-  { id: '6', name: 'Patricia Williams', category: 'Veículo da Prefeitura', vehicleModel: 'Nissan Leaf', licensePlate: 'LEF-200', status: 'Verificado', rating: 4.7, rides: 150 },
+  { id: '1', name: 'João da Silva', category: 'Veículo da Prefeitura', vehicleModel: 'Fiat Strada', licensePlate: 'PM-001', status: 'Verificado', rating: 4.8, rides: 125 },
+  { id: '2', name: 'Maria Oliveira', category: 'Veículo da Prefeitura', vehicleModel: 'VW Gol', licensePlate: 'PM-002', status: 'Pendente', rating: 4.9, rides: 88 },
+  { id: '3', name: 'Pedro Santos', category: 'Veículo da Prefeitura', vehicleModel: 'Renault Kwid', licensePlate: 'PM-003', status: 'Verificado', rating: 4.5, rides: 210 },
+  { id: '4', name: 'Ana Souza', category: 'Veículo da Prefeitura', vehicleModel: 'Chevrolet Onix', licensePlate: 'PM-004', status: 'Rejeitado', rating: 3.2, rides: 42 },
+  { id: '5', name: 'Carlos Pereira', category: 'Veículo da Prefeitura', vehicleModel: 'Fiat Mobi', licensePlate: 'PM-005', status: 'Verificado', rating: 5.0, rides: 301 },
+  { id: '6', name: 'Lúcia Ferreira', category: 'Veículo da Prefeitura', vehicleModel: 'VW Nivus', licensePlate: 'PM-006', status: 'Verificado', rating: 4.7, rides: 150 },
 ];
 
-export const taxis: Taxi[] = [
-  { id: 'T1', driverName: 'Carlos Silva', vehicleModel: 'Fiat Cronos', licensePlate: 'TAXI-001', status: 'Ativo', rating: 4.9, ridesToday: 15 },
-  { id: 'T2', driverName: 'Ana Pereira', vehicleModel: 'Chevrolet Onix', licensePlate: 'TAXI-002', status: 'Ativo', rating: 4.7, ridesToday: 12 },
-  { id: 'T3', driverName: 'Rafael Souza', vehicleModel: 'Renault Logan', licensePlate: 'TAXI-003', status: 'Inativo', rating: 4.6, ridesToday: 0 },
-  { id: 'T4', driverName: 'Mariana Costa', vehicleModel: 'Volkswagen Voyage', licensePlate: 'TAXI-004', status: 'Manutenção', rating: 4.8, ridesToday: 2 },
-  { id: 'T5', driverName: 'Lucas Almeida', vehicleModel: 'Hyundai HB20S', licensePlate: 'TAXI-005', status: 'Ativo', rating: 4.9, ridesToday: 22 },
+export const vehicles: Vehicle[] = [
+  { id: 'V1', driverName: 'João da Silva', vehicleModel: 'Fiat Strada', licensePlate: 'PM-001', status: 'Em Serviço', mileage: 15000, sector: 'Secretaria de Obras' },
+  { id: 'V2', driverName: 'Maria Oliveira', vehicleModel: 'VW Gol', licensePlate: 'PM-002', status: 'Na Sede', mileage: 8500, sector: 'Secretaria de Saúde' },
+  { id: 'V3', driverName: 'Pedro Santos', vehicleModel: 'Renault Kwid', licensePlate: 'PM-003', status: 'Na Sede', mileage: 22000, sector: 'Administração' },
+  { id: 'V4', driverName: 'Ana Souza', vehicleModel: 'Chevrolet Onix', licensePlate: 'PM-004', status: 'Manutenção', mileage: 41000, sector: 'Secretaria de Educação' },
+  { id: 'V5', driverName: 'Carlos Pereira', vehicleModel: 'Fiat Mobi', licensePlate: 'PM-005', status: 'Em Serviço', mileage: 5200, sector: 'Vigilância Sanitária' },
 ];
 
 

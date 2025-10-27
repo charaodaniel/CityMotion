@@ -1,190 +1,150 @@
+# 🚘 CityMotion - Sistema de Gerenciamento de Frota Municipal
 
-🚘 CityMotion - Sistema Inteligente de Gestão de Frota Municipal
+O **CityMotion** é um sistema moderno desenvolvido para o **gerenciamento de frotas municipais**.  
+Ele permite **monitorar veículos e motoristas**, **registrar deslocamentos oficiais**, **controlar escalas de viagem** e **acompanhar em tempo real** o status da frota da prefeitura.
 
-O CityMotion é um sistema completo e moderno para gestão de frotas, táxis, motoristas de aplicativo e veículos municipais.
-Desenvolvido para prefeituras e cooperativas urbanas, ele oferece controle operacional, agendamento de viagens e relatórios detalhados, tudo em uma interface intuitiva e responsiva.
+Ideal para **secretarias municipais, departamentos de transporte e logística pública**, o sistema oferece uma interface simples, intuitiva e eficiente.
 
-🧭 Objetivo do Projeto
+---
 
-O CityMotion foi criado para centralizar e simplificar o gerenciamento da frota urbana, permitindo:
+## 🧭 **Objetivo do Projeto**
 
-Monitorar veículos em tempo real (locais e trajetos);
+O **CityMotion** tem como objetivo centralizar o **controle operacional da frota da prefeitura**, garantindo:
+- **Transparência** no uso de veículos públicos;
+- **Eficiência** na alocação de motoristas e rotas;
+- **Registro completo** de viagens, horários e destinos;
+- **Redução de tempo ocioso** e **melhor uso dos recursos**.
 
-Agendar viagens e rotas com motoristas designados;
+---
 
-Registrar ganhos de motoristas de táxi e aplicativos;
+## 🚗 **Funcionalidades Principais**
 
-Manter histórico de deslocamentos da frota municipal;
+### 1. **Painel Principal (`/`)**
+O painel apresenta uma visão geral e em tempo real de toda a frota:
+- **Resumo da frota:** total de veículos, motoristas ativos, veículos em serviço e disponíveis;
+- **Gráficos e indicadores:** relatórios de uso mensal, quilometragem e frequência de deslocamentos;
+- **Status ao vivo:** mostra quais veículos estão na sede, em percurso ou em manutenção.
 
-Gerar relatórios de desempenho e utilização.
+---
 
-A plataforma busca trazer transparência, eficiência e organização ao transporte urbano, tanto público quanto privado.
+### 2. **Gestão de Motoristas (`/drivers`)**
+Gerencie todos os motoristas vinculados à prefeitura:
+- **Listagem completa:** nome, cargo, setor, CNH, veículo designado e status (Ativo, Em Serviço, Afastado);
+- **Cadastro de novos motoristas:** formulário com informações pessoais, documentos e vínculo de trabalho;
+- **Histórico de viagens:** cada motorista tem um histórico de deslocamentos e serviços realizados.
 
-🚗 Tipos de Veículos e Casos de Uso
+---
 
-O sistema abrange três categorias principais de motoristas e veículos:
+### 3. **Gestão de Veículos (`/vehicles`)**
+Controle detalhado da frota municipal:
+- **Cadastro de veículos:** marca, modelo, placa, quilometragem, setor responsável e status (Na sede, Em serviço, Manutenção);
+- **Tabela de frota:** exibe todos os veículos cadastrados com filtros e busca rápida;
+- **Documentos e manutenção:** upload de CRLV, comprovantes de vistoria e registros de manutenção.
 
-1. 🟡 Taxistas
+---
 
-Registram corridas e ganhos diários;
+### 4. **Escala e Agendamento de Viagens (`/schedule`)**
+Ferramenta central para organizar os deslocamentos dos veículos públicos:
+- **Criação de viagens:** defina veículo, motorista, destino, motivo e horário de saída/retorno;
+- **Status de viagem:** Em andamento, Concluída ou Cancelada;
+- **Rastreamento interno:** exibe no painel a localização e o status do veículo em tempo real;
+- **Histórico:** registro completo de todas as viagens realizadas.
 
-Visualizam relatórios de desempenho e produtividade mensal;
-
-Gerenciam histórico de corridas e avaliações.
-
-2. 🔵 Motoristas de Aplicativo (Autônomos)
-
-Podem controlar ganhos, despesas e número de viagens;
-
-Acompanham estatísticas individuais e gráficos comparativos;
-
-Ideal para cooperativas de transporte urbano.
-
-3. 🟢 Veículos Municipais / Prefeitura
-
-Focados em controle de localização e status em tempo real;
-
-Indicam se o veículo está na sede, em deslocamento ou em serviço externo (exemplo: “Prefeitura → ESF2”);
-
-Registram rotas, horários e destinos;
-
-Melhoram a gestão de frota pública e transparência administrativa.
-
-✨ Principais Funcionalidades
-1. Painel Principal (/)
-
-Interface inicial que exibe uma visão geral da frota:
-
-Cartões de resumo: número total de motoristas, táxis ativos, viagens concluídas e tempo médio de espera;
-
-Gráfico de visão geral: comparativo mensal de motoristas e viagens;
-
-Gráfico de atividade: monitoramento do status dos motoristas (ativos, em corrida, parados).
-
-2. Escala e Agendamento de Viagens (/schedule)
-
-Ferramenta para criar e gerenciar escalas de viagem:
-
-Permite agendar deslocamentos com horário, motorista e veículo específicos;
-
-Visualiza viagens em andamento, concluídas e pendentes;
-
-Possibilita cancelamento ou reagendamento rápido;
-
-Facilita o controle da frota municipal em serviços internos e externos.
-
-Exemplo de uso:
-
-Motorista: João Pereira
-Veículo: VW Gol - Placa ABC-1234
-Rota: Prefeitura → ESF2
-Horário: 08:30 - 10:00
+Exemplo:
+```
+Motorista: Maria Silva
+Veículo: Fiat Strada - Placa XYZ-1234
+Rota: Prefeitura → Escola Municipal São José
+Horário: 09:00 às 10:30
 Status: Em percurso
+Motivo: Entrega de materiais escolares
+```
 
-3. Gestão de Motoristas (/drivers)
+---
 
-Controle completo dos motoristas cadastrados:
+### 5. **Relatórios e Indicadores**
+Geração automática de relatórios administrativos:
+- Quilometragem mensal por veículo;
+- Frequência de uso por setor;
+- Tempo total em deslocamento;
+- Registros de manutenção e viagens.
 
-Listagem completa com nome, categoria, veículo e status (Ativo, Inativo, Pendente);
+Todos os relatórios podem ser exportados em **PDF ou CSV** para auditorias e prestações de contas.
 
-Formulário de cadastro com dados pessoais, CNH, veículo e documentos;
+---
 
-Filtro por categoria: Taxista, Autônomo, Prefeitura;
+## 🧩 **Arquitetura e Estrutura do Projeto**
 
-Avaliação e desempenho: sistema de notas e histórico de viagens.
-
-4. Gestão de Veículos (/taxis)
-
-Gerenciamento central da frota:
-
-Listagem de veículos: placa, motorista, modelo, status (Ativo, Inativo, Manutenção);
-
-Cadastro de novos veículos: com upload de documentos e inspeções;
-
-Monitoramento de uso: identifica se está na sede, em rota ou em serviço;
-
-Histórico de viagens: relatórios automáticos por veículo.
-
-5. Relatórios e Indicadores
-
-O sistema gera relatórios automáticos de:
-
-Ganhos diários, semanais e mensais;
-
-Deslocamentos realizados pela frota municipal;
-
-Utilização de veículos e tempo ocioso;
-
-Desempenho de motoristas.
-
-🧩 Arquitetura e Estrutura do Projeto
+```
 src/
-├── app/              # Páginas e rotas principais do sistema
+├── app/              # Páginas e rotas principais
 │   ├── page.tsx      # Painel principal
 │   ├── drivers/      # Gestão de motoristas
-│   ├── taxis/        # Gestão de veículos
+│   ├── vehicles/     # Gestão de veículos
 │   └── schedule/     # Escala e agendamento de viagens
 ├── components/       # Componentes reutilizáveis (UI, tabelas, formulários, gráficos)
-├── lib/              # Funções auxiliares, tipos, dados mockados
-└── styles/           # Arquivos de estilização global (Tailwind)
+├── lib/              # Funções utilitárias, dados e tipos
+└── styles/           # Estilização global (Tailwind CSS)
+```
 
-🛠️ Tecnologias Utilizadas
-Categoria	Tecnologia
-Framework	Next.js
- com App Router
-Linguagem	TypeScript
+---
 
-Estilização	Tailwind CSS
+## 🛠️ **Tecnologias Utilizadas**
 
-UI Components	ShadCN UI
+| Categoria | Tecnologia |
+|------------|-------------|
+| **Framework** | [Next.js](https://nextjs.org/) (App Router) |
+| **Linguagem** | [TypeScript](https://www.typescriptlang.org/) |
+| **Estilização** | [Tailwind CSS](https://tailwindcss.com/) |
+| **UI Components** | [ShadCN UI](https://ui.shadcn.com/) |
+| **Gráficos** | [Recharts](https://recharts.org/) |
+| **Ícones** | [Lucide React](https://lucide.dev/) |
+| **Formulários** | [React Hook Form](https://react-hook-form.com/) |
+| **Validação** | [Zod](https://zod.dev/) |
 
-Gráficos	Recharts
+---
 
-Ícones	Lucide React
+## ⚙️ **Instalação e Execução**
 
-Formulários	React Hook Form
+### 📋 Pré-requisitos
+- Node.js 18+  
+- npm ou yarn  
 
-Validação	Zod
-⚙️ Requisitos de Instalação
-📦 Dependências
-
-Node.js 18 ou superior
-
-npm ou yarn
-
-🧰 Instalação
+### 🚀 Passos para rodar o projeto
+```bash
 # Clonar o repositório
 git clone https://github.com/seuusuario/citymotion.git
 
-# Acessar a pasta do projeto
+# Entrar na pasta do projeto
 cd citymotion
 
 # Instalar dependências
 npm install
 
-# Rodar em modo desenvolvimento
+# Iniciar o servidor de desenvolvimento
 npm run dev
+```
 
-🌐 Acesso
+Acesse em:  
+👉 [http://localhost:3000](http://localhost:3000)
 
-Abra no navegador:
-http://localhost:3000
+---
 
-🧾 Possíveis Extensões Futuras
+## 📈 **Futuras Implementações**
 
-Integração com GPS em tempo real (para frota municipal);
+- Mapa de localização dos veículos (integração com GPS);
+- Controle de combustível e manutenção preventiva;
+- Sistema de notificações para revisões e vencimentos de documentos;
+- Aplicativo mobile para motoristas registrarem viagens;
+- Dashboard de eficiência por setor.
 
-Relatórios exportáveis em PDF e Excel;
+---
 
-Controle de combustível e manutenção preventiva;
+## 📄 **Licença**
 
-Aplicativo mobile para motoristas (Android/iOS);
+Este projeto está licenciado sob a **MIT License**.  
+Você pode usar, modificar e distribuir livremente, desde que mantenha os créditos originais.
 
-Painel administrativo com permissões de acesso por nível.
+---
 
-📄 Licença
-
-Este projeto está sob a licença MIT.
-Sinta-se livre para usar, modificar e distribuir conforme necessário.
-
-CityMotion — Mobilidade e gestão inteligente para o transporte urbano municipal.
+**CityMotion — Mobilidade, transparência e eficiência para a frota pública municipal.**

@@ -20,28 +20,15 @@ function getStatusVariant(status: Driver['status']) {
   }
 }
 
-function translateStatus(status: Driver['status']): string {
-    switch (status) {
-        case 'Verified':
-            return 'Verificado';
-        case 'Pending':
-            return 'Pendente';
-        case 'Rejected':
-            return 'Rejeitado';
-        default:
-            return status;
-    }
-}
-
 export default function DriversPage() {
   return (
     <div className="container mx-auto p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
             <h1 className="text-3xl font-bold tracking-tight font-headline">
-                Gerenciamento de Motoristas
+                Gestão de Motoristas
             </h1>
-            <p className="text-muted-foreground">Veja, gerencie e cadastre motoristas.</p>
+            <p className="text-muted-foreground">Veja, gerencie e cadastre os motoristas da prefeitura.</p>
         </div>
         <Link href="/drivers/register">
           <Button className="bg-accent hover:bg-accent/90">
@@ -61,23 +48,21 @@ export default function DriversPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
-                <TableHead>Categoria</TableHead>
                 <TableHead className="hidden md:table-cell">Veículo</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Avaliação</TableHead>
-                <TableHead className="text-right">Corridas</TableHead>
+                <TableHead className="text-right">Viagens</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {drivers.map((driver) => (
                 <TableRow key={driver.id}>
                   <TableCell className="font-medium">{driver.name}</TableCell>
-                  <TableCell>{driver.category}</TableCell>
                   <TableCell className="hidden md:table-cell">
                     {driver.vehicleModel} ({driver.licensePlate})
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(translateStatus(driver.status) as any)}>{translateStatus(driver.status)}</Badge>
+                    <Badge variant={getStatusVariant(driver.status)}>{driver.status}</Badge>
                   </TableCell>
                   <TableCell className="text-right flex justify-end items-center gap-1">
                     {driver.rating.toFixed(1)}

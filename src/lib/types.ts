@@ -1,20 +1,20 @@
 export type Driver = {
   id: string;
   name: string;
-  category: 'Taxista' | 'Autônomo' | 'Veículo da Prefeitura';
+  category: 'Veículo da Prefeitura';
   vehicleModel: string;
   licensePlate: string;
-  status: 'Verificado' | 'Pendente' | 'Rejeitado' | 'Verified' | 'Pending' | 'Rejected';
+  status: 'Verificado' | 'Pendente' | 'Rejeitado';
   rating: number;
   rides: number;
 };
 
-export type Taxi = {
+export type Vehicle = {
   id: string;
   driverName: string;
   vehicleModel: string;
   licensePlate: string;
-  status: 'Ativo' | 'Inativo' | 'Manutenção' | 'Active' | 'Inactive' | 'Maintenance';
-  rating: number;
-  ridesToday: number;
+  status: 'Na Sede' | 'Em Serviço' | 'Manutenção';
+  mileage: number;
+  sector: string;
 };

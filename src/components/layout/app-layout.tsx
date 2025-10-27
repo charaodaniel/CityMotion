@@ -21,7 +21,7 @@ const navItems = [
   { href: '/', label: 'Painel', icon: LayoutDashboard },
   { href: '/dispatch', label: 'Despacho', icon: Send },
   { href: '/drivers', label: 'Motoristas', icon: User },
-  { href: '/taxis', label: 'Táxis', icon: Car },
+  { href: '/vehicles', label: 'Veículos', icon: Car },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
