@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,9 +24,12 @@ const formSchema = z.object({
   description: z.string().optional(),
 });
 
-export default function ScheduleTripPage() {
+interface ScheduleTripFormProps {
+  onFormSubmit: () => void;
+}
+
+export function ScheduleTripForm({ onFormSubmit }: ScheduleTripFormProps) {
   const { toast } = useToast();
-  const router = useRouter();
 
   const tripCategoriesBySector: Record<string, string[]> = {
     "Secretaria de Saúde": ["Transporte de Paciente", "Consulta Agendada", "Entrega de Medicamentos"],
@@ -63,7 +65,8 @@ export default function ScheduleTripPage() {
       title: "Agendamento Enviado",
       description: "A solicitação de viagem foi criada e aguarda aprovação.",
     });
-    router.push('/viagens');
+    onFormSubmit();
+    form.reset();
   };
 
   const sectors = Object.keys(tripCategoriesBySector);

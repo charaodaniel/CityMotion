@@ -9,8 +9,8 @@ import type { Schedule, ScheduleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import ScheduleTripPage from './agendar/page';
 import { Separator } from '@/components/ui/separator';
+import { ScheduleTripForm } from '@/components/schedule-trip-form';
 
 function getStatusVariant(status: ScheduleStatus) {
     switch (status) {
@@ -73,7 +73,7 @@ export default function TripsPage() {
                     </DialogDescription>
                 </DialogHeader>
                  <ScrollArea className="max-h-[70vh] p-4">
-                    <ScheduleTripPage />
+                    <ScheduleTripForm onFormSubmit={() => setIsModalOpen(false)}/>
                 </ScrollArea>
             </DialogContent>
         </Dialog>
