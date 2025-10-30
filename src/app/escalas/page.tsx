@@ -9,6 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useState } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { CreateScheduleForm } from '@/components/create-schedule-form';
 
 
 function getStatusVariant(status: ScheduleStatus) {
@@ -44,8 +46,16 @@ export default function SchedulesPage() {
                 Criar Nova Escala
             </Button>
           </DialogTrigger>
-          <DialogContent>
-            crie
+          <DialogContent className="sm:max-w-3xl">
+            <DialogHeader>
+                <DialogTitle className="text-2xl">Criar Nova Escala</DialogTitle>
+                <DialogDescription>
+                    Preencha o formulário para agendar uma nova escala de trabalho.
+                </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="max-h-[70vh] p-4">
+                <CreateScheduleForm onFormSubmit={() => setIsModalOpen(false)} />
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       </div>
