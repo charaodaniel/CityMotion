@@ -369,7 +369,7 @@ export function CreateScheduleForm({ onFormSubmit }: CreateScheduleFormProps) {
         />
         
         <div className="flex justify-end">
-            <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">
+            <Button type="submit" className="w-full md:w-auto">
                 Agendar Escala
             </Button>
         </div>

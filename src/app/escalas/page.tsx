@@ -61,7 +61,7 @@ export default function SchedulesPage() {
         </div>
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="bg-primary hover:bg-primary/90">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Criar Nova Escala
             </Button>
