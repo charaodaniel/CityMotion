@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Car, Clock, PlusCircle, User } from 'lucide-react';
+import { Car, Clock, PlusCircle, User, Route } from 'lucide-react';
 import { schedules } from '@/lib/data';
 import type { Schedule, ScheduleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
@@ -62,7 +62,7 @@ export default function TripsPage() {
             <DialogTrigger asChild>
                 <Button className="bg-accent hover:bg-accent/90">
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Agendar Nova Viagem
+                    Criar/Adicionar Viagem
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-3xl">
@@ -122,7 +122,7 @@ export default function TripsPage() {
       ) : (
         <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
             <p className="text-lg">Nenhuma viagem agendada no momento.</p>
-            <p className="text-sm mt-2">Clique em "Agendar Nova Viagem" para começar.</p>
+            <p className="text-sm mt-2">Clique em "Criar/Adicionar Viagem" para começar.</p>
         </div>
       )}
 
