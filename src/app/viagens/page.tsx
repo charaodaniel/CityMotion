@@ -4,13 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { schedules } from '@/lib/data';
-import type { ScheduleStatus } from '@/lib/types';
+import type { Schedule, ScheduleStatus } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ScheduleTripPage from './agendar/page';
+import { Separator } from '@/components/ui/separator';
 
 function getStatusVariant(status: ScheduleStatus) {
     switch (status) {
@@ -27,6 +28,15 @@ function getStatusVariant(status: ScheduleStatus) {
 
 export default function TripsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+
+  const handleRowClick = (schedule: Schedule) => {
+    setSelectedSchedule(schedule);
+  };
+
+  const closeDetailsModal = () => {
+    setSelectedSchedule(null);
+  };
 
   return (
     <div className="container mx-auto p-4 sm:p-8">
@@ -64,7 +74,7 @@ export default function TripsPage() {
           <CardTitle>Viagens Agendadas</CardTitle>
           <CardDescription>
             {schedules.length > 0 
-                ? 'Consulte e gerencie as viagens programadas.'
+                ? 'Consulte e gerencie as viagens programadas. Clique em uma linha para ver os detalhes.'
                 : 'Ainda não há viagens agendadas.'
             }
           </CardDescription>
@@ -84,7 +94,7 @@ export default function TripsPage() {
                     </TableHeader>
                     <TableBody>
                         {schedules.map((schedule) => (
-                            <TableRow key={schedule.id}>
+                            <TableRow key={schedule.id} onClick={() => handleRowClick(schedule)} className="cursor-pointer">
                                 <TableCell className="font-medium">{schedule.title}</TableCell>
                                 <TableCell>{schedule.category}</TableCell>
                                 <TableCell>{schedule.driver}</TableCell>
@@ -105,6 +115,57 @@ export default function TripsPage() {
             )}
         </CardContent>
       </Card>
+
+      {/* Details Modal */}
+      <Dialog open={!!selectedSchedule} onOpenChange={closeDetailsModal}>
+        <DialogContent>
+          {selectedSchedule && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
+                <DialogDescription>
+                  Detalhes da viagem agendada.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div>
+                    <span className="text-sm font-semibold text-muted-foreground">Motorista</span>
+                    <p className="text-lg">{selectedSchedule.driver}</p>
+                </div>
+                <Separator />
+                <div>
+                    <span className="text-sm font-semibold text-muted-foreground">Veículo</span>
+                    <p className="text-lg">{selectedSchedule.vehicle}</p>
+                </div>
+                <Separator />
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <span className="text-sm font-semibold text-muted-foreground">Origem</span>
+                        <p className="text-lg">{selectedSchedule.origin}</p>
+                    </div>
+                    <div>
+                        <span className="text-sm font-semibold text-muted-foreground">Destino</span>
+                        <p className="text-lg">{selectedSchedule.destination}</p>
+                    </div>
+                </div>
+                <Separator />
+                 <div>
+                    <span className="text-sm font-semibold text-muted-foreground">Data e Horário</span>
+                    <p className="text-lg">{selectedSchedule.time}</p>
+                </div>
+                <Separator />
+                <div>
+                    <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                    <p>
+                        <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
+                    </p>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
