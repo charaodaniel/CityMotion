@@ -45,15 +45,7 @@ export default function SchedulesPage() {
             </Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Criar Nova Escala</DialogTitle>
-              <DialogDescription>
-                Formulário para criar uma nova escala de trabalho. (Em desenvolvimento)
-              </DialogDescription>
-            </DialogHeader>
-            <div className='py-4'>
-                <p className='text-sm text-muted-foreground'>O formulário de criação de escala será adicionado aqui em breve.</p>
-            </div>
+            crie
           </DialogContent>
         </Dialog>
       </div>
