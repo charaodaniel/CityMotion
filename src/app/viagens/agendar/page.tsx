@@ -67,17 +67,22 @@ export default function ScheduleTripPage() {
     router.push('/viagens');
   };
 
+  const sectors = Object.keys(tripCategoriesBySector);
+
   return (
     <div className="container mx-auto p-4 sm:p-8 max-w-3xl">
       <Card className="border-none shadow-none">
         <CardHeader>
           <CardTitle className="text-2xl">Agendar Nova Viagem</CardTitle>
-          <CardDescription>Preencha o formulário para solicitar um veículo e agendar um deslocamento.</CardDescription>
+          <CardDescription>
+            Preencha o formulário para solicitar um veículo e agendar um deslocamento.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              
+
+              {/* Título da Viagem */}
               <FormField
                 control={form.control}
                 name="title"
@@ -94,70 +99,82 @@ export default function ScheduleTripPage() {
 
               <Separator />
 
+              {/* Detalhes da Viagem */}
               <div>
                 <h3 className="text-lg font-semibold mb-4">Detalhes da Viagem</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  {/* Setor */}
                   <FormField
                     control={form.control}
                     name="sector"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Setor Solicitante</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o setor" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Secretaria de Saúde">Secretaria de Saúde</SelectItem>
-                            <SelectItem value="Secretaria de Educação">Secretaria de Educação</SelectItem>
-                            <SelectItem value="Secretaria de Obras">Secretaria de Obras</SelectItem>
-                            <SelectItem value="Administração">Administração</SelectItem>
-                            <SelectItem value="Vigilância Sanitária">Vigilância Sanitária</SelectItem>
+                            {sectors.map(sector => (
+                              <SelectItem key={sector} value={sector}>{sector}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
+                  {/* Categoria */}
                   <FormField
                     control={form.control}
                     name="category"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Categoria da Viagem</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedSector}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          disabled={!selectedSector}
+                        >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder={selectedSector ? "Selecione a categoria" : "Selecione um setor primeiro"} />
+                              <SelectValue
+                                placeholder={selectedSector ? "Selecione a categoria" : "Selecione um setor primeiro"}
+                              />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {selectedSector && tripCategoriesBySector[selectedSector]?.map(category => (
+                            {selectedSector &&
+                              tripCategoriesBySector[selectedSector]?.map(category => (
                                 <SelectItem key={category} value={category}>{category}</SelectItem>
-                            ))}
+                              ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                   <FormField
+
+                  {/* Motorista */}
+                  <FormField
                     control={form.control}
                     name="driver"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Motorista Responsável</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o motorista" />
-                            </Trigger>
+                            </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {drivers.map(driver => (
-                                <SelectItem key={driver.id} value={driver.name}>{driver.name}</SelectItem>
+                              <SelectItem key={driver.id} value={driver.name}>{driver.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -165,23 +182,28 @@ export default function ScheduleTripPage() {
                       </FormItem>
                     )}
                   />
-                   <FormField
+
+                  {/* Veículo */}
+                  <FormField
                     control={form.control}
                     name="vehicle"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Veículo Designado</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o veículo" />
-                            </Trigger>
+                            </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                             {vehicles.map(vehicle => (
-                                <SelectItem key={vehicle.id} value={`${vehicle.vehicleModel} (${vehicle.licensePlate})`}>
-                                    {vehicle.vehicleModel} ({vehicle.licensePlate})
-                                </SelectItem>
+                            {vehicles.map(vehicle => (
+                              <SelectItem
+                                key={vehicle.id}
+                                value={`${vehicle.vehicleModel} (${vehicle.licensePlate})`}
+                              >
+                                {vehicle.vehicleModel} ({vehicle.licensePlate})
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -189,57 +211,63 @@ export default function ScheduleTripPage() {
                       </FormItem>
                     )}
                   />
+
                 </div>
               </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <FormField
-                    control={form.control}
-                    name="origin"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Origem</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Local de partida" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="destination"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Destino</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Local de chegada" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-               </div>
-
+              {/* Origem e Destino */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Motivo/Descrição</FormLabel>
-                        <FormControl>
-                            <Textarea
-                            placeholder="Descreva o motivo da viagem, pessoas envolvidas ou outras informações relevantes."
-                            className="resize-none"
-                            {...field}
-                            />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
+                  control={form.control}
+                  name="origin"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Origem</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Local de partida" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
+                <FormField
+                  control={form.control}
+                  name="destination"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Destino</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Local de chegada" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-              <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">Enviar Solicitação</Button>
+              {/* Descrição */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Motivo/Descrição</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Descreva o motivo da viagem, pessoas envolvidas ou outras informações relevantes."
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Botão */}
+              <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">
+                Enviar Solicitação
+              </Button>
             </form>
           </Form>
         </CardContent>
