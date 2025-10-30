@@ -15,10 +15,21 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, User, Menu, Settings, LifeBuoy, Route, CalendarClock } from 'lucide-react';
+import { LayoutDashboard, Car, User, Menu, Settings, LifeBuoy, Route, CalendarClock, Users } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
+import { useApp } from '@/contexts/app-provider';
+import { Avatar, AvatarFallback } from '../ui/avatar';
+
 
 const navItems = [
   { href: '/', label: 'Painel', icon: LayoutDashboard },
@@ -35,6 +46,19 @@ const bottomNavItems = [
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { userRole, setUserRole } = useApp();
+
+  const getRoleName = (role: string) => {
+    switch (role) {
+      case 'admin': return 'Admin';
+      case 'manager': return 'Gestor';
+      case 'driver': return 'Motorista';
+      default: return 'Desconhecido'
+    }
+  }
+  const getInitials = (role: string) => {
+    return getRoleName(role).charAt(0);
+  }
 
   return (
     <SidebarProvider>
@@ -83,6 +107,48 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     </SidebarMenuButton>
                     </SidebarMenuItem>
                 ))}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton tooltip='Trocar Perfil'>
+                                <Users />
+                                <span>Trocar Perfil</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent side="right" align="start" className="mb-2">
+                        <DropdownMenuLabel>Simular Perfil</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setUserRole('admin')}>
+                          <Avatar className="h-6 w-6 mr-2">
+                            <AvatarFallback>A</AvatarFallback>
+                          </Avatar>
+                          <span>Administrador</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setUserRole('manager')}>
+                           <Avatar className="h-6 w-6 mr-2">
+                            <AvatarFallback>G</AvatarFallback>
+                          </Avatar>
+                          <span>Gestor de Setor</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setUserRole('driver')}>
+                           <Avatar className="h-6 w-6 mr-2">
+                            <AvatarFallback>M</AvatarFallback>
+                          </Avatar>
+                          <span>Motorista</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                 <div className="flex items-center gap-2 p-2 mt-2 border-t border-sidebar-border">
+                    <Avatar className="h-8 w-8">
+                        <AvatarFallback>{getInitials(userRole)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-sidebar-foreground">{getRoleName(userRole)}</span>
+                        <span className="text-xs text-muted-foreground">{userRole}@citymotion.com</span>
+                    </div>
+                </div>
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>

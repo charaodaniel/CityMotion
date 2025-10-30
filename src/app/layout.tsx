@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { AppLayout } from '@/components/layout/app-layout';
+import { AppProvider } from '@/contexts/app-provider';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { Inter } from 'next/font/google';
@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={cn("font-sans antialiased", inter.variable)}>
-        <AppLayout>{children}</AppLayout>
+        <AppProvider>{children}</AppProvider>
         <Toaster />
       </body>
     </html>
