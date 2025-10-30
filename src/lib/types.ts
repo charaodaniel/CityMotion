@@ -23,6 +23,11 @@ export type Vehicle = {
 
 export type ScheduleStatus = 'Agendada' | 'Em Andamento' | 'Concluída';
 
+export type Passenger = {
+  name: string;
+  document: string;
+};
+
 export type Schedule = {
   id: string;
   title: string;
@@ -30,9 +35,10 @@ export type Schedule = {
   vehicle: string;
   origin: string;
   destination: string;
-  time: string;
+  time: string; // Should be split into date and time
   status: ScheduleStatus;
   category: string;
+  passengers?: Passenger[];
 };
 
 export type RequestPriority = 'Alta' | 'Média' | 'Baixa';
