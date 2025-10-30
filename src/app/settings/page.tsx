@@ -17,8 +17,6 @@ const settingsSchema = z.object({
   primaryColor: z.string().regex(/^(\d{1,3})\s(\d{1,3})%\s(\d{1,3})%$/, "Formato HSL inválido. Ex: 215 80% 55%"),
   accentColor: z.string().regex(/^(\d{1,3})\s(\d{1,3})%\s(\d{1,3})%$/, "Formato HSL inválido. Ex: 140 70% 40%"),
   backgroundColor: z.string().regex(/^(\d{1,3})\s(\d{1,3})%\s(\d{1,3})%$/, "Formato HSL inválido. Ex: 220 20% 98%"),
-  supabaseUrl: z.string().url("A URL do Supabase deve ser uma URL válida."),
-  supabaseAnonKey: z.string().min(1, "A chave anônima do Supabase é obrigatória."),
 });
 
 export default function SettingsPage() {
@@ -32,8 +30,6 @@ export default function SettingsPage() {
       primaryColor: '215 80% 55%',
       accentColor: '140 70% 40%',
       backgroundColor: '220 20% 98%',
-      supabaseUrl: '',
-      supabaseAnonKey: '',
     },
   });
 
@@ -63,8 +59,8 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Identidade Visual & Integração</CardTitle>
-          <CardDescription>Personalize a aparência do sistema e configure a conexão com o backend.</CardDescription>
+          <CardTitle>Identidade Visual</CardTitle>
+          <CardDescription>Personalize a aparência do sistema para a sua organização.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -150,43 +146,6 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
-              
-              <Separator />
-
-               <div>
-                <h3 className="text-lg font-semibold mb-4">Configuração de API</h3>
-                <div className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="supabaseUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>URL do Supabase</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://exemplo.supabase.co" {...field} />
-                        </FormControl>
-                        <FormDescription>A URL do seu projeto Supabase.</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="supabaseAnonKey"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Chave Anônima do Supabase</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="••••••••••••••••••••" {...field} />
-                        </FormControl>
-                        <FormDescription>Sua chave pública (anon key) do Supabase.</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
 
               <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">
                 Salvar Alterações
