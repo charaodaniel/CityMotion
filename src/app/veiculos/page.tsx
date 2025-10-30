@@ -51,7 +51,7 @@ export default function VehiclesPage() {
         </div>
         <Dialog open={isRegisterModalOpen} onOpenChange={setIsRegisterModalOpen}>
             <DialogTrigger asChild>
-                <Button>
+                <Button className="bg-primary hover:bg-primary/90">
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Cadastrar Novo Veículo
                 </Button>
@@ -147,9 +147,9 @@ export default function VehiclesPage() {
                   <Separator />
                   <div>
                       <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                      <p>
+                      <div>
                           <Badge variant={getStatusVariant(selectedVehicle.status)}>{selectedVehicle.status}</Badge>
-                      </p>
+                      </div>
                   </div>
                   {selectedVehicle.driverName && (
                     <>
