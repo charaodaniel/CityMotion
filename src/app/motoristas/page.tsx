@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { PlusCircle } from 'lucide-react';
 import { RegisterDriverForm } from '@/components/register-driver-form';
 import { useState } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 function getStatusVariant(status: DriverStatus) {
   switch (status) {
@@ -52,7 +53,9 @@ export default function DriversPage() {
                         Preencha o formulário para cadastrar um novo motorista da prefeitura.
                     </DialogDescription>
                 </DialogHeader>
-                <RegisterDriverForm onFormSubmit={() => setIsModalOpen(false)} />
+                <ScrollArea className="max-h-[70vh] p-4">
+                  <RegisterDriverForm onFormSubmit={() => setIsModalOpen(false)} />
+                </ScrollArea>
             </DialogContent>
         </Dialog>
       </div>
