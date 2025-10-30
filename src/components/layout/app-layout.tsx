@@ -15,7 +15,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, User, Menu, Settings, LifeBuoy, Route } from 'lucide-react';
+import { LayoutDashboard, Car, User, Menu, Settings, LifeBuoy, Route, CalendarClock } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 
@@ -24,6 +24,7 @@ const navItems = [
   { href: '/motoristas', label: 'Motoristas', icon: User },
   { href: '/veiculos', label: 'Veículos', icon: Car },
   { href: '/viagens', label: 'Viagens', icon: Route },
+  { href: '/escalas', label: 'Escalas', icon: CalendarClock },
 ];
 
 const bottomNavItems = [
