@@ -12,6 +12,7 @@ import { RegisterDriverForm } from '@/components/register-driver-form';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 function getStatusVariant(status: DriverStatus) {
   switch (status) {
@@ -105,14 +106,18 @@ export default function DriversPage() {
       {/* Driver Details Modal */}
       <Dialog open={!!selectedDriver} onOpenChange={closeDetailsModal}>
         <DialogContent>
-          <ScrollArea className="max-h-[80vh]">
+          <ScrollArea className="max-h-[80vh] p-4">
             {selectedDriver && (
               <>
-                <DialogHeader>
-                  <DialogTitle className="text-2xl">{selectedDriver.name}</DialogTitle>
-                  <DialogDescription>
-                    Detalhes do motorista.
-                  </DialogDescription>
+                <DialogHeader className="items-center text-center">
+                    <Avatar className="h-24 w-24 mb-4">
+                        <AvatarImage src={`https://i.pravatar.cc/150?u=${selectedDriver.id}`} alt={selectedDriver.name} />
+                        <AvatarFallback>{selectedDriver.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <DialogTitle className="text-2xl">{selectedDriver.name}</DialogTitle>
+                    <DialogDescription>
+                        Detalhes do motorista.
+                    </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4 pr-4">
                   <div>
@@ -132,9 +137,9 @@ export default function DriversPage() {
                   <Separator />
                   <div>
                       <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                      <p>
+                      <div>
                           <Badge variant={getStatusVariant(selectedDriver.status)}>{selectedDriver.status}</Badge>
-                      </p>
+                      </div>
                   </div>
                 </div>
               </>
