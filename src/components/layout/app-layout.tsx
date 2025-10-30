@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -24,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, User, Menu, Settings, LifeBuoy, Route, CalendarClock, Users } from 'lucide-react';
+import { LayoutDashboard, Car, User, Menu, Settings, LifeBuoy, Route, CalendarClock, Users, UserCog } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { useApp } from '@/contexts/app-provider';
@@ -40,6 +41,7 @@ const navItems = [
 ];
 
 const bottomNavItems = [
+    { href: '/perfil', label: 'Meu Perfil', icon: UserCog },
     { href: '/settings', label: 'Configurações', icon: Settings },
     { href: '/support', label: 'Suporte', icon: LifeBuoy },
 ]
