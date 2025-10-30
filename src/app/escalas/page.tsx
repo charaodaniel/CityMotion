@@ -1,11 +1,15 @@
+
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import Link from 'next/link';
 import { schedules } from '@/lib/data';
 import type { ScheduleStatus } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useState } from 'react';
 
 
 function getStatusVariant(status: ScheduleStatus) {
@@ -22,6 +26,7 @@ function getStatusVariant(status: ScheduleStatus) {
 }
 
 export default function SchedulesPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div className="container mx-auto p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
@@ -33,12 +38,25 @@ export default function SchedulesPage() {
             Gerencie as escalas de trabalho, plantões e jornadas dos funcionários.
           </p>
         </div>
-        <Link href="/escalas/criar">
-          <Button className="bg-accent hover:bg-accent/90">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Criar Nova Escala
-          </Button>
-        </Link>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-accent hover:bg-accent/90">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                abrir modal
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Criar Nova Escala</DialogTitle>
+              <DialogDescription>
+                Formulário para criar uma nova escala de trabalho. (Em desenvolvimento)
+              </DialogDescription>
+            </DialogHeader>
+            <div className='py-4'>
+                <p className='text-sm text-muted-foreground'>O formulário de criação de escala será adicionado aqui em breve.</p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
       <Card>
         <CardHeader>
@@ -77,7 +95,7 @@ export default function SchedulesPage() {
             ) : (
                 <div className="text-center text-muted-foreground py-8">
                     <p>Nenhuma escala agendada no momento.</p>
-                    <p className="text-sm">Clique em "Criar Nova Escala" para começar.</p>
+                    <p className="text-sm">Clique em "abrir modal" para começar.</p>
                 </div>
             )}
         </CardContent>
