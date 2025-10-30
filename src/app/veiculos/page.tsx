@@ -147,7 +147,7 @@ export default function VehiclesPage() {
                   <Separator />
                   <div>
                       <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                      <div>
+                      <div className="mt-1">
                           <Badge variant={getStatusVariant(selectedVehicle.status)}>{selectedVehicle.status}</Badge>
                       </div>
                   </div>
