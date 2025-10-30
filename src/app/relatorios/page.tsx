@@ -11,6 +11,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
+interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: (options: any) => jsPDF;
+}
+
 
 function getStatusVariant(status: ScheduleStatus) {
     switch (status) {
@@ -38,6 +45,39 @@ export default function ReportsPage() {
 
   const completedSchedules = schedules.filter(s => s.status === 'Concluída');
 
+  const generatePdf = () => {
+    const doc = new jsPDF() as jsPDFWithAutoTable;
+    
+    doc.text('Relatório de Viagens Concluídas', 14, 16);
+    doc.setFontSize(10);
+    doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 22);
+
+    doc.autoTable({
+        startY: 30,
+        head: [['Título', 'Motorista', 'Veículo', 'Data', 'Origem', 'Destino']],
+        body: completedSchedules.map(s => [
+            s.title,
+            s.driver,
+            s.vehicle,
+            s.time.split(' ')[0],
+            s.origin,
+            s.destination,
+        ]),
+        headStyles: { fillColor: [33, 150, 243] }, // Azul
+        styles: { fontSize: 8 },
+        columnStyles: {
+            0: { cellWidth: 35 },
+            1: { cellWidth: 25 },
+            2: { cellWidth: 25 },
+            3: { cellWidth: 20 },
+            4: { cellWidth: 'auto' },
+            5: { cellWidth: 'auto' },
+        }
+    });
+
+    doc.save(`relatorio_viagens_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
   return (
     <div className="container mx-auto p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
@@ -49,7 +89,7 @@ export default function ReportsPage() {
             Consulte o histórico de viagens e gere relatórios.
           </p>
         </div>
-        <Button disabled>
+        <Button onClick={generatePdf} disabled={completedSchedules.length === 0}>
             <FileDown className="mr-2 h-4 w-4" />
             Exportar para PDF
         </Button>
