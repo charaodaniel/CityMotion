@@ -2,10 +2,9 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { Car, Clock, PlusCircle, User } from 'lucide-react';
 import { schedules } from '@/lib/data';
 import type { Schedule, ScheduleStatus } from '@/lib/types';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -26,11 +25,17 @@ function getStatusVariant(status: ScheduleStatus) {
     }
   }
 
+const statusColumns: { title: string; status: ScheduleStatus }[] = [
+    { title: 'Agendadas', status: 'Agendada' },
+    { title: 'Em Andamento', status: 'Em Andamento' },
+    { title: 'Concluídas', status: 'Concluída' },
+];
+
 export default function TripsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
 
-  const handleRowClick = (schedule: Schedule) => {
+  const handleCardClick = (schedule: Schedule) => {
     setSelectedSchedule(schedule);
   };
 
@@ -38,15 +43,19 @@ export default function TripsPage() {
     setSelectedSchedule(null);
   };
 
+  const schedulesByStatus = (status: ScheduleStatus) => {
+    return schedules.filter(s => s.status === status);
+  }
+
   return (
     <div className="container mx-auto p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline">
-            Agendamento de Viagens
+            Painel de Viagens
           </h1>
           <p className="text-muted-foreground">
-            Gerencie e agende os deslocamentos da frota.
+            Acompanhe o status de todas as viagens.
           </p>
         </div>
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -69,57 +78,59 @@ export default function TripsPage() {
             </DialogContent>
         </Dialog>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Viagens Agendadas</CardTitle>
-          <CardDescription>
-            {schedules.length > 0 
-                ? 'Consulte e gerencie as viagens programadas. Clique em uma linha para ver os detalhes.'
-                : 'Ainda não há viagens agendadas.'
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-            {schedules.length > 0 ? (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Título</TableHead>
-                            <TableHead>Categoria</TableHead>
-                            <TableHead>Motorista</TableHead>
-                            <TableHead>Veículo</TableHead>
-                            <TableHead>Horário</TableHead>
-                            <TableHead>Status</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {schedules.map((schedule) => (
-                            <TableRow key={schedule.id} onClick={() => handleRowClick(schedule)} className="cursor-pointer">
-                                <TableCell className="font-medium">{schedule.title}</TableCell>
-                                <TableCell>{schedule.category}</TableCell>
-                                <TableCell>{schedule.driver}</TableCell>
-                                <TableCell>{schedule.vehicle}</TableCell>
-                                <TableCell>{schedule.time}</TableCell>
-                                <TableCell>
-                                    <Badge variant={getStatusVariant(schedule.status)}>{schedule.status}</Badge>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            ) : (
-                <div className="text-center text-muted-foreground py-8">
-                    <p>Nenhuma viagem agendada no momento.</p>
-                    <p className="text-sm">Clique em "Agendar Nova Viagem" para começar.</p>
+      
+      {schedules.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {statusColumns.map(column => (
+                <div key={column.status} className="flex flex-col gap-4">
+                    <h2 className="text-xl font-semibold tracking-tight">{column.title} ({schedulesByStatus(column.status).length})</h2>
+                    <div className="bg-muted/50 rounded-lg p-4 space-y-4 min-h-[200px]">
+                        {schedulesByStatus(column.status).length > 0 ? (
+                            schedulesByStatus(column.status).map(schedule => (
+                                <Card 
+                                    key={schedule.id} 
+                                    onClick={() => handleCardClick(schedule)} 
+                                    className="cursor-pointer hover:shadow-md transition-shadow"
+                                >
+                                    <CardHeader className="pb-4">
+                                        <CardTitle className="text-base">{schedule.title}</CardTitle>
+                                        <CardDescription className="flex items-center text-xs">
+                                            <Clock className="mr-1.5 h-3 w-3" /> {schedule.time}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="text-xs space-y-2">
+                                        <div className="flex items-center">
+                                            <User className="mr-2 h-3 w-3" />
+                                            <span>{schedule.driver}</span>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <Car className="mr-2 h-3 w-3" />
+                                            <span>{schedule.vehicle}</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+                                Nenhuma viagem nesta etapa.
+                            </div>
+                        )}
+                    </div>
                 </div>
-            )}
-        </CardContent>
-      </Card>
+            ))}
+        </div>
+      ) : (
+        <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
+            <p className="text-lg">Nenhuma viagem agendada no momento.</p>
+            <p className="text-sm mt-2">Clique em "Agendar Nova Viagem" para começar.</p>
+        </div>
+      )}
+
 
       {/* Details Modal */}
       <Dialog open={!!selectedSchedule} onOpenChange={closeDetailsModal}>
         <DialogContent>
-            <ScrollArea className="max-h-[80vh]">
+            <ScrollArea className="max-h-[80vh] p-4">
               {selectedSchedule && (
                 <>
                   <DialogHeader>
