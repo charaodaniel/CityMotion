@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -60,7 +61,7 @@ export default function TripsPage() {
         </div>
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-accent hover:bg-accent/90">
+                <Button>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Criar/Adicionar Viagem
                 </Button>
