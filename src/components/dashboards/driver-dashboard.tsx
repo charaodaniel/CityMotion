@@ -25,7 +25,7 @@ export default function DriverDashboard() {
 
   return (
     <div>
-        <h2 className="text-2xl font-semibold mb-4">Minhas Próximas Viagens</h2>
+        <h2 className="text-2xl font-semibold mb-4">Meus Próximos Deslocamentos</h2>
         <div className="space-y-4">
         {driverSchedules.length > 0 ? driverSchedules.map((schedule) => (
             <Card key={schedule.id}>
@@ -61,7 +61,7 @@ export default function DriverDashboard() {
             </Card>
         )) : (
             <div className="text-center text-muted-foreground p-8 border-dashed border-2 rounded-lg">
-                Você não tem nenhuma viagem agendada no momento.
+                Você não tem nenhum deslocamento agendado no momento.
             </div>
         )}
         </div>
