@@ -1,17 +1,17 @@
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Clock, User } from 'lucide-react';
 import { schedules } from '@/lib/data';
-import type { ScheduleStatus } from '@/lib/types';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import type { Schedule, ScheduleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { CreateScheduleForm } from '@/components/create-schedule-form';
-
+import { Separator } from '@/components/ui/separator';
 
 function getStatusVariant(status: ScheduleStatus) {
     switch (status) {
@@ -26,8 +26,28 @@ function getStatusVariant(status: ScheduleStatus) {
     }
 }
 
+const statusColumns: { title: string; status: ScheduleStatus }[] = [
+    { title: 'Agendadas', status: 'Agendada' },
+    { title: 'Em Andamento', status: 'Em Andamento' },
+    { title: 'Concluídas', status: 'Concluída' },
+];
+
 export default function SchedulesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+
+  const handleCardClick = (schedule: Schedule) => {
+    setSelectedSchedule(schedule);
+  };
+
+  const closeDetailsModal = () => {
+    setSelectedSchedule(null);
+  };
+
+  const schedulesByStatus = (status: ScheduleStatus) => {
+    return schedules.filter(s => s.status === status);
+  }
+
   return (
     <div className="container mx-auto p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
@@ -59,48 +79,86 @@ export default function SchedulesPage() {
           </DialogContent>
         </Dialog>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Escalas Agendadas</CardTitle>
-          <CardDescription>
-            {schedules.length > 0 
-                ? 'Consulte as escalas de trabalho e plantões agendados.'
-                : 'Ainda não há escalas agendadas.'
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-            {schedules.length > 0 ? (
-                 <Table>
-                 <TableHeader>
-                     <TableRow>
-                         <TableHead>Título</TableHead>
-                         <TableHead>Responsável</TableHead>
-                         <TableHead>Horário</TableHead>
-                         <TableHead>Status</TableHead>
-                     </TableRow>
-                 </TableHeader>
-                 <TableBody>
-                     {schedules.map((schedule) => (
-                         <TableRow key={schedule.id}>
-                             <TableCell className="font-medium">{schedule.title}</TableCell>
-                             <TableCell>{schedule.driver}</TableCell>
-                             <TableCell>{schedule.time}</TableCell>
-                             <TableCell>
-                                 <Badge variant={getStatusVariant(schedule.status)}>{schedule.status}</Badge>
-                             </TableCell>
-                         </TableRow>
-                     ))}
-                 </TableBody>
-             </Table>
-            ) : (
-                <div className="text-center text-muted-foreground py-8">
-                    <p>Nenhuma escala agendada no momento.</p>
-                    <p className="text-sm">Clique em "Criar Nova Escala" para começar.</p>
+
+      {schedules.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {statusColumns.map(column => (
+                <div key={column.status} className="flex flex-col gap-4">
+                    <h2 className="text-xl font-semibold tracking-tight">{column.title} ({schedulesByStatus(column.status).length})</h2>
+                    <div className="bg-muted/50 rounded-lg p-4 space-y-4 min-h-[200px]">
+                        {schedulesByStatus(column.status).length > 0 ? (
+                            schedulesByStatus(column.status).map(schedule => (
+                                <Card 
+                                    key={schedule.id} 
+                                    onClick={() => handleCardClick(schedule)} 
+                                    className="cursor-pointer hover:shadow-md transition-shadow"
+                                >
+                                    <CardHeader className="pb-4">
+                                        <CardTitle className="text-base">{schedule.title}</CardTitle>
+                                        <CardDescription className="flex items-center text-xs">
+                                            <Clock className="mr-1.5 h-3 w-3" /> {schedule.time}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="text-xs space-y-2">
+                                        <div className="flex items-center">
+                                            <User className="mr-2 h-3 w-3" />
+                                            <span>{schedule.driver}</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+                                Nenhuma escala nesta etapa.
+                            </div>
+                        )}
+                    </div>
                 </div>
-            )}
-        </CardContent>
-      </Card>
+            ))}
+        </div>
+      ) : (
+        <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
+            <p className="text-lg">Nenhuma escala agendada no momento.</p>
+            <p className="text-sm mt-2">Clique em "Criar Nova Escala" para começar.</p>
+        </div>
+      )}
+
+
+      {/* Details Modal */}
+      <Dialog open={!!selectedSchedule} onOpenChange={closeDetailsModal}>
+        <DialogContent>
+            <ScrollArea className="max-h-[80vh] p-4">
+              {selectedSchedule && (
+                <>
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
+                    <DialogDescription>
+                      Detalhes da escala agendada.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4 pr-4">
+                    <div>
+                        <span className="text-sm font-semibold text-muted-foreground">Responsável</span>
+                        <p className="text-lg">{selectedSchedule.driver}</p>
+                    </div>
+                    <Separator />
+                     <div>
+                        <span className="text-sm font-semibold text-muted-foreground">Horário</span>
+                        <p className="text-lg">{selectedSchedule.time}</p>
+                    </div>
+                    <Separator />
+                    <div>
+                        <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                        <div>
+                            <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
+                        </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
