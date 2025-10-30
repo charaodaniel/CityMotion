@@ -56,7 +56,7 @@ export default function SchedulesPage() {
                  <TableHeader>
                      <TableRow>
                          <TableHead>Título</TableHead>
-                         <TableHead>Motorista</TableHead>
+                         <TableHead>Responsável</TableHead>
                          <TableHead>Horário</TableHead>
                          <TableHead>Status</TableHead>
                      </TableRow>
