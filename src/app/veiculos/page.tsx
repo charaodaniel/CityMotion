@@ -113,62 +113,64 @@ export default function VehiclesPage() {
       {/* Vehicle Details Modal */}
        <Dialog open={!!selectedVehicle} onOpenChange={closeDetailsModal}>
         <DialogContent>
-          {selectedVehicle && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-2xl">{selectedVehicle.vehicleModel} - {selectedVehicle.licensePlate}</DialogTitle>
-                <DialogDescription>
-                  Detalhes do veículo.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Placa</span>
-                    <p className="text-lg">{selectedVehicle.licensePlate}</p>
-                </div>
-                 <Separator />
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Modelo</span>
-                    <p className="text-lg">{selectedVehicle.vehicleModel}</p>
-                </div>
-                 <Separator />
-                 <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Setor</span>
-                    <p className="text-lg">{selectedVehicle.sector}</p>
-                </div>
-                <Separator />
-                 <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Quilometragem</span>
-                    <p className="text-lg">{selectedVehicle.mileage.toLocaleString('pt-BR')} km</p>
-                </div>
-                <Separator />
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                    <p>
-                        <Badge variant={getStatusVariant(selectedVehicle.status)}>{selectedVehicle.status}</Badge>
-                    </p>
-                </div>
-                {selectedVehicle.driverName && (
-                  <>
-                  <Separator />
-                   <div>
-                      <span className="text-sm font-semibold text-muted-foreground">Motorista Atual</span>
-                      <p className="text-lg">{selectedVehicle.driverName}</p>
+          <ScrollArea className="max-h-[80vh]">
+            {selectedVehicle && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="text-2xl">{selectedVehicle.vehicleModel} - {selectedVehicle.licensePlate}</DialogTitle>
+                  <DialogDescription>
+                    Detalhes do veículo.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4 pr-4">
+                  <div>
+                      <span className="text-sm font-semibold text-muted-foreground">Placa</span>
+                      <p className="text-lg">{selectedVehicle.licensePlate}</p>
                   </div>
-                  </>
-                )}
-                 {selectedVehicle.destination && (
-                  <>
                   <Separator />
-                   <div>
-                      <span className="text-sm font-semibold text-muted-foreground">Destino Atual</span>
-                      <p className="text-lg">{selectedVehicle.destination}</p>
+                  <div>
+                      <span className="text-sm font-semibold text-muted-foreground">Modelo</span>
+                      <p className="text-lg">{selectedVehicle.vehicleModel}</p>
                   </div>
-                  </>
-                )}
-              </div>
-            </>
-          )}
+                  <Separator />
+                  <div>
+                      <span className="text-sm font-semibold text-muted-foreground">Setor</span>
+                      <p className="text-lg">{selectedVehicle.sector}</p>
+                  </div>
+                  <Separator />
+                  <div>
+                      <span className="text-sm font-semibold text-muted-foreground">Quilometragem</span>
+                      <p className="text-lg">{selectedVehicle.mileage.toLocaleString('pt-BR')} km</p>
+                  </div>
+                  <Separator />
+                  <div>
+                      <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                      <p>
+                          <Badge variant={getStatusVariant(selectedVehicle.status)}>{selectedVehicle.status}</Badge>
+                      </p>
+                  </div>
+                  {selectedVehicle.driverName && (
+                    <>
+                    <Separator />
+                    <div>
+                        <span className="text-sm font-semibold text-muted-foreground">Motorista Atual</span>
+                        <p className="text-lg">{selectedVehicle.driverName}</p>
+                    </div>
+                    </>
+                  )}
+                  {selectedVehicle.destination && (
+                    <>
+                    <Separator />
+                    <div>
+                        <span className="text-sm font-semibold text-muted-foreground">Destino Atual</span>
+                        <p className="text-lg">{selectedVehicle.destination}</p>
+                    </div>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 

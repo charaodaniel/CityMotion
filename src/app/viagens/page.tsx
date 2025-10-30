@@ -119,50 +119,52 @@ export default function TripsPage() {
       {/* Details Modal */}
       <Dialog open={!!selectedSchedule} onOpenChange={closeDetailsModal}>
         <DialogContent>
-          {selectedSchedule && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
-                <DialogDescription>
-                  Detalhes da viagem agendada.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Motorista</span>
-                    <p className="text-lg">{selectedSchedule.driver}</p>
-                </div>
-                <Separator />
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Veículo</span>
-                    <p className="text-lg">{selectedSchedule.vehicle}</p>
-                </div>
-                <Separator />
-                <div className="grid grid-cols-2 gap-4">
+            <ScrollArea className="max-h-[80vh]">
+              {selectedSchedule && (
+                <>
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
+                    <DialogDescription>
+                      Detalhes da viagem agendada.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4 pr-4">
                     <div>
-                        <span className="text-sm font-semibold text-muted-foreground">Origem</span>
-                        <p className="text-lg">{selectedSchedule.origin}</p>
+                        <span className="text-sm font-semibold text-muted-foreground">Motorista</span>
+                        <p className="text-lg">{selectedSchedule.driver}</p>
                     </div>
+                    <Separator />
                     <div>
-                        <span className="text-sm font-semibold text-muted-foreground">Destino</span>
-                        <p className="text-lg">{selectedSchedule.destination}</p>
+                        <span className="text-sm font-semibold text-muted-foreground">Veículo</span>
+                        <p className="text-lg">{selectedSchedule.vehicle}</p>
                     </div>
-                </div>
-                <Separator />
-                 <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Data e Horário</span>
-                    <p className="text-lg">{selectedSchedule.time}</p>
-                </div>
-                <Separator />
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                    <Separator />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <span className="text-sm font-semibold text-muted-foreground">Origem</span>
+                            <p className="text-lg">{selectedSchedule.origin}</p>
+                        </div>
+                        <div>
+                            <span className="text-sm font-semibold text-muted-foreground">Destino</span>
+                            <p className="text-lg">{selectedSchedule.destination}</p>
+                        </div>
+                    </div>
+                    <Separator />
+                     <div>
+                        <span className="text-sm font-semibold text-muted-foreground">Data e Horário</span>
+                        <p className="text-lg">{selectedSchedule.time}</p>
+                    </div>
+                    <Separator />
                     <div>
-                        <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
+                        <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                        <div>
+                            <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
+                        </div>
                     </div>
-                </div>
-              </div>
-            </>
-          )}
+                  </div>
+                </>
+              )}
+            </ScrollArea>
         </DialogContent>
       </Dialog>
 

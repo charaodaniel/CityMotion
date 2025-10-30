@@ -104,39 +104,41 @@ export default function DriversPage() {
       {/* Driver Details Modal */}
       <Dialog open={!!selectedDriver} onOpenChange={closeDetailsModal}>
         <DialogContent>
-          {selectedDriver && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-2xl">{selectedDriver.name}</DialogTitle>
-                <DialogDescription>
-                  Detalhes do motorista.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Nome Completo</span>
-                    <p className="text-lg">{selectedDriver.name}</p>
+          <ScrollArea className="max-h-[80vh]">
+            {selectedDriver && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="text-2xl">{selectedDriver.name}</DialogTitle>
+                  <DialogDescription>
+                    Detalhes do motorista.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4 pr-4">
+                  <div>
+                      <span className="text-sm font-semibold text-muted-foreground">Nome Completo</span>
+                      <p className="text-lg">{selectedDriver.name}</p>
+                  </div>
+                  <Separator />
+                  <div>
+                      <span className="text-sm font-semibold text-muted-foreground">CNH</span>
+                      <p className="text-lg">{selectedDriver.cnh}</p>
+                  </div>
+                  <Separator />
+                  <div>
+                      <span className="text-sm font-semibold text-muted-foreground">Setor</span>
+                      <p className="text-lg">{selectedDriver.sector}</p>
+                  </div>
+                  <Separator />
+                  <div>
+                      <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                      <p>
+                          <Badge variant={getStatusVariant(selectedDriver.status)}>{selectedDriver.status}</Badge>
+                      </p>
+                  </div>
                 </div>
-                 <Separator />
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">CNH</span>
-                    <p className="text-lg">{selectedDriver.cnh}</p>
-                </div>
-                 <Separator />
-                 <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Setor</span>
-                    <p className="text-lg">{selectedDriver.sector}</p>
-                </div>
-                <Separator />
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                    <p>
-                        <Badge variant={getStatusVariant(selectedDriver.status)}>{selectedDriver.status}</Badge>
-                    </p>
-                </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
