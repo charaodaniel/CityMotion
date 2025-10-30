@@ -80,10 +80,12 @@ export default function ProfilePage() {
                         <Building className="mr-3 h-4 w-4 text-muted-foreground" />
                         <span>Setor: <strong>{currentUser.sector}</strong></span>
                     </div>
-                     <div className="flex items-center">
-                        <ShieldCheck className="mr-3 h-4 w-4 text-muted-foreground" />
-                        <span>CNH: {currentUser.cnh}</span>
-                    </div>
+                    {currentUser.cnh && (
+                        <div className="flex items-center">
+                            <ShieldCheck className="mr-3 h-4 w-4 text-muted-foreground" />
+                            <span>CNH: {currentUser.cnh}</span>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>

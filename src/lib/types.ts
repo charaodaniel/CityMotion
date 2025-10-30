@@ -5,7 +5,7 @@ export type Driver = {
   name: string;
   status: DriverStatus;
   sector: string;
-  cnh: string;
+  cnh?: string;
 };
 
 export type VehicleStatus = 'Disponível' | 'Em Serviço' | 'Em Viagem' | 'Manutenção';

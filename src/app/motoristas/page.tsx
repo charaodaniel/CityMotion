@@ -52,7 +52,7 @@ export default function DriversPage() {
         </div>
         <Dialog open={isRegisterModalOpen} onOpenChange={setIsRegisterModalOpen}>
             <DialogTrigger asChild>
-                <Button>
+                <Button className="bg-primary hover:bg-primary/90">
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Cadastrar Novo Motorista
                 </Button>
@@ -87,10 +87,12 @@ export default function DriversPage() {
             </CardHeader>
             <CardContent className="flex items-center justify-between">
               <Badge variant={getStatusVariant(driver.status)}>{driver.status}</Badge>
-              <div className="flex items-center text-xs text-muted-foreground">
-                <ShieldCheck className="mr-1.5 h-3 w-3" />
-                <span>CNH: {driver.cnh.slice(-4)}</span>
-              </div>
+              {driver.cnh && (
+                <div className="flex items-center text-xs text-muted-foreground">
+                    <ShieldCheck className="mr-1.5 h-3 w-3" />
+                    <span>CNH: {driver.cnh.slice(-4)}</span>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -125,11 +127,15 @@ export default function DriversPage() {
                       <p className="text-lg">{selectedDriver.name}</p>
                   </div>
                   <Separator />
-                  <div>
-                      <span className="text-sm font-semibold text-muted-foreground">CNH</span>
-                      <p className="text-lg">{selectedDriver.cnh}</p>
-                  </div>
-                  <Separator />
+                  {selectedDriver.cnh && (
+                    <>
+                        <div>
+                            <span className="text-sm font-semibold text-muted-foreground">CNH</span>
+                            <p className="text-lg">{selectedDriver.cnh}</p>
+                        </div>
+                        <Separator />
+                    </>
+                  )}
                   <div>
                       <span className="text-sm font-semibold text-muted-foreground">Setor</span>
                       <p className="text-lg">{selectedDriver.sector}</p>
