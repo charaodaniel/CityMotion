@@ -26,17 +26,17 @@ const formSchema = z.object({
   description: z.string().optional(),
 });
 
-const tripCategoriesBySector: Record<string, string[]> = {
-  "Secretaria de Saúde": ["Transporte de Paciente", "Consulta Agendada", "Entrega de Medicamentos"],
-  "Secretaria de Educação": ["Transporte Escolar Diário", "Viagem Pedagógica", "Transporte de Professores"],
-  "Secretaria de Obras": ["Visita Técnica", "Transporte de Material", "Inspeção de Obra"],
-  "Administração": ["Entrega de Documentos", "Reunião Externa", "Serviço Bancário"],
-  "Vigilância Sanitária": ["Inspeção Sanitária", "Coleta de Amostras", "Ação Educativa"],
-};
-
 export default function ScheduleTripPage() {
   const { toast } = useToast();
   const router = useRouter();
+
+  const tripCategoriesBySector: Record<string, string[]> = {
+    "Secretaria de Saúde": ["Transporte de Paciente", "Consulta Agendada", "Entrega de Medicamentos"],
+    "Secretaria de Educação": ["Transporte Escolar Diário", "Viagem Pedagógica", "Transporte de Professores"],
+    "Secretaria de Obras": ["Visita Técnica", "Transporte de Material", "Inspeção de Obra"],
+    "Administração": ["Entrega de Documentos", "Reunião Externa", "Serviço Bancário"],
+    "Vigilância Sanitária": ["Inspeção Sanitária", "Coleta de Amostras", "Ação Educativa"],
+  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
