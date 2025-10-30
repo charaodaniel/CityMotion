@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,7 +41,7 @@ export default function SchedulesPage() {
           <DialogTrigger asChild>
             <Button className="bg-accent hover:bg-accent/90">
                 <PlusCircle className="mr-2 h-4 w-4" />
-                abrir modal
+                Criar Nova Escala
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -95,7 +94,7 @@ export default function SchedulesPage() {
             ) : (
                 <div className="text-center text-muted-foreground py-8">
                     <p>Nenhuma escala agendada no momento.</p>
-                    <p className="text-sm">Clique em "abrir modal" para começar.</p>
+                    <p className="text-sm">Clique em "Criar Nova Escala" para começar.</p>
                 </div>
             )}
         </CardContent>
