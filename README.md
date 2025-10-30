@@ -64,14 +64,40 @@ Geração de relatórios mensais em PDF, contendo:
 
 ---
 
-## 🧠 Perfis de Usuário
+## 🧠 Estrutura de Usuários e Permissões
 
-O sistema foi projetado para ser usado internamente pela prefeitura, com diferentes níveis de acesso para garantir segurança e organização.
+O CityMotion é multiusuário, com perfis hierárquicos e funções específicas:
 
-- **Administrador (TI):** Tem acesso total ao sistema. É responsável pela configuração, manutenção, backup e gerenciamento de todos os cadastros (setores, usuários, veículos).
-- **Gestor de Frota:** Responsável por gerenciar as operações diárias. Agenda viagens, define escalas, aprova solicitações de veículos, atribui motoristas e monitora o status da frota.
-- **Motorista:** Acessa o sistema para visualizar suas escalas de trabalho e viagens agendadas. Pode registrar o início e o fim de uma viagem, reportar quilometragem e ocorrências.
-- **Funcionário:** Usuário padrão que pode solicitar um veículo para uma necessidade de serviço. O pedido é enviado para aprovação do gestor do seu setor ou do gestor de frota, dependendo da regra definida.
+| Tipo de Usuário | Funções Principais |
+|---|---|
+| **Administrador (TI / Dev)** | Gerencia o sistema, cria usuários, define permissões, mantém os servidores e o banco de dados. Pode visualizar e editar todas as informações. |
+| **Secretário de Transporte** | Responsável pela aprovação final de pedidos de viagem que envolvam deslocamentos entre cidades ou setores diferentes. Supervisiona relatórios gerais da frota. |
+| **Gestor de Setor** | Responsável pelos veículos e motoristas vinculados ao seu setor. Pode criar escalas, aprovar solicitações de viagem internas e acompanhar status dos veículos. |
+| **Motorista** | Visualiza suas escalas, registra início e término de viagens, informa quilometragem e status do veículo. |
+| **Funcionário (Comum)** | Pode fazer pedidos de uso de veículo, informando o motivo e destino. Os pedidos passam por fluxo de aprovação (Gestor → Secretaria de Transporte). |
+| **Supervisor (opcional)** | Figura intermediária em setores maiores; pode autorizar viagens de menor porte sem precisar acionar o Secretário. |
+
+### 🧭 Fluxo de Solicitação de Viagem
+
+1.  **Funcionário** cria um pedido de veículo, informando:
+    - Setor
+    - Motivo
+    - Origem e destino
+    - Data e horário desejado
+
+2.  O **Gestor do Setor** recebe o pedido:
+    - Se for uma viagem **interna ao setor**, ele mesmo aprova.
+    - Se for uma viagem **entre setores ou fora do município**, o pedido é encaminhado automaticamente ao **Secretário de Transporte**.
+
+3.  Após aprovação:
+    - O Gestor ou Secretário define **veículo e motorista** disponíveis.
+    - O sistema gera uma **escala de viagem** com os dados da missão.
+
+4.  O **Motorista** visualiza sua viagem e, no dia agendado:
+    - Marca **início da viagem** (registrando data, hora e quilometragem inicial).
+    - Ao retornar, marca **término** (com km final, observações e status).
+
+Todos os dados ficam registrados para relatórios mensais e auditoria.
 
 ---
 
