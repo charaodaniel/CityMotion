@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React from 'react';
@@ -85,10 +84,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     isActive={pathname.startsWith(item.href) && (item.href !== '/' || pathname === '/')}
                     tooltip={item.label}
                   >
-                    <a href={item.href}>
+                    <Link href={item.href}>
                       <item.icon />
                       <span>{item.label}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -104,10 +103,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                         isActive={pathname.startsWith(item.href)}
                         tooltip={item.label}
                     >
-                        <a href={item.href}>
-                        <item.icon />
-                        <span>{item.label}</span>
-                        </a>
+                        <Link href={item.href}>
+                            <item.icon />
+                            <span>{item.label}</span>
+                        </Link>
                     </SidebarMenuButton>
                     </SidebarMenuItem>
                 ))}
