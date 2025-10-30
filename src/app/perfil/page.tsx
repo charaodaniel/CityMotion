@@ -92,11 +92,11 @@ export default function ProfilePage() {
         <div className="md:col-span-2">
              <Card>
                 <CardHeader>
-                    <CardTitle>Histórico de Deslocamentos</CardTitle>
+                    <CardTitle>Histórico de Viagens</CardTitle>
                     <CardDescription>
                         {userSchedules.length > 0 
-                            ? 'Seus deslocamentos mais recentes realizados no sistema.'
-                            : 'Você ainda não realizou nenhum deslocamento.'
+                            ? 'Suas viagens mais recentes realizadas no sistema.'
+                            : 'Você ainda não realizou nenhuma viagem.'
                         }
                     </CardDescription>
                 </CardHeader>
@@ -105,7 +105,7 @@ export default function ProfilePage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Deslocamento</TableHead>
+                                    <TableHead>Viagem</TableHead>
                                     <TableHead>Veículo</TableHead>
                                     <TableHead>Data</TableHead>
                                     <TableHead>Status</TableHead>
@@ -126,7 +126,7 @@ export default function ProfilePage() {
                         </Table>
                     ) : (
                          <div className="text-center text-muted-foreground py-8">
-                            <p>Nenhum histórico de deslocamentos para exibir.</p>
+                            <p>Nenhum histórico de viagens para exibir.</p>
                         </div>
                     )}
                 </CardContent>

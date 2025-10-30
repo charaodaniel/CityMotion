@@ -5,19 +5,19 @@ import { Mail, Book, LifeBuoy } from 'lucide-react';
 const faqItems = [
   {
     question: "Como faço para solicitar um veículo?",
-    answer: "Na página 'Deslocamentos', clique em 'Agendar Novo Deslocamento' e preencha o formulário com os detalhes do seu trajeto. Sua solicitação será enviada para aprovação."
+    answer: "Na página 'Viagens', clique em 'Agendar Nova Viagem' e preencha o formulário com os detalhes do seu trajeto. Sua solicitação será enviada para aprovação."
   },
   {
-    question: "Quem aprova minha solicitação de deslocamento?",
-    answer: "Deslocamentos dentro do seu setor são aprovados pelo seu gestor. Trajetos para outros setores ou municípios são encaminhadas para o Secretário de Transporte."
+    question: "Quem aprova minha solicitação de viagem?",
+    answer: "Viagens dentro do seu setor são aprovadas pelo seu gestor. Trajetos para outros setores ou municípios são encaminhadas para o Secretário de Transporte."
   },
   {
     question: "Como altero minha senha?",
     answer: "No momento, a alteração de senha deve ser solicitada ao administrador do sistema (TI). Em breve, essa funcionalidade estará disponível no seu perfil."
   },
   {
-    question: "Onde visualizo meus deslocamentos agendados?",
-    answer: "Todos os seus deslocamentos, tanto os futuros quanto os já realizados, podem ser encontradas na página 'Deslocamentos' ou na sua página de perfil."
+    question: "Onde visualizo minhas viagens agendadas?",
+    answer: "Todas as suas viagens, tanto as futuras quanto as já realizadas, podem ser encontradas na página 'Viagens' ou na sua página de perfil."
   }
 ]
 

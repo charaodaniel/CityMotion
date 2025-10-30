@@ -69,7 +69,7 @@ export default function TripsPage() {
                 <DialogHeader>
                     <DialogTitle className="text-2xl">Agendar Nova Viagem</DialogTitle>
                     <DialogDescription>
-                        Preencha o formulário para solicitar um veículo e agendar um deslocamento.
+                        Preencha o formulário para solicitar um veículo e agendar uma viagem.
                     </DialogDescription>
                 </DialogHeader>
                  <ScrollArea className="max-h-[70vh] p-4">
@@ -167,10 +167,10 @@ export default function TripsPage() {
                     </div>
                     <Separator />
                     <div>
-                        <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                        <div>
-                            <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
-                        </div>
+                      <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                      <div>
+                          <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
+                      </div>
                     </div>
                   </div>
                 </>

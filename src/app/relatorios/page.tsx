@@ -46,7 +46,7 @@ export default function ReportsPage() {
             Relatórios e Histórico
           </h1>
           <p className="text-muted-foreground">
-            Consulte o histórico de deslocamentos e gere relatórios.
+            Consulte o histórico de viagens e gere relatórios.
           </p>
         </div>
         <Button disabled>
@@ -57,11 +57,11 @@ export default function ReportsPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle>Histórico de Deslocamentos Concluídos</CardTitle>
+          <CardTitle>Histórico de Viagens Concluídas</CardTitle>
           <CardDescription>
             {completedSchedules.length > 0 
-                ? 'Lista de todos os deslocamentos já finalizados.'
-                : 'Ainda não há deslocamentos concluídos no histórico.'
+                ? 'Lista de todas as viagens já finalizadas.'
+                : 'Ainda não há viagens concluídas no histórico.'
             }
           </CardDescription>
         </CardHeader>
@@ -95,7 +95,7 @@ export default function ReportsPage() {
                 </div>
             ) : (
                 <div className="text-center text-muted-foreground py-8">
-                    <p>Nenhum deslocamento concluído para exibir.</p>
+                    <p>Nenhuma viagem concluída para exibir.</p>
                 </div>
             )}
         </CardContent>
@@ -110,7 +110,7 @@ export default function ReportsPage() {
                   <DialogHeader>
                     <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
                     <DialogDescription>
-                      Detalhes do deslocamento concluído.
+                      Detalhes da viagem concluída.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4 pr-4">
