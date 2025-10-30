@@ -1,4 +1,12 @@
-import type { Driver, Vehicle, Schedule, VehicleRequest } from './types';
+import type { Driver, Vehicle, Schedule, VehicleRequest, Sector } from './types';
+
+export const sectors: Sector[] = [
+  { id: 'SEC01', name: 'Secretaria de Saúde', description: 'Gestão de saúde pública, hospitais e postos de saúde.', vehicleCount: 2, driverCount: 3 },
+  { id: 'SEC02', name: 'Secretaria de Obras', description: 'Manutenção de vias, construções e infraestrutura urbana.', vehicleCount: 1, driverCount: 1 },
+  { id: 'SEC03', name: 'Secretaria de Educação', description: 'Administração de escolas, creches e transporte escolar.', vehicleCount: 1, driverCount: 1 },
+  { id: 'SEC04', name: 'Administração', description: 'Serviços gerais, finanças e recursos humanos da prefeitura.', vehicleCount: 1, driverCount: 1 },
+  { id: 'SEC05', name: 'Vigilância Sanitária', description: 'Fiscalização e controle sanitário de estabelecimentos.', vehicleCount: 1, driverCount: 1 },
+];
 
 export const drivers: Driver[] = [
   { id: '1', name: 'João da Silva', cnh: '123456789', sector: 'Secretaria de Obras', status: 'Em Serviço' },

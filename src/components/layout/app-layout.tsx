@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from 'react';
@@ -25,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, User, Menu, Settings, LifeBuoy, Route, CalendarClock, Users, UserCog, ScrollText } from 'lucide-react';
+import { LayoutDashboard, Car, User, Menu, Settings, LifeBuoy, Route, CalendarClock, Users, UserCog, ScrollText, Building } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { useApp } from '@/contexts/app-provider';
@@ -34,9 +33,10 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 
 const navItems = [
   { href: '/', label: 'Painel', icon: LayoutDashboard },
+  { href: '/setores', label: 'Setores', icon: Building },
   { href: '/motoristas', label: 'Motoristas', icon: User },
   { href: '/veiculos', label: 'Veículos', icon: Car },
-  { href: '/viagens', label: 'Viagens', icon: Route },
+  { href: '/deslocamentos', label: 'Deslocamentos', icon: Route },
   { href: '/escalas', label: 'Escalas', icon: CalendarClock },
   { href: '/relatorios', label: 'Relatórios', icon: ScrollText },
 ];

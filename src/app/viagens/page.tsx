@@ -1,12 +1,12 @@
 "use client";
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Car, Clock, PlusCircle, User } from 'lucide-react';
 import { schedules } from '@/lib/data';
 import type { Schedule, ScheduleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ScheduleTripPage from './agendar/page';
@@ -23,7 +23,7 @@ function getStatusVariant(status: ScheduleStatus) {
       default:
         return 'outline';
     }
-  }
+}
 
 const statusColumns: { title: string; status: ScheduleStatus }[] = [
     { title: 'Agendadas', status: 'Agendada' },

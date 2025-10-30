@@ -45,3 +45,11 @@ export type VehicleRequest = {
   priority: RequestPriority;
   requestDate: string;
 };
+
+export type Sector = {
+  id: string;
+  name: string;
+  description: string;
+  vehicleCount: number;
+  driverCount: number;
+};
