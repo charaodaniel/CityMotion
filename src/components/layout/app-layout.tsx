@@ -37,7 +37,7 @@ const navItems = [
   { href: '/', label: 'Painel', icon: LayoutDashboard },
   { href: '/motoristas', label: 'Motoristas', icon: User },
   { href: '/veiculos', label: 'Veículos', icon: Car },
-  { href: '/deslocamentos', label: 'Deslocamentos', icon: Route },
+  { href: '/viagens', label: 'Viagens', icon: Route },
   { href: '/escalas', label: 'Escalas', icon: CalendarClock },
   { href: '/relatorios', label: 'Relatórios', icon: ScrollText },
 ];
