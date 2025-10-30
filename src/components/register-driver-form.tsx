@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 
 const formSchema = z.object({
   fullName: z.string().min(2, "O nome completo deve ter pelo menos 2 caracteres."),
+  matricula: z.string().min(1, "A matrícula é obrigatória."),
   cnh: z.string().min(9, "O número da CNH é obrigatório."),
   sector: z.string().min(3, "O setor é obrigatório."),
   vehicleModel: z.string().optional(),
@@ -31,6 +32,7 @@ export function RegisterDriverForm({ onFormSubmit }: RegisterDriverFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: '',
+      matricula: '',
       cnh: '',
       sector: '',
       vehicleModel: '',
@@ -62,6 +64,19 @@ export function RegisterDriverForm({ onFormSubmit }: RegisterDriverFormProps) {
                   <FormLabel>Nome Completo</FormLabel>
                   <FormControl>
                     <Input placeholder="Nome do motorista" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="matricula"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Matrícula</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Número da matrícula" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
