@@ -156,9 +156,9 @@ export default function TripsPage() {
                 <Separator />
                 <div>
                     <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                    <p>
+                    <div>
                         <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
-                    </p>
+                    </div>
                 </div>
               </div>
             </>
