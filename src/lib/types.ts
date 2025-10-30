@@ -12,7 +12,7 @@ export type VehicleStatus = 'Disponível' | 'Em Serviço' | 'Em Viagem' | 'Manut
 
 export type Vehicle = {
   id: string;
-  driverName?: string; // Motorista atual, se houver
+  driverName?: string; 
   vehicleModel: string;
   licensePlate: string;
   status: VehicleStatus;
@@ -32,6 +32,7 @@ export type Schedule = {
   destination: string;
   time: string;
   status: ScheduleStatus;
+  category: string;
 };
 
 export type RequestPriority = 'Alta' | 'Média' | 'Baixa';

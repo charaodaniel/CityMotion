@@ -26,7 +26,8 @@ export const schedules: Schedule[] = [
         origin: 'Posto de Saúde Central', 
         destination: 'Hospital Regional', 
         time: '08:00 - 10:00',
-        status: 'Agendada' 
+        status: 'Agendada',
+        category: 'Transporte de Paciente',
     },
     { 
         id: 'SCH002', 
@@ -36,7 +37,8 @@ export const schedules: Schedule[] = [
         origin: 'Prefeitura', 
         destination: 'Secretaria de Educação', 
         time: '09:30 - 10:30',
-        status: 'Em Andamento' 
+        status: 'Em Andamento',
+        category: 'Entrega de Documentos',
     },
     { 
         id: 'SCH003', 
@@ -46,7 +48,8 @@ export const schedules: Schedule[] = [
         origin: 'Secretaria de Obras', 
         destination: 'Bairro Novo Horizonte', 
         time: '14:00 - 16:00',
-        status: 'Agendada' 
+        status: 'Agendada',
+        category: 'Visita Técnica',
     },
 ];
 

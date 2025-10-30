@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,13 +17,22 @@ import { drivers, vehicles } from '@/lib/data';
 
 const formSchema = z.object({
   title: z.string().min(5, "O título da viagem é obrigatório."),
-  sector: z.string().min(3, "O setor solicitante é obrigatório."),
+  sector: z.string().min(1, "O setor solicitante é obrigatório."),
+  category: z.string().min(1, "A categoria da viagem é obrigatória."),
   driver: z.string().min(1, "É necessário selecionar um motorista."),
   vehicle: z.string().min(1, "É necessário selecionar um veículo."),
   origin: z.string().min(3, "O local de origem é obrigatório."),
   destination: z.string().min(3, "O local de destino é obrigatório."),
   description: z.string().optional(),
 });
+
+const tripCategoriesBySector: Record<string, string[]> = {
+  "Secretaria de Saúde": ["Transporte de Paciente", "Consulta Agendada", "Entrega de Medicamentos"],
+  "Secretaria de Educação": ["Transporte Escolar Diário", "Viagem Pedagógica", "Transporte de Professores"],
+  "Secretaria de Obras": ["Visita Técnica", "Transporte de Material", "Inspeção de Obra"],
+  "Administração": ["Entrega de Documentos", "Reunião Externa", "Serviço Bancário"],
+  "Vigilância Sanitária": ["Inspeção Sanitária", "Coleta de Amostras", "Ação Educativa"],
+};
 
 export default function ScheduleTripPage() {
   const { toast } = useToast();
@@ -33,6 +43,7 @@ export default function ScheduleTripPage() {
     defaultValues: {
       title: '',
       sector: '',
+      category: '',
       driver: '',
       vehicle: '',
       origin: '',
@@ -40,6 +51,12 @@ export default function ScheduleTripPage() {
       description: '',
     },
   });
+
+  const selectedSector = form.watch('sector');
+
+  useEffect(() => {
+    form.setValue('category', '');
+  }, [selectedSector, form]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
@@ -104,6 +121,28 @@ export default function ScheduleTripPage() {
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Categoria da Viagem</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedSector}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={selectedSector ? "Selecione a categoria" : "Selecione um setor primeiro"} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {selectedSector && tripCategoriesBySector[selectedSector]?.map(category => (
+                                <SelectItem key={category} value={category}>{category}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                    <FormField
                     control={form.control}
                     name="driver"
@@ -114,7 +153,7 @@ export default function ScheduleTripPage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o motorista" />
-                            </SelectTrigger>
+                            </Trigger>
                           </FormControl>
                           <SelectContent>
                             {drivers.map(driver => (
@@ -136,7 +175,7 @@ export default function ScheduleTripPage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o veículo" />
-                            </SelectTrigger>
+                            </Trigger>
                           </FormControl>
                           <SelectContent>
                              {vehicles.map(vehicle => (

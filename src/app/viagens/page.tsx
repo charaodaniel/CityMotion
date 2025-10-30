@@ -6,7 +6,6 @@ import { schedules } from '@/lib/data';
 import type { ScheduleStatus } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Clock, User, Car, Pin, ArrowRight } from 'lucide-react';
 
 function getStatusVariant(status: ScheduleStatus) {
     switch (status) {
@@ -56,6 +55,7 @@ export default function TripsPage() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Título</TableHead>
+                            <TableHead>Categoria</TableHead>
                             <TableHead>Motorista</TableHead>
                             <TableHead>Veículo</TableHead>
                             <TableHead>Horário</TableHead>
@@ -66,6 +66,7 @@ export default function TripsPage() {
                         {schedules.map((schedule) => (
                             <TableRow key={schedule.id}>
                                 <TableCell className="font-medium">{schedule.title}</TableCell>
+                                <TableCell>{schedule.category}</TableCell>
                                 <TableCell>{schedule.driver}</TableCell>
                                 <TableCell>{schedule.vehicle}</TableCell>
                                 <TableCell>{schedule.time}</TableCell>
