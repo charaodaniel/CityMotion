@@ -6,105 +6,76 @@ A plataforma permite controlar viagens, escalas e status dos veículos, além de
 
 ---
 
-## 🚗 MÓDULO DE GESTÃO DE FROTAS
+## 🧩 Objetivo
 
-Gerencia todos os veículos da prefeitura, empresa ou frota terceirizada.
+O CityMotion foi criado para centralizar o gerenciamento da frota municipal em um único sistema, possibilitando:
 
-### 🔹 Cadastro e Controle de Veículos
-
-- Cadastro de veículos (placa, modelo, marca, ano, chassi, cor, quilometragem inicial, combustível etc.)
-- Registro de documentos do veículo (CRLV, seguro, IPVA, licenciamento)
-- Histórico de manutenção e revisões
-- Controle de abastecimentos (data, valor, local, quilometragem, tipo de combustível)
-- Monitoramento de quilometragem e consumo médio
-- Controle de pneus e trocas
-- Alertas de vencimento (IPVA, licenciamento, seguro, revisões)
-
-### 🔹 Manutenções e Ocorrências
-
-- Agendamento de manutenções preventivas
-- Registro de manutenções corretivas (problemas e soluções)
-- Controle de oficinas e fornecedores
-- Lançamento de custos e relatórios de manutenção
-- Registro de acidentes, multas e sinistros
-
-### 🔹 Controle de Escalas e Viagens
-
-- Criação e agendamento de viagens
-- Associação de veículo e motorista à viagem
-- Registro de origem, destino, horário e finalidade
-- Controle de quilometragem de saída e chegada
-- Acompanhamento de status (em andamento, concluída, cancelada)
-- Relatórios de uso da frota por período, setor ou motorista
+- Acompanhar em tempo real quais veículos estão disponíveis, em manutenção ou em viagem.
+- Agendar e registrar viagens, informando origem, destino, motorista e setor responsável.
+- Gerenciar motoristas e setores da prefeitura, com controle de vínculo e histórico de viagens.
+- Emitir relatórios mensais sobre quilometragem, utilização e deslocamentos.
 
 ---
 
-## 👨‍🔧 MÓDULO DE GESTÃO DE FUNCIONÁRIOS
+## ⚙️ Funcionalidades Principais
 
-Gerencia motoristas, operadores e demais servidores envolvidos na frota.
+### 🏠 1. Painel Principal (/)
+Exibe visão geral da frota e viagens em andamento.
+- Indicadores com totais de veículos, motoristas e escalas do mês.
+- Gráficos simples de uso da frota por setor e viagens concluídas.
 
-### 🔹 Cadastro de Funcionários
+### 🏢 2. Gestão de Setores (/setores)
+- Cadastro e listagem dos setores municipais (ex: Saúde, Educação, Obras, Administração).
+- Cada setor pode ter veículos e motoristas vinculados.
+- Possibilidade de desativar ou editar setores quando necessário.
 
-- Dados pessoais e funcionais (nome, CPF, cargo, setor, matrícula, contato, CNH etc.)
-- Histórico de treinamentos e certificações
-- Controle de validade da CNH e categoria
-- Associação do funcionário ao setor ou veículo principal
+### 👨‍✈️ 3. Gestão de Motoristas (/motoristas)
+- Cadastro de motoristas com dados pessoais, CNH, categoria e setor vinculado.
+- Controle de status: disponível, em viagem, afastado.
+- Histórico de viagens realizadas pelo motorista.
 
-### 🔹 Escalas e Jornadas
+### 🚗 4. Gestão de Veículos (/veiculos)
+Listagem completa da frota municipal com informações como:
+- Placa
+- Modelo
+- Setor responsável
+- Status: Disponível, Em Viagem, Manutenção
+- Registro de quilometragem atual e datas de manutenção.
+- Upload de documentos do veículo (licenciamento, seguro, inspeção).
 
-- Criação e gestão de escalas de trabalho e plantões
-- Atribuição de motoristas e equipes às viagens
-- Controle de horários, presença e faltas
-- Relatórios de horas trabalhadas e produtividade
+### 🧭 5. Escalas e Viagens (/escalas)
+Criação e agendamento de viagens oficiais, com informações de:
+- Setor solicitante
+- Motorista responsável
+- Veículo designado
+- Origem e destino
+- Data, hora de saída e retorno previsto
+- Controle de status da viagem: Aguardando, Em andamento, Concluída.
+- Registro de quilometragem inicial e final.
+- Histórico completo de deslocamentos por período e setor.
 
-### 🔹 Controle de Desempenho
-
-- Registro de ocorrências e advertências
-- Avaliação de desempenho de motoristas (pontualidade, condução, incidentes)
-- Histórico de viagens realizadas por funcionário
-
----
-
-## 🧾 MÓDULO ADMINISTRATIVO E RELATÓRIOS
-
-### 🔹 Painel Administrativo
-
-- Dashboard com indicadores (veículos ativos, em manutenção, viagens em andamento, custo mensal etc.)
-- Filtros por período, setor e tipo de veículo
-- Exportação de relatórios em PDF, Excel ou CSV
-
-### 🔹 Relatórios e Estatísticas
-
-- Consumo médio por veículo
-- Custos totais por mês, setor ou motorista
-- Quilometragem percorrida por período
-- Manutenções e gastos detalhados
-- Controle de rotas e produtividade da frota
-
----
-
-## ⚙️ MÓDULO DE CONFIGURAÇÕES E SUPORTE
-
-- Controle de usuários e permissões (admin, gestor, motorista etc.)
-- Backup e restauração de dados
-- Logs de atividades do sistema
-- Notificações automáticas (e-mail ou WhatsApp, opcional)
-- Integração com GPS, planilhas ou sistemas externos (opcional)
+### 📊 6. Relatórios (/relatorios)
+Geração de relatórios mensais em PDF, contendo:
+- Total de viagens realizadas por setor
+- Quilometragem total percorrida
+- Veículos mais utilizados
+- Viagens por motorista
+- Filtros por data, setor ou veículo.
 
 ---
 
-## 🧩 FUNCIONALIDADES OPCIONAIS AVANÇADAS
+## 🧠 Perfis de Usuário
 
-- Rastreio em tempo real (GPS)
-- Aplicativo mobile para motoristas
-- Checklists digitais de inspeção antes/depois da viagem
-- Solicitação de viagem online (com aprovação)
-- Controle de combustível com integração de cartão frota
-- Módulo de orçamento e custo operacional
+O sistema foi projetado para ser usado internamente pela prefeitura, com diferentes níveis de acesso para garantir segurança e organização.
+
+- **Administrador (TI):** Tem acesso total ao sistema. É responsável pela configuração, manutenção, backup e gerenciamento de todos os cadastros (setores, usuários, veículos).
+- **Gestor de Frota:** Responsável por gerenciar as operações diárias. Agenda viagens, define escalas, aprova solicitações de veículos, atribui motoristas e monitora o status da frota.
+- **Motorista:** Acessa o sistema para visualizar suas escalas de trabalho e viagens agendadas. Pode registrar o início e o fim de uma viagem, reportar quilometragem e ocorrências.
+- **Funcionário:** Usuário padrão que pode solicitar um veículo para uma necessidade de serviço. O pedido é enviado para aprovação do gestor do seu setor ou do gestor de frota, dependendo da regra definida.
 
 ---
 
-### 🧰 Tecnologias Utilizadas
+## 🧰 Tecnologias Utilizadas
 
 | Função | Tecnologia |
 |------------|-------------|
@@ -119,7 +90,7 @@ Gerencia motoristas, operadores e demais servidores envolvidos na frota.
 
 ---
 
-### 📂 Estrutura do Projeto
+## 📂 Estrutura do Projeto
 
 ```
 src/
@@ -140,7 +111,19 @@ src/
 
 ---
 
-### 🖥️ Instalação e Execução (Frontend)
+## 🧾 Fluxo de Uso
+
+1. O usuário acessa o sistema e faz login.
+2. No painel principal, visualiza o status da frota e das viagens.
+3. Gestores e administradores podem:
+   - Criar setores, motoristas e veículos.
+   - Agendar novas viagens (escala).
+   - Acompanhar veículos em percurso.
+4. Ao final do mês, é possível gerar relatórios em PDF para controle administrativo.
+
+---
+
+## 🖥️ Instalação e Execução (Frontend)
 
 ```bash
 # Clonar o repositório
@@ -156,4 +139,5 @@ npm run dev
 Acesse em: `http://localhost:3000`
 
 ---
+
 **CityMotion — Mobilidade, transparência e eficiência para a frota pública municipal.**
