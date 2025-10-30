@@ -43,7 +43,7 @@ export default function TripsPage() {
             <DialogTrigger asChild>
                 <Button className="bg-accent hover:bg-accent/90">
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    abrir modal
+                    Agendar Nova Viagem
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-3xl">
@@ -100,7 +100,7 @@ export default function TripsPage() {
             ) : (
                 <div className="text-center text-muted-foreground py-8">
                     <p>Nenhuma viagem agendada no momento.</p>
-                    <p className="text-sm">Clique em "abrir modal" para começar.</p>
+                    <p className="text-sm">Clique em "Agendar Nova Viagem" para começar.</p>
                 </div>
             )}
         </CardContent>
