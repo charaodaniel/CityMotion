@@ -1,11 +1,15 @@
+"use client";
+
 import { drivers } from '@/lib/data';
 import type { Driver, DriverStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { PlusCircle } from 'lucide-react';
-import Link from 'next/link';
+import { RegisterDriverForm } from '@/components/register-driver-form';
+import { useState } from 'react';
 
 function getStatusVariant(status: DriverStatus) {
   switch (status) {
@@ -23,6 +27,8 @@ function getStatusVariant(status: DriverStatus) {
 }
 
 export default function DriversPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <div className="container mx-auto p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
@@ -32,12 +38,23 @@ export default function DriversPage() {
             </h1>
             <p className="text-muted-foreground">Veja, gerencie e cadastre os motoristas da prefeitura.</p>
         </div>
-        <Link href="/motoristas/register">
-          <Button className="bg-accent hover:bg-accent/90">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Cadastrar Novo Motorista
-          </Button>
-        </Link>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+                <Button className="bg-accent hover:bg-accent/90">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Cadastrar Novo Motorista
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-3xl">
+                <DialogHeader>
+                    <DialogTitle className="text-2xl">Cadastro de Motorista</DialogTitle>
+                    <DialogDescription>
+                        Preencha o formulário para cadastrar um novo motorista da prefeitura.
+                    </DialogDescription>
+                </DialogHeader>
+                <RegisterDriverForm onFormSubmit={() => setIsModalOpen(false)} />
+            </DialogContent>
+        </Dialog>
       </div>
 
       <Card>
