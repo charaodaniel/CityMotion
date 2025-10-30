@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -70,15 +69,6 @@ export default function ScheduleTripPage() {
   const sectors = Object.keys(tripCategoriesBySector);
 
   return (
-    <div className="container mx-auto p-4 sm:p-8 max-w-3xl">
-      <Card className="border-none shadow-none">
-        <CardHeader>
-          <CardTitle className="text-2xl">Agendar Nova Viagem</CardTitle>
-          <CardDescription>
-            Preencha o formulário para solicitar um veículo e agendar um deslocamento.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
@@ -270,8 +260,5 @@ export default function ScheduleTripPage() {
               </Button>
             </form>
           </Form>
-        </CardContent>
-      </Card>
-    </div>
   );
 }
