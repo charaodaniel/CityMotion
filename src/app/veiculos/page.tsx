@@ -1,3 +1,4 @@
+
 "use client";
 
 import { vehicles } from '@/lib/data';
@@ -5,8 +6,7 @@ import type { Vehicle, VehicleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Car, Gauge, Building } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { RegisterVehicleForm } from '@/components/register-vehicle-form';
 import { useState } from 'react';
@@ -32,7 +32,7 @@ export default function VehiclesPage() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
-  const handleRowClick = (vehicle: Vehicle) => {
+  const handleCardClick = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
   };
 
@@ -70,45 +70,47 @@ export default function VehiclesPage() {
         </Dialog>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Frota de Veículos</CardTitle>
-          <CardDescription>Uma lista de todos os veículos cadastrados no sistema. Clique em uma linha para ver detalhes.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Placa</TableHead>
-                <TableHead className="hidden md:table-cell">Modelo</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Motorista Atual</TableHead>
-                <TableHead className="hidden md:table-cell">Setor</TableHead>
-                <TableHead className="text-right">Quilometragem</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {vehicles.map((vehicle) => (
-                <TableRow key={vehicle.id} onClick={() => handleRowClick(vehicle)} className="cursor-pointer">
-                  <TableCell className="font-medium">{vehicle.licensePlate}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {vehicle.vehicleModel}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusVariant(vehicle.status)}>
-                      {vehicle.status}
-                      {(vehicle.status === 'Em Viagem' || vehicle.status === 'Em Serviço') && vehicle.destination && ` - ${vehicle.destination}`}
-                    </Badge>
-                  </TableCell>
-                   <TableCell>{vehicle.driverName || 'N/A'}</TableCell>
-                   <TableCell className="hidden md:table-cell">{vehicle.sector}</TableCell>
-                  <TableCell className="text-right">{vehicle.mileage.toLocaleString('pt-BR')} km</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {vehicles.map((vehicle) => (
+            <Card 
+              key={vehicle.id} 
+              onClick={() => handleCardClick(vehicle)} 
+              className="cursor-pointer hover:shadow-md transition-shadow flex flex-col"
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <Car className="w-5 h-5 text-muted-foreground" />
+                  <span className="truncate">{vehicle.vehicleModel}</span>
+                </CardTitle>
+                <CardDescription>Placa: {vehicle.licensePlate}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col flex-grow justify-between">
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center">
+                    <Building className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span>Setor: <strong>{vehicle.sector}</strong></span>
+                  </div>
+                   <div className="flex items-center">
+                    <Gauge className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span>{vehicle.mileage.toLocaleString('pt-BR')} km</span>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <Badge variant={getStatusVariant(vehicle.status)} className="w-full justify-center">
+                    {vehicle.status}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+      </div>
+
+      {vehicles.length === 0 && (
+        <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg col-span-full">
+            <p>Nenhum veículo cadastrado no momento.</p>
+            <p className="text-sm mt-2">Clique em "Cadastrar Novo Veículo" para começar.</p>
+        </div>
+      )}
 
       {/* Vehicle Details Modal */}
        <Dialog open={!!selectedVehicle} onOpenChange={closeDetailsModal}>

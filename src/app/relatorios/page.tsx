@@ -1,24 +1,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileDown } from 'lucide-react';
+import { FileDown, Car, Clock, User } from 'lucide-react';
 import { schedules } from '@/lib/data';
-import type { ScheduleStatus } from '@/lib/types';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-
-function getStatusVariant(status: ScheduleStatus) {
-    switch (status) {
-      case 'Agendada':
-        return 'secondary';
-      case 'Em Andamento':
-        return 'default';
-      case 'Concluída':
-        return 'outline';
-      default:
-        return 'outline';
-    }
-}
 
 export default function ReportsPage() {
   const completedSchedules = schedules.filter(s => s.status === 'Concluída');
@@ -39,6 +23,7 @@ export default function ReportsPage() {
             Exportar para PDF
         </Button>
       </div>
+      
       <Card>
         <CardHeader>
           <CardTitle>Histórico de Deslocamentos Concluídos</CardTitle>
@@ -51,30 +36,32 @@ export default function ReportsPage() {
         </CardHeader>
         <CardContent>
             {completedSchedules.length > 0 ? (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Título</TableHead>
-                            <TableHead>Motorista</TableHead>
-                            <TableHead>Veículo</TableHead>
-                            <TableHead>Data</TableHead>
-                            <TableHead>Status</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {completedSchedules.map((schedule) => (
-                            <TableRow key={schedule.id}>
-                                <TableCell className="font-medium">{schedule.title}</TableCell>
-                                <TableCell>{schedule.driver}</TableCell>
-                                <TableCell>{schedule.vehicle}</TableCell>
-                                <TableCell>{schedule.time}</TableCell>
-                                <TableCell>
-                                    <Badge variant={getStatusVariant(schedule.status)}>{schedule.status}</Badge>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {completedSchedules.map((schedule) => (
+                        <Card key={schedule.id}>
+                            <CardHeader className="pb-4">
+                                <CardTitle className="text-base">{schedule.title}</CardTitle>
+                                <CardDescription className="flex items-center text-xs">
+                                    <Clock className="mr-1.5 h-3 w-3" /> Concluído em: {schedule.time.split(' ')[0]}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="text-xs space-y-2">
+                                <div className="flex items-center">
+                                    <User className="mr-2 h-3 w-3 text-muted-foreground" />
+                                    <span>Motorista: <strong>{schedule.driver}</strong></span>
+                                </div>
+                                <div className="flex items-center">
+                                    <Car className="mr-2 h-3 w-3 text-muted-foreground" />
+                                    <span>Veículo: <strong>{schedule.vehicle}</strong></span>
+                                </div>
+                                <div className="pt-2">
+                                    <p className="text-xs text-muted-foreground">De: {schedule.origin}</p>
+                                    <p className="text-xs text-muted-foreground">Para: {schedule.destination}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
             ) : (
                 <div className="text-center text-muted-foreground py-8">
                     <p>Nenhum deslocamento concluído para exibir.</p>

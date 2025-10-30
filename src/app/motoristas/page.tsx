@@ -1,3 +1,4 @@
+
 "use client";
 
 import { drivers } from '@/lib/data';
@@ -5,9 +6,8 @@ import type { Driver, DriverStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, User, ShieldCheck } from 'lucide-react';
 import { RegisterDriverForm } from '@/components/register-driver-form';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -32,7 +32,7 @@ export default function DriversPage() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
-  const handleRowClick = (driver: Driver) => {
+  const handleCardClick = (driver: Driver) => {
     setSelectedDriver(driver);
   };
 
@@ -70,36 +70,37 @@ export default function DriversPage() {
         </Dialog>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Motoristas</CardTitle>
-          <CardDescription>Uma lista de todos os motoristas cadastrados no sistema. Clique em uma linha para ver os detalhes.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>CNH</TableHead>
-                <TableHead className="hidden md:table-cell">Setor</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {drivers.map((driver) => (
-                <TableRow key={driver.id} onClick={() => handleRowClick(driver)} className="cursor-pointer">
-                  <TableCell className="font-medium">{driver.name}</TableCell>
-                  <TableCell>{driver.cnh}</TableCell>
-                  <TableCell className="hidden md:table-cell">{driver.sector}</TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusVariant(driver.status)}>{driver.status}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {drivers.map((driver) => (
+          <Card 
+            key={driver.id} 
+            onClick={() => handleCardClick(driver)} 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+          >
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <User className="w-5 h-5 text-muted-foreground" />
+                <span className="truncate">{driver.name}</span>
+              </CardTitle>
+              <CardDescription>{driver.sector}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between">
+              <Badge variant={getStatusVariant(driver.status)}>{driver.status}</Badge>
+              <div className="flex items-center text-xs text-muted-foreground">
+                <ShieldCheck className="mr-1.5 h-3 w-3" />
+                <span>CNH: {driver.cnh.slice(-4)}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      
+      {drivers.length === 0 && (
+        <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg col-span-full">
+            <p>Nenhum motorista cadastrado no momento.</p>
+            <p className="text-sm mt-2">Clique em "Cadastrar Novo Motorista" para começar.</p>
+        </div>
+      )}
 
       {/* Driver Details Modal */}
       <Dialog open={!!selectedDriver} onOpenChange={closeDetailsModal}>
