@@ -11,6 +11,7 @@ import { PlusCircle } from 'lucide-react';
 import { RegisterDriverForm } from '@/components/register-driver-form';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
 function getStatusVariant(status: DriverStatus) {
   switch (status) {
@@ -28,7 +29,16 @@ function getStatusVariant(status: DriverStatus) {
 }
 
 export default function DriversPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+
+  const handleRowClick = (driver: Driver) => {
+    setSelectedDriver(driver);
+  };
+
+  const closeDetailsModal = () => {
+    setSelectedDriver(null);
+  }
 
   return (
     <div className="container mx-auto p-4 sm:p-8">
@@ -39,7 +49,7 @@ export default function DriversPage() {
             </h1>
             <p className="text-muted-foreground">Veja, gerencie e cadastre os motoristas da prefeitura.</p>
         </div>
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <Dialog open={isRegisterModalOpen} onOpenChange={setIsRegisterModalOpen}>
             <DialogTrigger asChild>
                 <Button className="bg-accent hover:bg-accent/90">
                     <PlusCircle className="mr-2 h-4 w-4" />
@@ -54,7 +64,7 @@ export default function DriversPage() {
                     </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="max-h-[70vh] p-4">
-                  <RegisterDriverForm onFormSubmit={() => setIsModalOpen(false)} />
+                  <RegisterDriverForm onFormSubmit={() => setIsRegisterModalOpen(false)} />
                 </ScrollArea>
             </DialogContent>
         </Dialog>
@@ -63,7 +73,7 @@ export default function DriversPage() {
       <Card>
         <CardHeader>
           <CardTitle>Lista de Motoristas</CardTitle>
-          <CardDescription>Uma lista de todos os motoristas cadastrados no sistema.</CardDescription>
+          <CardDescription>Uma lista de todos os motoristas cadastrados no sistema. Clique em uma linha para ver os detalhes.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -77,7 +87,7 @@ export default function DriversPage() {
             </TableHeader>
             <TableBody>
               {drivers.map((driver) => (
-                <TableRow key={driver.id}>
+                <TableRow key={driver.id} onClick={() => handleRowClick(driver)} className="cursor-pointer">
                   <TableCell className="font-medium">{driver.name}</TableCell>
                   <TableCell>{driver.cnh}</TableCell>
                   <TableCell className="hidden md:table-cell">{driver.sector}</TableCell>
@@ -90,6 +100,46 @@ export default function DriversPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Driver Details Modal */}
+      <Dialog open={!!selectedDriver} onOpenChange={closeDetailsModal}>
+        <DialogContent>
+          {selectedDriver && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl">{selectedDriver.name}</DialogTitle>
+                <DialogDescription>
+                  Detalhes do motorista.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div>
+                    <span className="text-sm font-semibold text-muted-foreground">Nome Completo</span>
+                    <p className="text-lg">{selectedDriver.name}</p>
+                </div>
+                 <Separator />
+                <div>
+                    <span className="text-sm font-semibold text-muted-foreground">CNH</span>
+                    <p className="text-lg">{selectedDriver.cnh}</p>
+                </div>
+                 <Separator />
+                 <div>
+                    <span className="text-sm font-semibold text-muted-foreground">Setor</span>
+                    <p className="text-lg">{selectedDriver.sector}</p>
+                </div>
+                <Separator />
+                <div>
+                    <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                    <p>
+                        <Badge variant={getStatusVariant(selectedDriver.status)}>{selectedDriver.status}</Badge>
+                    </p>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
