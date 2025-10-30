@@ -50,10 +50,8 @@ export default function AdminDashboard() {
                       <CardTitle className="text-lg">{schedule.title}</CardTitle>
                       <Badge variant={getStatusVariant(schedule.status)}>{schedule.status}</Badge>
                     </div>
-                    <CardDescription asChild>
-                      <div className="flex items-center text-sm text-muted-foreground mt-2">
+                    <CardDescription className="flex items-center text-sm text-muted-foreground mt-2">
                         <Clock className="mr-2 h-4 w-4" /> {schedule.time}
-                      </div>
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm">
@@ -93,10 +91,8 @@ export default function AdminDashboard() {
                         Prioridade {request.priority}
                       </Badge>
                     </div>
-                    <CardDescription asChild>
-                      <div className="flex items-center text-sm text-muted-foreground mt-2">
+                    <CardDescription className="flex items-center text-sm text-muted-foreground mt-2">
                         <Clock className="mr-2 h-4 w-4" /> Solicitado em: {new Date(request.requestDate).toLocaleDateString('pt-BR')}
-                      </div>
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm">
