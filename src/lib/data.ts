@@ -1,4 +1,4 @@
-import type { Driver, Vehicle } from './types';
+import type { Driver, Vehicle, Schedule, VehicleRequest } from './types';
 
 export const drivers: Driver[] = [
   { id: '1', name: 'João da Silva', cnh: '123456789', sector: 'Secretaria de Obras', vehicleModel: 'Fiat Strada', licensePlate: 'PM-001', status: 'Em Serviço' },
@@ -15,6 +15,58 @@ export const vehicles: Vehicle[] = [
   { id: 'V3', driverName: 'Pedro Santos', vehicleModel: 'Renault Kwid', licensePlate: 'PM-003', status: 'Disponível', mileage: 22000, sector: 'Administração' },
   { id: 'V4', driverName: 'Ana Souza', vehicleModel: 'Chevrolet Onix', licensePlate: 'PM-004', status: 'Manutenção', mileage: 41000, sector: 'Secretaria de Educação' },
   { id: 'V5', driverName: 'Carlos Pereira', vehicleModel: 'Fiat Mobi', licensePlate: 'PM-005', status: 'Em Viagem', destination: 'Uruguaiana/RS', mileage: 5200, sector: 'Vigilância Sanitária' },
+];
+
+export const schedules: Schedule[] = [
+    { 
+        id: 'SCH001', 
+        title: 'Transporte de Paciente', 
+        driver: 'Maria Oliveira', 
+        vehicle: 'VW Gol (PM-002)', 
+        origin: 'Posto de Saúde Central', 
+        destination: 'Hospital Regional', 
+        time: '08:00 - 10:00',
+        status: 'Agendada' 
+    },
+    { 
+        id: 'SCH002', 
+        title: 'Entrega de Documentos', 
+        driver: 'Pedro Santos', 
+        vehicle: 'Renault Kwid (PM-003)', 
+        origin: 'Prefeitura', 
+        destination: 'Secretaria de Educação', 
+        time: '09:30 - 10:30',
+        status: 'Em Andamento' 
+    },
+    { 
+        id: 'SCH003', 
+        title: 'Visita Técnica em Obra', 
+        driver: 'João da Silva', 
+        vehicle: 'Fiat Strada (PM-001)', 
+        origin: 'Secretaria de Obras', 
+        destination: 'Bairro Novo Horizonte', 
+        time: '14:00 - 16:00',
+        status: 'Agendada' 
+    },
+];
+
+export const vehicleRequests: VehicleRequest[] = [
+    {
+        id: 'REQ001',
+        title: 'Buscar materiais de construção',
+        sector: 'Secretaria de Obras',
+        details: 'É necessário um veículo com caçamba para buscar cimento e areia no fornecedor X.',
+        priority: 'Alta',
+        requestDate: '2024-07-29T10:00:00Z',
+    },
+    {
+        id: 'REQ002',
+        title: 'Levar equipe para evento',
+        sector: 'Secretaria de Cultura',
+        details: 'Transportar 3 pessoas da equipe de eventos para a Praça Central para a montagem do palco.',
+        priority: 'Média',
+        requestDate: '2024-07-29T11:30:00Z',
+    },
 ];
 
 

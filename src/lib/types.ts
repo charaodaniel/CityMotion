@@ -22,3 +22,27 @@ export type Vehicle = {
   mileage: number;
   sector: string;
 };
+
+export type ScheduleStatus = 'Agendada' | 'Em Andamento' | 'Concluída';
+
+export type Schedule = {
+  id: string;
+  title: string;
+  driver: string;
+  vehicle: string;
+  origin: string;
+  destination: string;
+  time: string;
+  status: ScheduleStatus;
+};
+
+export type RequestPriority = 'Alta' | 'Média' | 'Baixa';
+
+export type VehicleRequest = {
+  id: string;
+  title: string;
+  sector: string;
+  details: string;
+  priority: RequestPriority;
+  requestDate: string;
+};
