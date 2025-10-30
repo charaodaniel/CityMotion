@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React from 'react';
@@ -25,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, User, Menu, Settings, LifeBuoy, Route, CalendarClock, Users, UserCog } from 'lucide-react';
+import { LayoutDashboard, Car, User, Menu, Settings, LifeBuoy, Route, CalendarClock, Users, UserCog, ScrollText } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { useApp } from '@/contexts/app-provider';
@@ -38,6 +39,7 @@ const navItems = [
   { href: '/veiculos', label: 'Veículos', icon: Car },
   { href: '/viagens', label: 'Viagens', icon: Route },
   { href: '/escalas', label: 'Escalas', icon: CalendarClock },
+  { href: '/relatorios', label: 'Relatórios', icon: ScrollText },
 ];
 
 const bottomNavItems = [
