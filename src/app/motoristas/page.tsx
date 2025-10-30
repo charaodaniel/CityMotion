@@ -70,8 +70,8 @@ export default function DriversPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
+                <TableHead>CNH</TableHead>
                 <TableHead className="hidden md:table-cell">Setor</TableHead>
-                <TableHead>Veículo Designado</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -79,10 +79,8 @@ export default function DriversPage() {
               {drivers.map((driver) => (
                 <TableRow key={driver.id}>
                   <TableCell className="font-medium">{driver.name}</TableCell>
+                  <TableCell>{driver.cnh}</TableCell>
                   <TableCell className="hidden md:table-cell">{driver.sector}</TableCell>
-                  <TableCell>
-                    {driver.vehicleModel ? `${driver.vehicleModel} (${driver.licensePlate})` : 'N/A'}
-                  </TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(driver.status)}>{driver.status}</Badge>
                   </TableCell>

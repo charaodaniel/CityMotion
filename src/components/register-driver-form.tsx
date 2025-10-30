@@ -15,8 +15,6 @@ const formSchema = z.object({
   matricula: z.string().min(1, "A matrícula é obrigatória."),
   cnh: z.string().min(9, "O número da CNH é obrigatório."),
   sector: z.string().min(3, "O setor é obrigatório."),
-  vehicleModel: z.string().optional(),
-  licensePlate: z.string().optional(),
   idPhoto: z.any().refine(files => files?.length == 1, "A foto 3x4 é obrigatória."),
   cnhPhoto: z.any().refine(files => files?.length == 1, "A foto da CNH é obrigatória."),
 });
@@ -35,8 +33,6 @@ export function RegisterDriverForm({ onFormSubmit }: RegisterDriverFormProps) {
       matricula: '',
       cnh: '',
       sector: '',
-      vehicleModel: '',
-      licensePlate: '',
     },
   });
 
@@ -115,40 +111,6 @@ export function RegisterDriverForm({ onFormSubmit }: RegisterDriverFormProps) {
                       <SelectItem value="Vigilância Sanitária">Vigilância Sanitária</SelectItem>
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Veículo Designado (Opcional)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="vehicleModel"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Modelo do Veículo</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Fiat Strada 2023" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="licensePlate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Placa do Veículo</FormLabel>
-                  <FormControl>
-                    <Input placeholder="ABC-1234" {...field} />
-                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

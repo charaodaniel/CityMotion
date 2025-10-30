@@ -4,8 +4,6 @@ export type Driver = {
   id: string;
   name: string;
   status: DriverStatus;
-  vehicleModel?: string;
-  licensePlate?: string;
   sector: string;
   cnh: string;
 };
@@ -14,7 +12,7 @@ export type VehicleStatus = 'Disponível' | 'Em Serviço' | 'Em Viagem' | 'Manut
 
 export type Vehicle = {
   id: string;
-  driverName: string;
+  driverName?: string; // Motorista atual, se houver
   vehicleModel: string;
   licensePlate: string;
   status: VehicleStatus;

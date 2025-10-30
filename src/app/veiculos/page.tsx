@@ -50,9 +50,9 @@ export default function VehiclesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Placa</TableHead>
-                <TableHead>Motorista</TableHead>
                 <TableHead className="hidden md:table-cell">Modelo</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Motorista Atual</TableHead>
                 <TableHead className="hidden md:table-cell">Setor</TableHead>
                 <TableHead className="text-right">Quilometragem</TableHead>
               </TableRow>
@@ -61,17 +61,16 @@ export default function VehiclesPage() {
               {vehicles.map((vehicle) => (
                 <TableRow key={vehicle.id}>
                   <TableCell className="font-medium">{vehicle.licensePlate}</TableCell>
-                  <TableCell>{vehicle.driverName}</TableCell>
                   <TableCell className="hidden md:table-cell">
                     {vehicle.vehicleModel}
                   </TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(vehicle.status)}>
                       {vehicle.status}
-                      {vehicle.status === 'Em Viagem' && vehicle.destination && ` - ${vehicle.destination}`}
-                      {vehicle.status === 'Em Serviço' && vehicle.destination && ` - ${vehicle.destination}`}
+                      {(vehicle.status === 'Em Viagem' || vehicle.status === 'Em Serviço') && vehicle.destination && ` - ${vehicle.destination}`}
                     </Badge>
                   </TableCell>
+                   <TableCell>{vehicle.driverName || 'N/A'}</TableCell>
                    <TableCell className="hidden md:table-cell">{vehicle.sector}</TableCell>
                   <TableCell className="text-right">{vehicle.mileage.toLocaleString('pt-BR')} km</TableCell>
                 </TableRow>

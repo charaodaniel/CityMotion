@@ -1,19 +1,19 @@
 import type { Driver, Vehicle, Schedule, VehicleRequest } from './types';
 
 export const drivers: Driver[] = [
-  { id: '1', name: 'João da Silva', cnh: '123456789', sector: 'Secretaria de Obras', vehicleModel: 'Fiat Strada', licensePlate: 'PM-001', status: 'Em Serviço' },
-  { id: '2', name: 'Maria Oliveira', cnh: '987654321', sector: 'Secretaria de Saúde', vehicleModel: 'VW Gol', licensePlate: 'PM-002', status: 'Disponível' },
-  { id: '3', name: 'Pedro Santos', cnh: '112233445', sector: 'Administração', vehicleModel: 'Renault Kwid', licensePlate: 'PM-003', status: 'Disponível' },
-  { id: '4', name: 'Ana Souza', cnh: '556677889', sector: 'Secretaria de Educação', vehicleModel: 'Chevrolet Onix', licensePlate: 'PM-004', status: 'Afastado' },
-  { id: '5', name: 'Carlos Pereira', cnh: '998877665', sector: 'Vigilância Sanitária', vehicleModel: 'Fiat Mobi', licensePlate: 'PM-005', status: 'Em Viagem' },
-  { id: '6', name: 'Lúcia Ferreira', cnh: '123123123', sector: 'Secretaria de Saúde', vehicleModel: 'VW Nivus', licensePlate: 'PM-006', status: 'Disponível' },
+  { id: '1', name: 'João da Silva', cnh: '123456789', sector: 'Secretaria de Obras', status: 'Em Serviço' },
+  { id: '2', name: 'Maria Oliveira', cnh: '987654321', sector: 'Secretaria de Saúde', status: 'Disponível' },
+  { id: '3', name: 'Pedro Santos', cnh: '112233445', sector: 'Administração', status: 'Disponível' },
+  { id: '4', name: 'Ana Souza', cnh: '556677889', sector: 'Secretaria de Educação', status: 'Afastado' },
+  { id: '5', name: 'Carlos Pereira', cnh: '998877665', sector: 'Vigilância Sanitária', status: 'Em Viagem' },
+  { id: '6', name: 'Lúcia Ferreira', cnh: '123123123', sector: 'Secretaria de Saúde', status: 'Disponível' },
 ];
 
 export const vehicles: Vehicle[] = [
   { id: 'V1', driverName: 'João da Silva', vehicleModel: 'Fiat Strada', licensePlate: 'PM-001', status: 'Em Serviço', destination: 'Hospital Municipal', mileage: 15000, sector: 'Secretaria de Obras' },
-  { id: 'V2', driverName: 'Maria Oliveira', vehicleModel: 'VW Gol', licensePlate: 'PM-002', status: 'Disponível', mileage: 8500, sector: 'Secretaria de Saúde' },
-  { id: 'V3', driverName: 'Pedro Santos', vehicleModel: 'Renault Kwid', licensePlate: 'PM-003', status: 'Disponível', mileage: 22000, sector: 'Administração' },
-  { id: 'V4', driverName: 'Ana Souza', vehicleModel: 'Chevrolet Onix', licensePlate: 'PM-004', status: 'Manutenção', mileage: 41000, sector: 'Secretaria de Educação' },
+  { id: 'V2', vehicleModel: 'VW Gol', licensePlate: 'PM-002', status: 'Disponível', mileage: 8500, sector: 'Secretaria de Saúde' },
+  { id: 'V3', vehicleModel: 'Renault Kwid', licensePlate: 'PM-003', status: 'Disponível', mileage: 22000, sector: 'Administração' },
+  { id: 'V4', vehicleModel: 'Chevrolet Onix', licensePlate: 'PM-004', status: 'Manutenção', mileage: 41000, sector: 'Secretaria de Educação' },
   { id: 'V5', driverName: 'Carlos Pereira', vehicleModel: 'Fiat Mobi', licensePlate: 'PM-005', status: 'Em Viagem', destination: 'Uruguaiana/RS', mileage: 5200, sector: 'Vigilância Sanitária' },
 ];
 

@@ -13,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 
 const formSchema = z.object({
-  driverName: z.string().min(2, "O nome do motorista é obrigatório."),
   vehicleModel: z.string().min(3, "O modelo do veículo é obrigatório."),
   licensePlate: z.string().min(7, "A placa deve ter o formato ABC-1234.").max(8),
   sector: z.string().min(3, "O setor responsável é obrigatório."),
@@ -29,7 +28,6 @@ export default function RegisterVehiclePage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-        driverName: '',
         vehicleModel: '',
         licensePlate: '',
         sector: '',
@@ -57,7 +55,7 @@ export default function RegisterVehiclePage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <div>
-                <h3 className="text-lg font-semibold mb-4">Informações do Veículo e Motorista</h3>
+                <h3 className="text-lg font-semibold mb-4">Informações do Veículo</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
@@ -80,19 +78,6 @@ export default function RegisterVehiclePage() {
                         <FormLabel>Placa do Veículo</FormLabel>
                         <FormControl>
                           <Input placeholder="ABC-1234" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="driverName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome do Motorista Principal</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Carlos Silva" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
