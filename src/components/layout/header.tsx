@@ -10,8 +10,11 @@ import { cn } from "@/lib/utils";
 
 export function Header() {
     const pathname = usePathname();
-    // Don't show header on login page
-    if (pathname === '/login') return null;
+    
+    // Header não será exibido em nenhuma página logada que usa o AppLayout
+    if (pathname.startsWith('/setores') || pathname.startsWith('/motoristas') || pathname.startsWith('/veiculos') || pathname.startsWith('/viagens') || pathname.startsWith('/escalas') || pathname.startsWith('/relatorios') || pathname.startsWith('/perfil') || pathname.startsWith('/settings') || pathname.startsWith('/support') || pathname === '/login') {
+        return null;
+    }
 
     return (
         <header className="sticky top-0 z-40 w-full border-b bg-background">
