@@ -1,13 +1,13 @@
 
 "use client";
 
-import { drivers } from '@/lib/data';
+import { drivers as initialDrivers } from '@/lib/data';
 import type { Driver, DriverStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { PlusCircle, User, ShieldCheck } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PlusCircle, User, ShieldCheck, Edit } from 'lucide-react';
 import { RegisterDriverForm } from '@/components/register-driver-form';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,9 +19,8 @@ function getStatusVariant(status: DriverStatus) {
     case 'Disponível':
       return 'secondary';
     case 'Em Serviço':
-      return 'default';
     case 'Em Viagem':
-      return 'outline';
+      return 'default';
     case 'Afastado':
       return 'destructive';
     default:
@@ -30,16 +29,131 @@ function getStatusVariant(status: DriverStatus) {
 }
 
 export default function DriversPage() {
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [drivers, setDrivers] = useState<Driver[]>(initialDrivers);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
   const handleCardClick = (driver: Driver) => {
     setSelectedDriver(driver);
+    setModalMode('details');
+    setIsModalOpen(true);
+  };
+  
+  const handleOpenRegisterModal = () => {
+    setSelectedDriver(null);
+    setModalMode('register');
+    setIsModalOpen(true);
+  };
+  
+  const handleOpenEditModal = (driver: Driver) => {
+    setSelectedDriver(driver);
+    setModalMode('edit');
+    setIsModalOpen(true);
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedDriver(null);
   };
 
-  const closeDetailsModal = () => {
-    setSelectedDriver(null);
+  const handleFormSubmit = (newDriverData: Partial<Driver>) => {
+    if (modalMode === 'edit' && selectedDriver) {
+      // @ts-ignore
+      setDrivers(drivers.map(d => d.id === selectedDriver.id ? { ...d, ...newDriverData } : d));
+    } else {
+      const newDriver: Driver = {
+        id: `${drivers.length + 1}`,
+        status: 'Disponível',
+        ...newDriverData
+      } as Driver;
+      // @ts-ignore
+      setDrivers([...drivers, newDriver]);
+    }
+    closeModal();
+  };
+  
+  const getModalContent = () => {
+    switch (modalMode) {
+      case 'register':
+        return {
+          title: 'Cadastro de Motorista',
+          description: 'Preencha o formulário para cadastrar um novo motorista da prefeitura.',
+          content: <RegisterDriverForm onFormSubmit={handleFormSubmit} />
+        };
+      case 'edit':
+         return {
+          title: 'Editar Motorista',
+          description: 'Altere as informações do motorista.',
+          content: <RegisterDriverForm onFormSubmit={handleFormSubmit} existingDriver={selectedDriver} />
+        };
+      case 'details':
+      default:
+        return {
+          title: selectedDriver?.name || '',
+          description: 'Detalhes do motorista.',
+          content: (
+            <>
+              <DialogHeader className="items-center text-center">
+                  <Avatar className="h-24 w-24 mb-4">
+                      <AvatarImage src={`https://i.pravatar.cc/150?u=${selectedDriver?.id}`} alt={selectedDriver?.name} />
+                      <AvatarFallback>{selectedDriver?.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <DialogTitle className="text-2xl">{selectedDriver?.name}</DialogTitle>
+                  <DialogDescription>
+                      Detalhes do motorista.
+                  </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4 pr-4">
+                <div>
+                    <span className="text-sm font-semibold text-muted-foreground">Nome Completo</span>
+                    <p className="text-lg">{selectedDriver?.name}</p>
+                </div>
+                <Separator />
+                {selectedDriver?.cnh && (
+                  <>
+                      <div>
+                          <span className="text-sm font-semibold text-muted-foreground">CNH</span>
+                          <p className="text-lg">{selectedDriver.cnh}</p>
+                      </div>
+                      <Separator />
+                  </>
+                )}
+                 {selectedDriver?.matricula && (
+                  <>
+                      <div>
+                          <span className="text-sm font-semibold text-muted-foreground">Matrícula</span>
+                          <p className="text-lg">{selectedDriver.matricula}</p>
+                      </div>
+                      <Separator />
+                  </>
+                )}
+                <div>
+                    <span className="text-sm font-semibold text-muted-foreground">Setor</span>
+                    <p className="text-lg">{selectedDriver?.sector}</p>
+                </div>
+                <Separator />
+                <div>
+                    <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                    <div>
+                        {selectedDriver && <Badge variant={getStatusVariant(selectedDriver.status)}>{selectedDriver.status}</Badge>}
+                    </div>
+                </div>
+                <div className="flex justify-end pt-4">
+                    <Button variant="outline" onClick={() => handleOpenEditModal(selectedDriver!)}>
+                        <Edit className="mr-2 h-4 w-4"/>
+                        Editar
+                    </Button>
+                </div>
+              </div>
+            </>
+          )
+        };
+    }
   }
+  
+  const { title, description, content } = getModalContent();
+
 
   return (
     <div className="container mx-auto p-4 sm:p-8">
@@ -50,25 +164,10 @@ export default function DriversPage() {
             </h1>
             <p className="text-muted-foreground">Veja, gerencie e cadastre os motoristas da prefeitura.</p>
         </div>
-        <Dialog open={isRegisterModalOpen} onOpenChange={setIsRegisterModalOpen}>
-            <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Cadastrar Novo Motorista
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-3xl">
-                <DialogHeader>
-                    <DialogTitle className="text-2xl">Cadastro de Motorista</DialogTitle>
-                    <DialogDescription>
-                        Preencha o formulário para cadastrar um novo motorista da prefeitura.
-                    </DialogDescription>
-                </DialogHeader>
-                <ScrollArea className="max-h-[70vh] p-4">
-                  <RegisterDriverForm onFormSubmit={() => setIsRegisterModalOpen(false)} />
-                </ScrollArea>
-            </DialogContent>
-        </Dialog>
+        <Button onClick={handleOpenRegisterModal} className="bg-primary hover:bg-primary/90">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Cadastrar Novo Motorista
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -80,7 +179,10 @@ export default function DriversPage() {
           >
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
-                <User className="w-5 h-5 text-muted-foreground" />
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={`https://i.pravatar.cc/150?u=${driver.id}`} alt={driver.name} />
+                  <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
+                </Avatar>
                 <span className="truncate">{driver.name}</span>
               </CardTitle>
               <CardDescription>{driver.sector}</CardDescription>
@@ -105,51 +207,19 @@ export default function DriversPage() {
         </div>
       )}
 
-      {/* Driver Details Modal */}
-      <Dialog open={!!selectedDriver} onOpenChange={closeDetailsModal}>
-        <DialogContent>
+      {/* Driver Modal */}
+      <Dialog open={isModalOpen} onOpenChange={closeModal}>
+        <DialogContent className={modalMode !== 'details' ? 'sm:max-w-3xl' : ''}>
           <ScrollArea className="max-h-[80vh] p-4">
-            {selectedDriver && (
-              <>
-                <DialogHeader className="items-center text-center">
-                    <Avatar className="h-24 w-24 mb-4">
-                        <AvatarImage src={`https://i.pravatar.cc/150?u=${selectedDriver.id}`} alt={selectedDriver.name} />
-                        <AvatarFallback>{selectedDriver.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <DialogTitle className="text-2xl">{selectedDriver.name}</DialogTitle>
-                    <DialogDescription>
-                        Detalhes do motorista.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4 pr-4">
-                  <div>
-                      <span className="text-sm font-semibold text-muted-foreground">Nome Completo</span>
-                      <p className="text-lg">{selectedDriver.name}</p>
-                  </div>
-                  <Separator />
-                  {selectedDriver.cnh && (
-                    <>
-                        <div>
-                            <span className="text-sm font-semibold text-muted-foreground">CNH</span>
-                            <p className="text-lg">{selectedDriver.cnh}</p>
-                        </div>
-                        <Separator />
-                    </>
-                  )}
-                  <div>
-                      <span className="text-sm font-semibold text-muted-foreground">Setor</span>
-                      <p className="text-lg">{selectedDriver.sector}</p>
-                  </div>
-                  <Separator />
-                  <div>
-                      <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                      <div>
-                          <Badge variant={getStatusVariant(selectedDriver.status)}>{selectedDriver.status}</Badge>
-                      </div>
-                  </div>
-                </div>
-              </>
-            )}
+              {modalMode === 'details' ? content : (
+                <>
+                  <DialogHeader>
+                      <DialogTitle className="text-2xl">{title}</DialogTitle>
+                      <DialogDescription>{description}</DialogDescription>
+                  </DialogHeader>
+                  {content}
+                </>
+              )}
           </ScrollArea>
         </DialogContent>
       </Dialog>

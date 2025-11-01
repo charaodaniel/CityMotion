@@ -6,6 +6,7 @@ export type Driver = {
   status: DriverStatus;
   sector: string;
   cnh?: string;
+  matricula?: string;
 };
 
 export type VehicleStatus = 'Disponível' | 'Em Serviço' | 'Em Viagem' | 'Manutenção';
@@ -21,7 +22,7 @@ export type Vehicle = {
   sector: string;
 };
 
-export type ScheduleStatus = 'Agendada' | 'Em Andamento' | 'Concluída';
+export type ScheduleStatus = 'Agendada' | 'Em Andamento' | 'Concluída' | 'Cancelada';
 
 export type Passenger = {
   name: string;
@@ -34,14 +35,20 @@ export type Schedule = {
   driver: string;
   vehicle: string;
   origin: string;
-  destination: string;
-  time: string; // Should be split into date and time
+  destination:string;
+  departureTime: string;
+  arrivalTime?: string;
+  startMileage?: number;
+  endMileage?: number;
   status: ScheduleStatus;
   category: string;
   passengers?: Passenger[];
+  notes?: string;
 };
 
 export type RequestPriority = 'Alta' | 'Média' | 'Baixa';
+
+export type VehicleRequestStatus = 'Pendente' | 'Aprovada' | 'Rejeitada';
 
 export type VehicleRequest = {
   id: string;
@@ -50,6 +57,7 @@ export type VehicleRequest = {
   details: string;
   priority: RequestPriority;
   requestDate: string;
+  status: VehicleRequestStatus;
 };
 
 export type Sector = {

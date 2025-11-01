@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from 'react-hook-form';
@@ -9,40 +10,54 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import type { Driver } from '@/lib/types';
+import { useEffect } from 'react';
 
 const formSchema = z.object({
-  fullName: z.string().min(2, "O nome completo deve ter pelo menos 2 caracteres."),
+  name: z.string().min(2, "O nome completo deve ter pelo menos 2 caracteres."),
   matricula: z.string().min(1, "A matrícula é obrigatória."),
-  cnh: z.string().min(9, "O número da CNH é obrigatório."),
+  cnh: z.string().optional(),
   sector: z.string().min(3, "O setor é obrigatório."),
-  idPhoto: z.any().refine(files => files?.length == 1, "A foto 3x4 é obrigatória."),
-  cnhPhoto: z.any().refine(files => files?.length == 1, "A foto da CNH é obrigatória."),
+  idPhoto: z.any().optional(),
+  cnhPhoto: z.any().optional(),
 });
 
 interface RegisterDriverFormProps {
-  onFormSubmit: () => void;
+  onFormSubmit: (data: Partial<Driver>) => void;
+  existingDriver?: Driver | null;
 }
 
-export function RegisterDriverForm({ onFormSubmit }: RegisterDriverFormProps) {
+export function RegisterDriverForm({ onFormSubmit, existingDriver }: RegisterDriverFormProps) {
   const { toast } = useToast();
+  const isEditMode = !!existingDriver;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: '',
+      name: '',
       matricula: '',
       cnh: '',
       sector: '',
     },
   });
 
+  useEffect(() => {
+    if (isEditMode) {
+      form.reset({
+        name: existingDriver.name,
+        matricula: existingDriver.matricula,
+        cnh: existingDriver.cnh,
+        sector: existingDriver.sector,
+      });
+    }
+  }, [isEditMode, existingDriver, form]);
+
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    onFormSubmit(values);
     toast({
-      title: "Cadastro Enviado",
-      description: "O cadastro do motorista foi realizado com sucesso.",
+      title: isEditMode ? "Cadastro Atualizado" : "Cadastro Enviado",
+      description: `O cadastro do motorista foi ${isEditMode ? 'atualizado' : 'realizado'} com sucesso.`,
     });
-    onFormSubmit();
     form.reset();
   };
 
@@ -54,7 +69,7 @@ export function RegisterDriverForm({ onFormSubmit }: RegisterDriverFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
-              name="fullName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nome Completo</FormLabel>
@@ -83,7 +98,7 @@ export function RegisterDriverForm({ onFormSubmit }: RegisterDriverFormProps) {
               name="cnh"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nº da CNH</FormLabel>
+                  <FormLabel>Nº da CNH (Opcional)</FormLabel>
                   <FormControl>
                     <Input placeholder="0123456789" {...field} />
                   </FormControl>
@@ -97,7 +112,7 @@ export function RegisterDriverForm({ onFormSubmit }: RegisterDriverFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Setor de Lotação</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o setor" />
@@ -153,7 +168,9 @@ export function RegisterDriverForm({ onFormSubmit }: RegisterDriverFormProps) {
         </div>
 
         <div className="flex justify-end">
-            <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">Enviar Cadastro</Button>
+            <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">
+                {isEditMode ? 'Salvar Alterações' : 'Enviar Cadastro'}
+            </Button>
         </div>
       </form>
     </Form>

@@ -1,11 +1,14 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Clock, Package } from 'lucide-react';
-import { vehicleRequests } from '@/lib/data';
-import type { RequestPriority } from '@/lib/types';
+import { vehicleRequests as initialVehicleRequests } from '@/lib/data';
+import type { RequestPriority, VehicleRequest } from '@/lib/types';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 function getPriorityVariant(priority: RequestPriority) {
   switch (priority) {
@@ -21,7 +24,22 @@ function getPriorityVariant(priority: RequestPriority) {
 }
 
 export default function ManagerDashboard() {
-  const managerRequests = vehicleRequests.filter(r => r.sector === 'Secretaria de Obras');
+  const [vehicleRequests, setVehicleRequests] = useState<VehicleRequest[]>(initialVehicleRequests);
+  const { toast } = useToast();
+
+  const handleRequest = (id: string, approved: boolean) => {
+    setVehicleRequests(vehicleRequests.filter(req => req.id !== id));
+    const request = vehicleRequests.find(req => req.id === id);
+    if (request) {
+      toast({
+        title: `Solicitação ${approved ? 'Aprovada' : 'Rejeitada'}`,
+        description: `A solicitação "${request.title}" foi ${approved ? 'aprovada' : 'rejeitada'}.`,
+      });
+    }
+  };
+
+
+  const managerRequests = vehicleRequests.filter(r => r.sector === 'Secretaria de Obras' && r.status === 'Pendente');
 
   return (
     <div>
@@ -48,8 +66,8 @@ export default function ManagerDashboard() {
               </div>
               <p className="text-muted-foreground pt-2">{request.details}</p>
               <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline">Rejeitar</Button>
-                <Button>Aprovar</Button>
+                <Button variant="outline" onClick={() => handleRequest(request.id, false)}>Rejeitar</Button>
+                <Button onClick={() => handleRequest(request.id, true)}>Aprovar</Button>
               </div>
             </CardContent>
           </Card>

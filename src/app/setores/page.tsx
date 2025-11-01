@@ -5,28 +5,148 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building, Car, PlusCircle, User, Edit } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { sectors, drivers, vehicles } from '@/lib/data';
+import { sectors as initialSectors, drivers, vehicles } from '@/lib/data';
 import type { Sector } from '@/lib/types';
 import { RegisterSectorForm } from '@/components/register-sector-form';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export default function SectorsPage() {
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [sectors, setSectors] = useState<Sector[]>(initialSectors);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
   const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
 
   const handleCardClick = (sector: Sector) => {
     setSelectedSector(sector);
+    setModalMode('details');
+    setIsModalOpen(true);
+  };
+  
+  const handleOpenRegisterModal = () => {
+    setSelectedSector(null);
+    setModalMode('register');
+    setIsModalOpen(true);
+  };
+  
+  const handleOpenEditModal = (sector: Sector) => {
+    setSelectedSector(sector);
+    setModalMode('edit');
+    setIsModalOpen(true);
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedSector(null);
   };
 
-  const closeDetailsModal = () => {
-    setSelectedSector(null);
+  const handleFormSubmit = (newSectorData: Partial<Sector>) => {
+    if (modalMode === 'edit' && selectedSector) {
+      setSectors(sectors.map(s => s.id === selectedSector.id ? { ...s, ...newSectorData } : s));
+    } else {
+      const newSector: Sector = {
+        id: `SEC${sectors.length + 1}`,
+        driverCount: 0,
+        vehicleCount: 0,
+        ...newSectorData
+      } as Sector;
+      setSectors([...sectors, newSector]);
+    }
+    closeModal();
   };
 
   const sectorDrivers = selectedSector ? drivers.filter(d => d.sector === selectedSector.name) : [];
   const sectorVehicles = selectedSector ? vehicles.filter(v => v.sector === selectedSector.name) : [];
+
+  const getModalContent = () => {
+      switch(modalMode) {
+          case 'register':
+              return {
+                  title: 'Adicionar Novo Setor',
+                  description: 'Preencha o formulário para cadastrar um novo setor.',
+                  content: <RegisterSectorForm onFormSubmit={handleFormSubmit} />
+              };
+          case 'edit':
+              return {
+                  title: 'Editar Setor',
+                  description: 'Altere as informações do setor.',
+                  content: <RegisterSectorForm onFormSubmit={handleFormSubmit} existingSector={selectedSector} />
+              };
+          case 'details':
+          default:
+              return {
+                  title: selectedSector?.name || '',
+                  description: selectedSector?.description || '',
+                  content: (
+                      <div className="space-y-6 py-4 pr-4 mt-4">
+                          <div className="flex items-center justify-end">
+                              <Button variant="outline" size="sm" onClick={() => handleOpenEditModal(selectedSector!)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Editar
+                              </Button>
+                          </div>
+                          <div>
+                              <h3 className="text-lg font-semibold mb-2 flex items-center"><User className="mr-2 h-5 w-5" />Motoristas Vinculados</h3>
+                              {sectorDrivers.length > 0 ? (
+                              <Card>
+                                  <Table>
+                                  <TableHeader>
+                                      <TableRow>
+                                      <TableHead>Nome</TableHead>
+                                      <TableHead>Status</TableHead>
+                                      </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                      {sectorDrivers.map(driver => (
+                                      <TableRow key={driver.id}>
+                                          <TableCell className="font-medium">{driver.name}</TableCell>
+                                          <TableCell>{driver.status}</TableCell>
+                                      </TableRow>
+                                      ))}
+                                  </TableBody>
+                                  </Table>
+                              </Card>
+                              ) : (
+                              <p className="text-sm text-muted-foreground">Nenhum motorista vinculado a este setor.</p>
+                              )}
+                          </div>
+                          <Separator />
+                          <div>
+                              <h3 className="text-lg font-semibold mb-2 flex items-center"><Car className="mr-2 h-5 w-5" />Veículos Vinculados</h3>
+                              {sectorVehicles.length > 0 ? (
+                              <Card>
+                                  <Table>
+                                  <TableHeader>
+                                      <TableRow>
+                                      <TableHead>Modelo</TableHead>
+                                      <TableHead>Placa</TableHead>
+                                      <TableHead>Status</TableHead>
+                                      </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                      {sectorVehicles.map(vehicle => (
+                                      <TableRow key={vehicle.id}>
+                                          <TableCell className="font-medium">{vehicle.vehicleModel}</TableCell>
+                                          <TableCell>{vehicle.licensePlate}</TableCell>
+                                          <TableCell>{vehicle.status}</TableCell>
+                                      </TableRow>
+                                      ))}
+                                  </TableBody>
+                                  </Table>
+                              </Card>
+                              ) : (
+                              <p className="text-sm text-muted-foreground">Nenhum veículo vinculado a este setor.</p>
+                              )}
+                          </div>
+                      </div>
+                  )
+              };
+      }
+  }
+
+  const { title, description, content } = getModalContent();
 
   return (
     <div className="container mx-auto p-4 sm:p-8">
@@ -39,25 +159,10 @@ export default function SectorsPage() {
             Gerencie os setores e departamentos da prefeitura.
           </p>
         </div>
-        <Dialog open={isRegisterModalOpen} onOpenChange={setIsRegisterModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Adicionar Novo Setor
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-xl">
-            <DialogHeader>
-              <DialogTitle className="text-2xl">Adicionar Novo Setor</DialogTitle>
-              <DialogDescription>
-                Preencha o formulário para cadastrar um novo setor.
-              </DialogDescription>
-            </DialogHeader>
-            <ScrollArea className="max-h-[70vh] p-4">
-              <RegisterSectorForm onFormSubmit={() => setIsRegisterModalOpen(false)} />
-            </ScrollArea>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={handleOpenRegisterModal} className="bg-primary hover:bg-primary/90">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Adicionar Novo Setor
+        </Button>
       </div>
 
       {sectors.length > 0 ? (
@@ -78,11 +183,11 @@ export default function SectorsPage() {
               <CardContent className="flex flex-col flex-grow justify-end text-sm space-y-2">
                 <div className="flex items-center text-muted-foreground">
                   <Car className="mr-2 h-4 w-4" />
-                  <span>{sector.vehicleCount} {sector.vehicleCount === 1 ? 'veículo' : 'veículos'}</span>
+                  <span>{vehicles.filter(v => v.sector === sector.name).length} {sector.vehicleCount === 1 ? 'veículo' : 'veículos'}</span>
                 </div>
                 <div className="flex items-center text-muted-foreground">
                   <User className="mr-2 h-4 w-4" />
-                  <span>{sector.driverCount} {sector.driverCount === 1 ? 'motorista' : 'motoristas'}</span>
+                  <span>{drivers.filter(d => d.sector === sector.name).length} {sector.driverCount === 1 ? 'motorista' : 'motoristas'}</span>
                 </div>
               </CardContent>
             </Card>
@@ -96,83 +201,14 @@ export default function SectorsPage() {
       )}
 
       {/* Details Modal */}
-      <Dialog open={!!selectedSector} onOpenChange={closeDetailsModal}>
-        <DialogContent className="sm:max-w-3xl">
+      <Dialog open={isModalOpen} onOpenChange={closeModal}>
+        <DialogContent className={modalMode === 'details' ? "sm:max-w-3xl" : "sm:max-w-xl"}>
           <ScrollArea className="max-h-[80vh] p-4">
-            {selectedSector && (
-              <>
-                <DialogHeader>
-                  <DialogTitle className="text-2xl flex items-center justify-between">
-                    <span>{selectedSector.name}</span>
-                    <Button variant="outline" size="sm">
-                        <Edit className="mr-2 h-4 w-4" />
-                        Editar
-                    </Button>
-                  </DialogTitle>
-                  <DialogDescription>
-                    {selectedSector.description}
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-6 py-4 pr-4 mt-4">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2 flex items-center"><User className="mr-2 h-5 w-5" />Motoristas Vinculados</h3>
-                    {sectorDrivers.length > 0 ? (
-                      <Card>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Nome</TableHead>
-                              <TableHead>Status</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {sectorDrivers.map(driver => (
-                              <TableRow key={driver.id}>
-                                <TableCell className="font-medium">{driver.name}</TableCell>
-                                <TableCell>{driver.status}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </Card>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Nenhum motorista vinculado a este setor.</p>
-                    )}
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2 flex items-center"><Car className="mr-2 h-5 w-5" />Veículos Vinculados</h3>
-                    {sectorVehicles.length > 0 ? (
-                      <Card>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Modelo</TableHead>
-                              <TableHead>Placa</TableHead>
-                              <TableHead>Status</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {sectorVehicles.map(vehicle => (
-                              <TableRow key={vehicle.id}>
-                                <TableCell className="font-medium">{vehicle.vehicleModel}</TableCell>
-                                <TableCell>{vehicle.licensePlate}</TableCell>
-                                <TableCell>{vehicle.status}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </Card>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Nenhum veículo vinculado a este setor.</p>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
+            <DialogHeader>
+              <DialogTitle className="text-2xl">{title}</DialogTitle>
+              <DialogDescription>{description}</DialogDescription>
+            </DialogHeader>
+            {content}
           </ScrollArea>
         </DialogContent>
       </Dialog>

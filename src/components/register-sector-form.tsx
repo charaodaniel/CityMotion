@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import type { Sector } from '@/lib/types';
+import { useEffect } from 'react';
 
 const formSchema = z.object({
   name: z.string().min(3, "O nome do setor é obrigatório."),
@@ -16,11 +18,13 @@ const formSchema = z.object({
 });
 
 interface RegisterSectorFormProps {
-  onFormSubmit: () => void;
+  onFormSubmit: (data: Partial<Sector>) => void;
+  existingSector?: Sector | null;
 }
 
-export function RegisterSectorForm({ onFormSubmit }: RegisterSectorFormProps) {
+export function RegisterSectorForm({ onFormSubmit, existingSector }: RegisterSectorFormProps) {
   const { toast } = useToast();
+  const isEditMode = !!existingSector;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -30,13 +34,21 @@ export function RegisterSectorForm({ onFormSubmit }: RegisterSectorFormProps) {
     },
   });
 
+  useEffect(() => {
+    if (isEditMode) {
+      form.reset({
+        name: existingSector.name,
+        description: existingSector.description
+      });
+    }
+  }, [isEditMode, existingSector, form]);
+
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    onFormSubmit(values);
     toast({
-      title: "Setor Cadastrado",
-      description: "O novo setor foi adicionado com sucesso.",
+      title: isEditMode ? "Setor Atualizado" : "Setor Cadastrado",
+      description: `O setor foi ${isEditMode ? 'atualizado' : 'adicionado'} com sucesso.`,
     });
-    onFormSubmit();
     form.reset();
   };
 
@@ -75,7 +87,7 @@ export function RegisterSectorForm({ onFormSubmit }: RegisterSectorFormProps) {
         />
         <div className="flex justify-end">
           <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">
-            Salvar Setor
+            {isEditMode ? 'Salvar Alterações' : 'Salvar Setor'}
           </Button>
         </div>
       </form>

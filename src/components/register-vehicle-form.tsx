@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from 'react-hook-form';
@@ -9,22 +10,26 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import type { Vehicle } from '@/lib/types';
+import { useEffect } from 'react';
 
 const formSchema = z.object({
   vehicleModel: z.string().min(3, "O modelo do veículo é obrigatório."),
   licensePlate: z.string().min(7, "A placa deve ter o formato ABC-1234.").max(8),
   sector: z.string().min(3, "O setor responsável é obrigatório."),
   mileage: z.coerce.number().min(0, "A quilometragem não pode ser negativa."),
-  vehicleRegistration: z.any().refine(files => files?.length == 1, "O CRLV é obrigatório."),
-  vehicleInspection: z.any().refine(files => files?.length == 1, "O documento de inspeção é obrigatório."),
+  vehicleRegistration: z.any().optional(),
+  vehicleInspection: z.any().optional(),
 });
 
 interface RegisterVehicleFormProps {
-  onFormSubmit: () => void;
+  onFormSubmit: (data: Partial<Vehicle>) => void;
+  existingVehicle?: Vehicle | null;
 }
 
-export function RegisterVehicleForm({ onFormSubmit }: RegisterVehicleFormProps) {
+export function RegisterVehicleForm({ onFormSubmit, existingVehicle }: RegisterVehicleFormProps) {
   const { toast } = useToast();
+  const isEditMode = !!existingVehicle;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,13 +41,23 @@ export function RegisterVehicleForm({ onFormSubmit }: RegisterVehicleFormProps) 
     },
   });
 
+   useEffect(() => {
+    if (isEditMode) {
+      form.reset({
+        vehicleModel: existingVehicle.vehicleModel,
+        licensePlate: existingVehicle.licensePlate,
+        sector: existingVehicle.sector,
+        mileage: existingVehicle.mileage,
+      });
+    }
+  }, [isEditMode, existingVehicle, form]);
+
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    onFormSubmit(values);
     toast({
-      title: "Cadastro de Veículo Enviado",
-      description: "O novo veículo foi adicionado à frota e está pendente de verificação.",
+      title: isEditMode ? "Veículo Atualizado" : "Cadastro de Veículo Enviado",
+      description: `O veículo foi ${isEditMode ? 'atualizado' : 'adicionado à frota'}.`,
     });
-    onFormSubmit();
     form.reset();
   };
 
@@ -84,7 +99,7 @@ export function RegisterVehicleForm({ onFormSubmit }: RegisterVehicleFormProps) 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Setor Responsável</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o setor" />
@@ -107,7 +122,7 @@ export function RegisterVehicleForm({ onFormSubmit }: RegisterVehicleFormProps) 
               name="mileage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quilometragem Inicial</FormLabel>
+                  <FormLabel>Quilometragem</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="0" {...field} />
                   </FormControl>
@@ -153,7 +168,9 @@ export function RegisterVehicleForm({ onFormSubmit }: RegisterVehicleFormProps) 
         </div>
         
         <div className="flex justify-end">
-            <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">Enviar Cadastro</Button>
+            <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">
+                {isEditMode ? 'Salvar Alterações' : 'Enviar Cadastro'}
+            </Button>
         </div>
       </form>
     </Form>
