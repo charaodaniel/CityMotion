@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileDown, Car, Clock, User, Filter, Calendar as CalendarIcon } from 'lucide-react';
+import { FileDown, Car, Clock, User, Filter, Calendar as CalendarIcon, Gauge, Route, Trophy } from 'lucide-react';
 import { schedules, sectors, vehicles } from '@/lib/data';
 import type { Schedule, ScheduleStatus } from '@/lib/types';
 import { useState } from 'react';
@@ -60,11 +60,36 @@ export default function ReportsPage() {
     const scheduleDate = new Date(s.departureTime.split(' ')[0].split('/').reverse().join('-'));
     const isAfterFrom = dateRange.from ? scheduleDate >= dateRange.from : true;
     const isBeforeTo = dateRange.to ? scheduleDate <= dateRange.to : true;
-    const isInSector = selectedSector ? (s as any).sector === selectedSector : true; // Assuming schedule has sector
+    // @ts-ignore
+    const scheduleSector = vehicles.find(v => s.vehicle.includes(v.licensePlate))?.sector;
+    const isInSector = selectedSector ? scheduleSector === selectedSector : true;
     const isVehicle = selectedVehicle ? s.vehicle.includes(selectedVehicle) : true;
     
     return s.status === 'Concluída' && isAfterFrom && isBeforeTo && isInSector && isVehicle;
   });
+
+  const totalTrips = filteredSchedules.length;
+
+  const totalMileage = filteredSchedules.reduce((acc, s) => {
+    if (s.endMileage && s.startMileage) {
+      return acc + (s.endMileage - s.startMileage);
+    }
+    return acc;
+  }, 0);
+
+  const getMostUsedVehicle = () => {
+    if (filteredSchedules.length === 0) return 'N/A';
+
+    const vehicleCount = filteredSchedules.reduce((acc, schedule) => {
+      acc[schedule.vehicle] = (acc[schedule.vehicle] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.keys(vehicleCount).reduce((a, b) => vehicleCount[a] > vehicleCount[b] ? a : b);
+  };
+
+  const mostUsedVehicle = getMostUsedVehicle();
+
 
   const generatePdf = () => {
     const doc = new jsPDF() as jsPDFWithAutoTable;
@@ -151,11 +176,11 @@ export default function ReportsPage() {
                   {dateRange?.from ? (
                     dateRange.to ? (
                       <>
-                        {format(dateRange.from, "LLL dd, y")} -{" "}
-                        {format(dateRange.to, "LLL dd, y")}
+                        {format(dateRange.from, "dd/MM/yyyy", { locale: ptBR })} -{" "}
+                        {format(dateRange.to, "dd/MM/yyyy", { locale: ptBR })}
                       </>
                     ) : (
-                      format(dateRange.from, "LLL dd, y")
+                      format(dateRange.from, "dd/MM/yyyy", { locale: ptBR })
                     )
                   ) : (
                     <span>Selecione um período</span>
@@ -202,6 +227,39 @@ export default function ReportsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="grid gap-4 md:grid-cols-3 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total de Viagens</CardTitle>
+            <Route className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalTrips}</div>
+            <p className="text-xs text-muted-foreground">Viagens concluídas no período</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Quilometragem Total</CardTitle>
+            <Gauge className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalMileage.toLocaleString('pt-BR')} km</div>
+            <p className="text-xs text-muted-foreground">Distância total percorrida</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Veículo Mais Utilizado</CardTitle>
+            <Trophy className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold truncate">{mostUsedVehicle}</div>
+            <p className="text-xs text-muted-foreground">Veículo com mais viagens no período</p>
+          </CardContent>
+        </Card>
+      </div>
       
       <Card>
         <CardHeader>
@@ -323,3 +381,5 @@ export default function ReportsPage() {
     </div>
   );
 }
+
+    
