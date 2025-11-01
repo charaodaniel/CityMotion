@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileDown, Car, Clock, User, Filter, Calendar as CalendarIcon, Gauge, Route, Trophy } from 'lucide-react';
-import { schedules, sectors, vehicles } from '@/lib/data';
+import { schedules, sectors, vehicles, drivers } from '@/lib/data';
 import type { Schedule, ScheduleStatus } from '@/lib/types';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -46,6 +46,8 @@ export default function ReportsPage() {
   const [dateRange, setDateRange] = useState<{from: Date | undefined, to: Date | undefined}>({ from: undefined, to: undefined });
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
+  const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
 
 
   const handleCardClick = (schedule: Schedule) => {
@@ -66,8 +68,10 @@ export default function ReportsPage() {
     const scheduleSector = vehicles.find(v => s.vehicle.includes(v.licensePlate))?.sector;
     const isInSector = selectedSector ? scheduleSector === selectedSector : true;
     const isVehicle = selectedVehicle ? s.vehicle.includes(selectedVehicle) : true;
+    const isDriver = selectedDriver ? s.driver === selectedDriver : true;
+    const isEmployee = selectedEmployee ? s.driver === selectedEmployee : true;
     
-    return s.status === 'Concluída' && isAfterFrom && isBeforeTo && isInSector && isVehicle;
+    return s.status === 'Concluída' && isAfterFrom && isBeforeTo && isInSector && isVehicle && isDriver && isEmployee;
   });
 
   const totalTrips = filteredSchedules.length;
@@ -132,6 +136,8 @@ export default function ReportsPage() {
       setDateRange({ from: undefined, to: undefined });
       setSelectedSector(null);
       setSelectedVehicle(null);
+      setSelectedDriver(null);
+      setSelectedEmployee(null);
   }
 
   return (
@@ -161,7 +167,7 @@ export default function ReportsPage() {
             Selecione os filtros para gerar um relatório personalizado.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <div className="flex flex-col space-y-1.5">
             <Label>Período</Label>
             <Popover>
@@ -224,7 +230,29 @@ export default function ReportsPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-end">
+           <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="driver">Motorista</Label>
+            <Select onValueChange={setSelectedDriver} value={selectedDriver || ''}>
+              <SelectTrigger id="driver">
+                <SelectValue placeholder="Todos os motoristas" />
+              </SelectTrigger>
+              <SelectContent>
+                {drivers.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="employee">Funcionário</Label>
+            <Select onValueChange={setSelectedEmployee} value={selectedEmployee || ''}>
+              <SelectTrigger id="employee">
+                <SelectValue placeholder="Todos os funcionários" />
+              </SelectTrigger>
+              <SelectContent>
+                {drivers.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-end col-start-4">
             <Button onClick={clearFilters} variant="ghost" className="w-full">Limpar Filtros</Button>
           </div>
         </CardContent>
@@ -286,7 +314,7 @@ export default function ReportsPage() {
                             <CardHeader className="pb-4">
                                 <CardTitle className="text-base">{schedule.title}</CardTitle>
                                 <CardDescription className="flex items-center text-xs">
-                                    <Clock className="mr-1.5 h-3 w-3" /> Concluído em: {arrivalDate ? format(arrivalDate, 'dd/MM/yyyy') : 'N/A'}
+                                    <Clock className="mr-1.5 h-3 w-3" /> Concluído em: {arrivalDate ? format(new Date(arrivalDate), 'dd/MM/yyyy') : 'N/A'}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="text-xs space-y-2">
@@ -388,3 +416,5 @@ export default function ReportsPage() {
     </div>
   );
 }
+
+    
