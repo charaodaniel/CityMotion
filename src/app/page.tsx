@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ScheduleTripForm } from '@/components/schedule-trip-form';
+import { QuickRequestForm } from '@/components/quick-request-form';
 
 export default function DashboardPage() {
     const { userRole } = useApp();
@@ -47,15 +47,15 @@ export default function DashboardPage() {
                             Pedir Transporte
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-3xl">
+                    <DialogContent className="sm:max-w-xl">
                         <DialogHeader>
                             <DialogTitle className="text-2xl">Solicitar um Transporte</DialogTitle>
                             <DialogDescription>
-                                Preencha o formulário para solicitar um veículo e agendar uma viagem.
+                                Preencha o formulário para fazer um pedido rápido. O gestor do seu setor será notificado.
                             </DialogDescription>
                         </DialogHeader>
                         <ScrollArea className="max-h-[70vh] p-4">
-                            <ScheduleTripForm onFormSubmit={() => setIsRequestModalOpen(false)} />
+                            <QuickRequestForm onFormSubmit={() => setIsRequestModalOpen(false)} />
                         </ScrollArea>
                     </DialogContent>
                 </Dialog>
