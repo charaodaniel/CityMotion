@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { AppLayout } from '@/components/layout/app-layout';
 import { vehicleRequests as initialVehicleRequests, schedules as initialSchedules, drivers, vehicles } from '@/lib/data';
 import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus } from '@/lib/types';
 import { format } from 'date-fns';
@@ -72,9 +71,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{ userRole, setUserRole, vehicleRequests, addVehicleRequest, updateVehicleRequestStatus, schedules, setSchedules }}>
-      <AppLayout>
-        {children}
-      </AppLayout>
+      {children}
     </AppContext.Provider>
   );
 }

@@ -36,8 +36,8 @@ Este arquivo organiza as funcionalidades pendentes e melhorias a serem implement
 
 ## ✨ Melhorias e UI/UX
 
--   [ ] **Criar Página de Login (Visual)**
-    -   [ ] Desenvolver a interface da página de login, sem a lógica de autenticação por enquanto.
+-   [x] **Criar Página de Login (Visual)**
+    -   [x] Desenvolver a interface da página de login, sem a lógica de autenticação por enquanto.
 
 -   [ ] **Internacionalização (Tradução)**
     -   [ ] Traduzir componentes de UI que ainda exibem textos em inglês (ex: `Calendar`).
