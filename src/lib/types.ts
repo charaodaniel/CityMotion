@@ -43,7 +43,8 @@ export type Schedule = {
   status: ScheduleStatus;
   category: string;
   passengers?: Passenger[];
-  notes?: string;
+  startNotes?: string;
+  endNotes?: string;
 };
 
 export type RequestPriority = 'Alta' | 'Média' | 'Baixa';

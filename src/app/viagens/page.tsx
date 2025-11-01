@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX } from 'lucide-react';
+import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText } from 'lucide-react';
 import { schedules as initialSchedules, drivers as initialDrivers, vehicles as initialVehicles } from '@/lib/data';
 import type { Schedule, ScheduleStatus, Driver, Vehicle } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
@@ -156,7 +156,7 @@ export default function ViagensPage() {
       setNotes('');
   }
 
-  const updateScheduleStatus = (scheduleId: string, newStatus: ScheduleStatus) => {
+  const updateScheduleStatus = (scheduleId: string, newStatus: ScheduleStatus, details?: { startNotes?: string, endNotes?: string, startMileage?: number, endMileage?: number }) => {
     let updatedSchedules = [...schedules];
     let updatedDrivers = [...drivers];
     let updatedVehicles = [...vehicles];
@@ -170,9 +170,9 @@ export default function ViagensPage() {
       updatedDrivers = drivers.map(d => d.id === driver.id ? { ...d, status: 'Em Viagem' } : d);
       updatedVehicles = vehicles.map(v => v.id === vehicle.id ? { ...v, status: 'Em Viagem' } : v);
       toast({ title: "Viagem iniciada!", description: `A viagem "${schedule.title}" foi marcada como "Em Andamento".` });
-    } else if (newStatus === 'Concluída' && driver && vehicle && finalMileage) {
+    } else if (newStatus === 'Concluída' && driver && vehicle && details?.endMileage) {
       updatedDrivers = drivers.map(d => d.id === driver.id ? { ...d, status: 'Disponível' } : d);
-      updatedVehicles = vehicles.map(v => v.id === vehicle.id ? { ...v, status: 'Disponível', mileage: finalMileage } : v);
+      updatedVehicles = vehicles.map(v => v.id === vehicle.id ? { ...v, status: 'Disponível', mileage: details.endMileage! } : v);
       toast({ title: "Viagem finalizada!", description: `A viagem "${schedule.title}" foi concluída com sucesso.` });
     } else if (newStatus === 'Cancelada') {
        toast({ title: "Viagem cancelada", description: `A viagem "${schedule.title}" foi cancelada.`, variant: 'destructive' });
@@ -181,15 +181,15 @@ export default function ViagensPage() {
     updatedSchedules = schedules.map(s => s.id === scheduleId ? {
       ...s,
       status: newStatus,
-      ...(newStatus === 'Concluída' && {
-        endMileage: finalMileage,
-        arrivalTime: new Date().toLocaleString('pt-BR'),
-        notes: notes,
-      }),
       ...(newStatus === 'Em Andamento' && {
-        startMileage: startMileage,
-        notes: notes,
-      })
+        startMileage: details?.startMileage,
+        startNotes: details?.startNotes,
+      }),
+      ...(newStatus === 'Concluída' && {
+        endMileage: details?.endMileage,
+        endNotes: details?.endNotes,
+        arrivalTime: new Date().toLocaleString('pt-BR'),
+      }),
     } : s);
 
     setSchedules(updatedSchedules);
@@ -199,13 +199,13 @@ export default function ViagensPage() {
 
   const handleStartTrip = () => {
     if (!selectedSchedule) return;
-    updateScheduleStatus(selectedSchedule.id, 'Em Andamento');
+    updateScheduleStatus(selectedSchedule.id, 'Em Andamento', { startNotes: notes, startMileage: startMileage });
     closeModal();
   };
 
   const handleFinishTrip = () => {
     if (!selectedSchedule || !finalMileage) return;
-    updateScheduleStatus(selectedSchedule.id, 'Concluída');
+    updateScheduleStatus(selectedSchedule.id, 'Concluída', { endNotes: notes, endMileage: finalMileage });
     closeModal();
   };
   
@@ -301,7 +301,14 @@ export default function ViagensPage() {
                       </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4 pr-4">
-                      <div>
+                        <div>
+                            <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                            <div>
+                                <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
+                            </div>
+                        </div>
+                        <Separator />
+                        <div>
                           <span className="text-sm font-semibold text-muted-foreground">Motorista</span>
                           <p className="text-lg">{selectedSchedule.driver}</p>
                       </div>
@@ -326,13 +333,33 @@ export default function ViagensPage() {
                           <span className="text-sm font-semibold text-muted-foreground">Data e Horário</span>
                           <p className="text-lg">{selectedSchedule.departureTime}</p>
                       </div>
-                      <Separator />
-                      <div>
-                      <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                      <div>
-                          <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
-                      </div>
-                      </div>
+
+                      {(selectedSchedule.status === 'Em Andamento' || selectedSchedule.status === 'Concluída') && selectedSchedule.startNotes && (
+                        <>
+                          <Separator />
+                          <div>
+                            <span className="text-sm font-semibold text-muted-foreground flex items-center">
+                              <MessageSquareText className="mr-2 h-4 w-4" />
+                              Observações de Partida
+                            </span>
+                            <p className="text-sm mt-1 p-3 bg-muted/50 rounded-md">{selectedSchedule.startNotes}</p>
+                          </div>
+                        </>
+                      )}
+
+                       {selectedSchedule.status === 'Concluída' && selectedSchedule.endNotes && (
+                        <>
+                          <Separator />
+                          <div>
+                            <span className="text-sm font-semibold text-muted-foreground flex items-center">
+                              <MessageSquareText className="mr-2 h-4 w-4" />
+                              Observações de Chegada
+                            </span>
+                            <p className="text-sm mt-1 p-3 bg-muted/50 rounded-md">{selectedSchedule.endNotes}</p>
+                          </div>
+                        </>
+                      )}
+
                       {selectedSchedule.status === 'Agendada' && (
                         <div className='pt-4 flex justify-end'>
                             <Button onClick={() => openModal('start-checklist', selectedSchedule)}>
