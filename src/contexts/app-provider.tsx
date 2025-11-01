@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
@@ -38,16 +39,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
   
   const updateVehicleRequestStatus = (id: string, status: VehicleRequestStatus) => {
+    let requestToProcess: VehicleRequest | undefined;
+    
     setVehicleRequests(prev => 
-        prev.map(req => 
-            req.id === id ? { ...req, status: status } : req
-        )
+        prev.map(req => {
+            if (req.id === id) {
+                requestToProcess = { ...req, status };
+                return requestToProcess;
+            }
+            return req;
+        })
     );
 
-    if (status === 'Aprovada') {
-      const request = vehicleRequests.find(req => req.id === id);
-      if (request) {
-        // Encontrar um motorista e veículo disponível para a nova viagem
+    if (status === 'Aprovada' && requestToProcess) {
+      const request = requestToProcess;
         const availableDriver = drivers.find(d => d.status === 'Disponível');
         const availableVehicle = vehicles.find(v => v.status === 'Disponível');
 
@@ -65,7 +70,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
             };
             setSchedules(prevSchedules => [newSchedule, ...prevSchedules]);
         }
-      }
     }
   };
 

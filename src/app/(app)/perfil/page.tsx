@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,14 +35,17 @@ export default function ProfilePage() {
         return drivers.find(d => d.id === '1'); // João da Silva (Obras)
       case 'driver':
         return drivers.find(d => d.id === '2'); // Maria Oliveira (Saúde)
+      case 'employee':
+        return drivers.find(d => d.id === '4'); // Ana Souza (Educação)
       default:
         return drivers[0];
     }
   }, [userRole]);
 
   const userSchedules = useMemo(() => {
+    if (userRole === 'employee') return []; // Funcionário comum não tem histórico de VIAGENS como motorista
     return schedules.filter(s => s.driver === currentUser?.name);
-  }, [currentUser]);
+  }, [currentUser, userRole]);
 
 
   if (!currentUser) {

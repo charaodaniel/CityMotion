@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState } from 'react';
@@ -12,6 +11,23 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { QuickRequestForm } from '@/components/quick-request-form';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+function EmployeeDashboard() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Bem-vindo(a)!</CardTitle>
+                <CardDescription>
+                    Este é o seu painel de funcionário.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p>Para solicitar um veículo para uma viagem, clique no botão "Pedir Transporte" no canto superior direito.</p>
+            </CardContent>
+        </Card>
+    )
+}
 
 export default function DashboardPage() {
     const { userRole } = useApp();
@@ -25,6 +41,8 @@ export default function DashboardPage() {
                 return <ManagerDashboard />;
             case 'driver':
                 return <DriverDashboard />;
+            case 'employee':
+                return <EmployeeDashboard />;
             default:
                 return <AdminDashboard />;
         }

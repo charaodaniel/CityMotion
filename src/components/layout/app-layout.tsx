@@ -33,7 +33,7 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 
 
 const navItems = [
-  { href: '/', label: 'Painel', icon: LayoutDashboard, roles: ['admin', 'manager', 'driver'] },
+  { href: '/', label: 'Painel', icon: LayoutDashboard, roles: ['admin', 'manager', 'driver', 'employee'] },
   { href: '/setores', label: 'Setores', icon: Building, roles: ['admin'] },
   { href: '/motoristas', label: 'Motoristas', icon: User, roles: ['admin', 'manager'] },
   { href: '/veiculos', label: 'Veículos', icon: Car, roles: ['admin', 'manager'] },
@@ -43,9 +43,9 @@ const navItems = [
 ];
 
 const bottomNavItems = [
-    { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['admin', 'manager', 'driver'] },
+    { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['admin', 'manager', 'driver', 'employee'] },
     { href: '/settings', label: 'Configurações', icon: Settings, roles: ['admin'] },
-    { href: '/support', label: 'Suporte', icon: LifeBuoy, roles: ['admin', 'driver'] },
+    { href: '/support', label: 'Suporte', icon: LifeBuoy, roles: ['admin', 'driver', 'employee'] },
 ]
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -65,6 +65,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       case 'admin': return 'Admin';
       case 'manager': return 'Gestor';
       case 'driver': return 'Motorista';
+      case 'employee': return 'Funcionário';
       default: return 'Desconhecido'
     }
   }
@@ -148,6 +149,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                             <AvatarFallback>M</AvatarFallback>
                           </Avatar>
                           <span>Motorista</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setUserRole('employee')}>
+                           <Avatar className="h-6 w-6 mr-2">
+                            <AvatarFallback>F</AvatarFallback>
+                          </Avatar>
+                          <span>Funcionário</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
