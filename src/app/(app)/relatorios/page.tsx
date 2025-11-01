@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { FileDown, Car, Clock, User, Filter, Calendar as CalendarIcon, Gauge, Route, Trophy } from 'lucide-react';
 import { schedules, sectors, vehicles, drivers } from '@/lib/data';
 import type { Schedule, ScheduleStatus } from '@/lib/types';
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -21,6 +21,7 @@ import { format } from 'date-fns';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ptBR } from 'date-fns/locale';
+import { useApp } from '@/contexts/app-provider';
 
 interface jsPDFWithAutoTable extends jsPDF {
   autoTable: (options: any) => jsPDF;
@@ -43,12 +44,27 @@ function getStatusVariant(status: ScheduleStatus) {
 }
 
 export default function ReportsPage() {
+  const { userRole } = useApp();
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [dateRange, setDateRange] = useState<{from: Date | undefined, to: Date | undefined}>({ from: undefined, to: undefined });
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
+
+  const currentUser = useMemo(() => {
+    if (userRole !== 'driver') return null;
+    // This logic should match the one in /perfil to simulate the same logged-in driver
+    return drivers.find(d => d.id === '2'); // Simulating 'Maria Oliveira' for driver role
+  }, [userRole]);
+
+  useEffect(() => {
+    if (userRole === 'driver' && currentUser) {
+      setSelectedDriver(currentUser.name);
+    } else {
+      setSelectedDriver(null);
+    }
+  }, [userRole, currentUser]);
 
 
   const handleCardClick = (schedule: Schedule) => {
@@ -137,7 +153,9 @@ export default function ReportsPage() {
       setDateRange({ from: undefined, to: undefined });
       setSelectedSector(null);
       setSelectedVehicle(null);
-      setSelectedDriver(null);
+      if (userRole !== 'driver') {
+        setSelectedDriver(null);
+      }
       setSelectedEmployee(null);
   }
 
@@ -149,7 +167,10 @@ export default function ReportsPage() {
             Relatórios e Histórico
           </h1>
           <p className="text-muted-foreground">
-            Consulte o histórico de viagens e gere relatórios.
+            {userRole === 'driver' 
+              ? 'Consulte seu histórico de viagens e gere relatórios.'
+              : 'Consulte o histórico de viagens e gere relatórios.'
+            }
           </p>
         </div>
         <Button onClick={generatePdf} disabled={filteredSchedules.length === 0}>
@@ -233,7 +254,11 @@ export default function ReportsPage() {
           </div>
            <div className="flex flex-col space-y-1.5">
             <Label htmlFor="driver">Motorista</Label>
-            <Select onValueChange={setSelectedDriver} value={selectedDriver || ''}>
+            <Select 
+              onValueChange={setSelectedDriver} 
+              value={selectedDriver || ''} 
+              disabled={userRole === 'driver'}
+            >
               <SelectTrigger id="driver">
                 <SelectValue placeholder="Todos os motoristas" />
               </SelectTrigger>

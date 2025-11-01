@@ -39,7 +39,7 @@ const navItems = [
   { href: '/veiculos', label: 'Veículos', icon: Car, roles: ['admin', 'manager'] },
   { href: '/viagens', label: 'Viagens', icon: Route, roles: ['admin', 'manager', 'driver'] },
   { href: '/escalas', label: 'Escalas', icon: CalendarClock, roles: ['admin', 'manager'] },
-  { href: '/relatorios', label: 'Relatórios', icon: ScrollText, roles: ['admin', 'manager'] },
+  { href: '/relatorios', label: 'Relatórios', icon: ScrollText, roles: ['admin', 'manager', 'driver'] },
 ];
 
 const bottomNavItems = [
