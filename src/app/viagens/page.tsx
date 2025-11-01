@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText, Check } from 'lucide-react';
-import { schedules as initialSchedules, drivers as initialDrivers, vehicles as initialVehicles } from '@/lib/data';
+import { drivers as initialDrivers, vehicles as initialVehicles } from '@/lib/data';
 import type { Schedule, ScheduleStatus, Driver, Vehicle } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { useApp } from '@/contexts/app-provider';
 
 type ModalState = 'details' | 'finish' | 'start-checklist' | 'form' | null;
 
@@ -130,7 +131,7 @@ function TripsView({
 }
 
 export default function ViagensPage() {
-  const [schedules, setSchedules] = useState<Schedule[]>(initialSchedules);
+  const { schedules, setSchedules } = useApp();
   const [drivers, setDrivers] = useState<Driver[]>(initialDrivers);
   const [vehicles, setVehicles] = useState<Vehicle[]>(initialVehicles);
 

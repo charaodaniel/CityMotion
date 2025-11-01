@@ -21,13 +21,13 @@ Este arquivo organiza as funcionalidades pendentes e melhorias a serem implement
     -   [x] Incluir campos para KM final e observações.
     -   [x] Exibir os checklists preenchidos (itens e observações) nos detalhes da viagem.
 
-## 🛠️ Próximas Funcionalidades
-
--   [ ] **Implementar Fluxo de Aprovação de Viagens**
+-   [x] **Implementar Fluxo de Aprovação de Viagens**
     -   [x] Conectar o formulário "Pedir Transporte" para que ele crie uma "Solicitação de Veículo" com status "Pendente".
     -   [x] Exibir solicitações pendentes no painel do "Gestor de Setor" (`ManagerDashboard`).
     -   [x] Implementar a lógica nos botões "Aprovar" e "Rejeitar" para que mudem o status da solicitação.
-    -   [ ] Uma vez aprovada, a solicitação deve se tornar uma viagem "Agendada" na página `/viagens`.
+    -   [x] Uma vez aprovada, a solicitação deve se tornar uma viagem "Agendada" na página `/viagens`.
+
+## 🛠️ Próximas Funcionalidades
 
 -   [ ] **Dinamizar Página de Perfil (`/perfil`)**
     -   [ ] Fazer com que a página exiba as informações do usuário "logado" (simulado pelo seletor de perfil).
