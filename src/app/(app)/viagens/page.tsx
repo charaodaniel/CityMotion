@@ -587,6 +587,10 @@ export default function ViagensPage() {
                 <Label htmlFor="refuel-receipt">Foto do Recibo (Opcional)</Label>
                 <Input id="refuel-receipt" type="file" accept="image/*" />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="refuel-notes">Observações (Opcional)</Label>
+              <Textarea id="refuel-notes" placeholder="Ex: Posto Shell da Av. Principal" />
+            </div>
             <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={closeModal}>Cancelar</Button>
                 <Button type="submit">Salvar Registro</Button>
@@ -597,4 +601,5 @@ export default function ViagensPage() {
     </div>
   );
 }
+
 
