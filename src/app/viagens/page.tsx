@@ -121,6 +121,7 @@ export default function ViagensPage() {
 
   const [activeModal, setActiveModal] = useState<ModalState>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  const [startMileage, setStartMileage] = useState<number | undefined>();
   const [finalMileage, setFinalMileage] = useState<number | undefined>();
   const [checkedItems, setCheckedItems] = useState<string[]>([]);
   const [checklistNotes, setChecklistNotes] = useState('');
@@ -142,6 +143,7 @@ export default function ViagensPage() {
   const closeModal = () => {
       openModal(null);
       // Reset dependent states
+      setStartMileage(undefined);
       setFinalMileage(undefined);
       setCheckedItems([]);
       setChecklistNotes('');
@@ -174,10 +176,10 @@ export default function ViagensPage() {
       status: newStatus,
       ...(newStatus === 'Concluída' && {
         endMileage: finalMileage,
-        startMileage: vehicle?.mileage,
         arrivalTime: new Date().toLocaleString('pt-BR'),
       }),
       ...(newStatus === 'Em Andamento' && {
+        startMileage: startMileage,
         notes: checklistNotes,
       })
     } : s);
@@ -205,12 +207,13 @@ export default function ViagensPage() {
   };
 
   const handleOpenChecklistModal = (schedule: Schedule) => {
+    const vehicle = vehicles.find(v => schedule.vehicle.includes(v.licensePlate));
+    setStartMileage(vehicle?.mileage);
     openModal('checklist', schedule);
   };
 
   const handleOpenFinishModal = (schedule: Schedule) => {
-    const vehicle = vehicles.find(v => schedule.vehicle.includes(v.licensePlate));
-    setFinalMileage(vehicle?.mileage);
+    setFinalMileage(schedule.startMileage);
     openModal('finish', schedule);
   };
   
@@ -379,6 +382,20 @@ export default function ViagensPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
+            <div className="space-y-2">
+                <div className="flex items-baseline gap-2">
+                    <Gauge className="h-5 w-5 text-muted-foreground"/>
+                    <Label htmlFor="startMileage">Quilometragem Inicial</Label>
+                </div>
+                <Input
+                    id="startMileage"
+                    type="number"
+                    value={startMileage}
+                    onChange={(e) => setStartMileage(Number(e.target.value))}
+                    placeholder="KM inicial do veículo"
+                />
+            </div>
+            <Separator />
             {checklistItemsData.map((item, index) => (
               <div key={index} className="flex items-center space-x-2">
                 <Checkbox 
@@ -394,6 +411,7 @@ export default function ViagensPage() {
                 </label>
               </div>
             ))}
+             <Separator />
             <div className="space-y-2">
                 <Label htmlFor="checklist-notes">Observações (opcional)</Label>
                 <Textarea 
@@ -413,7 +431,7 @@ export default function ViagensPage() {
                 <Button variant="outline" onClick={() => closeModal()}>Fechar</Button>
                 <Button 
                 onClick={handleStartTrip} 
-                disabled={checkedItems.length < checklistItemsData.length}
+                disabled={checkedItems.length < checklistItemsData.length || !startMileage}
                 >
                 <Play className="mr-2 h-4 w-4"/> Iniciar Viagem
                 </Button>
