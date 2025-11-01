@@ -16,8 +16,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
+
+type ModalState = 'details' | 'finish' | 'checklist' | 'form' | null;
 
 function getStatusVariant(status: ScheduleStatus) {
     switch (status) {
@@ -28,7 +29,7 @@ function getStatusVariant(status: ScheduleStatus) {
       case 'Concluída':
         return 'outline';
       case 'Cancelada':
-        return 'destructive'
+        return 'destructive';
       default:
         return 'outline';
     }
@@ -117,13 +118,10 @@ export default function ViagensPage() {
   const [drivers, setDrivers] = useState<Driver[]>(initialDrivers);
   const [vehicles, setVehicles] = useState<Vehicle[]>(initialVehicles);
 
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
-  const [isChecklistModalOpen, setIsChecklistModalOpen] = useState(false);
-  
+  const [activeModal, setActiveModal] = useState<ModalState>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [finalMileage, setFinalMileage] = useState<number | undefined>();
+  const [checkedItems, setCheckedItems] = useState<string[]>([]);
   
   const { toast } = useToast();
 
@@ -133,77 +131,83 @@ export default function ViagensPage() {
     'Documentos do veículo (CRLV) conferidos',
     'Limpeza interna e externa adequada'
   ];
-  const [checkedItems, setCheckedItems] = useState<string[]>([]);
 
-  const handleCardClick = (schedule: Schedule) => {
+  const openModal = (modal: ModalState, schedule: Schedule | null = null) => {
     setSelectedSchedule(schedule);
-    setIsDetailsModalOpen(true);
+    setActiveModal(modal);
   };
   
+  const closeModal = () => {
+      openModal(null);
+      // Reset dependent states
+      setFinalMileage(undefined);
+      setCheckedItems([]);
+  }
+
+  const updateScheduleStatus = (scheduleId: string, newStatus: ScheduleStatus) => {
+    let updatedSchedules = [...schedules];
+    let updatedDrivers = [...drivers];
+    let updatedVehicles = [...vehicles];
+    const schedule = schedules.find(s => s.id === scheduleId);
+    if (!schedule) return;
+
+    const driver = drivers.find(d => d.name === schedule.driver);
+    const vehicle = vehicles.find(v => schedule.vehicle.includes(v.licensePlate));
+
+    if (newStatus === 'Em Andamento' && driver && vehicle) {
+      updatedDrivers = drivers.map(d => d.id === driver.id ? { ...d, status: 'Em Viagem' } : d);
+      updatedVehicles = vehicles.map(v => v.id === vehicle.id ? { ...v, status: 'Em Viagem' } : v);
+      toast({ title: "Viagem iniciada!", description: `A viagem "${schedule.title}" foi marcada como "Em Andamento".` });
+    } else if (newStatus === 'Concluída' && driver && vehicle && finalMileage) {
+      updatedDrivers = drivers.map(d => d.id === driver.id ? { ...d, status: 'Disponível' } : d);
+      updatedVehicles = vehicles.map(v => v.id === vehicle.id ? { ...v, status: 'Disponível', mileage: finalMileage } : v);
+      toast({ title: "Viagem finalizada!", description: `A viagem "${schedule.title}" foi concluída com sucesso.` });
+    } else if (newStatus === 'Cancelada') {
+       toast({ title: "Viagem cancelada", description: `A viagem "${schedule.title}" foi cancelada.`, variant: 'destructive' });
+    }
+
+    updatedSchedules = schedules.map(s => s.id === scheduleId ? {
+      ...s,
+      status: newStatus,
+      ...(newStatus === 'Concluída' && {
+        endMileage: finalMileage,
+        startMileage: vehicle?.mileage,
+        arrivalTime: new Date().toLocaleString('pt-BR'),
+      }),
+    } : s);
+
+    setSchedules(updatedSchedules);
+    setDrivers(updatedDrivers);
+    setVehicles(updatedVehicles);
+  };
+
   const handleStartTrip = () => {
     if (!selectedSchedule) return;
-
-    setSchedules(schedules.map(s => {
-        if (s.id === selectedSchedule.id) {
-            const driver = drivers.find(d => d.name === s.driver);
-            const vehicle = vehicles.find(v => s.vehicle.includes(v.licensePlate));
-
-            if (driver && vehicle) {
-                setDrivers(drivers.map(d => d.id === driver.id ? { ...d, status: 'Em Viagem' } : d));
-                setVehicles(vehicles.map(v => v.id === vehicle.id ? { ...v, status: 'Em Viagem' } : v));
-                toast({ title: "Viagem iniciada!", description: `A viagem "${s.title}" foi marcada como "Em Andamento".` });
-            }
-            return { ...s, status: 'Em Andamento' as ScheduleStatus };
-        }
-        return s;
-    }));
-    setIsChecklistModalOpen(false);
-    setCheckedItems([]);
-    setSelectedSchedule(null);
+    updateScheduleStatus(selectedSchedule.id, 'Em Andamento');
+    closeModal();
   };
-  
-  const handleOpenFinishModal = (schedule: Schedule) => {
-    setSelectedSchedule(schedule);
-    const vehicle = vehicles.find(v => schedule.vehicle.includes(v.licensePlate));
-    setFinalMileage(vehicle?.mileage);
-    setIsFinishModalOpen(true);
-  };
-  
+
   const handleFinishTrip = () => {
     if (!selectedSchedule || !finalMileage) return;
-
-    setSchedules(schedules.map(s => {
-        if (s.id === selectedSchedule.id) {
-            const driver = drivers.find(d => d.name === s.driver);
-            const vehicle = vehicles.find(v => s.vehicle.includes(v.licensePlate));
-
-            if (driver && vehicle) {
-                setDrivers(drivers.map(d => d.id === driver.id ? { ...d, status: 'Disponível' } : d));
-                setVehicles(vehicles.map(v => v.id === vehicle.id ? { ...v, status: 'Disponível', mileage: finalMileage } : v));
-            }
-
-            toast({ title: "Viagem finalizada!", description: `A viagem "${s.title}" foi concluída com sucesso.` });
-            
-            return {
-                ...s,
-                status: 'Concluída' as ScheduleStatus,
-                endMileage: finalMileage,
-                startMileage: vehicle?.mileage,
-                arrivalTime: new Date().toLocaleString('pt-BR'),
-            };
-        }
-        return s;
-    }));
-    setIsFinishModalOpen(false);
-    setSelectedSchedule(null);
-    setFinalMileage(undefined);
+    updateScheduleStatus(selectedSchedule.id, 'Concluída');
+    closeModal();
+  };
+  
+  const handleCancelTrip = (scheduleId: string) => {
+    updateScheduleStatus(scheduleId, 'Cancelada');
+    closeModal();
   };
 
   const handleOpenChecklistModal = (schedule: Schedule) => {
-    setSelectedSchedule(schedule);
-    setIsChecklistModalOpen(true);
+    openModal('checklist', schedule);
   };
 
+  const handleOpenFinishModal = (schedule: Schedule) => {
+    const vehicle = vehicles.find(v => schedule.vehicle.includes(v.licensePlate));
+    setFinalMileage(vehicle?.mileage);
+    openModal('finish', schedule);
+  };
+  
   const handleChecklistItem = (item: string) => {
     setCheckedItems(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
   }
@@ -223,9 +227,9 @@ export default function ViagensPage() {
             Acompanhe o status de todas as viagens e linhas escolares.
           </p>
         </div>
-        <Dialog open={isFormModalOpen} onOpenChange={setIsFormModalOpen}>
+        <Dialog open={activeModal === 'form'} onOpenChange={() => closeModal()}>
             <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90">
+                <Button className="bg-primary hover:bg-primary/90" onClick={() => openModal('form')}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Agendar Viagem
                 </Button>
@@ -238,7 +242,7 @@ export default function ViagensPage() {
                     </DialogDescription>
                 </DialogHeader>
                  <ScrollArea className="max-h-[70vh] p-4">
-                    <ScheduleTripForm onFormSubmit={() => setIsFormModalOpen(false)}/>
+                    <ScheduleTripForm onFormSubmit={() => closeModal()}/>
                 </ScrollArea>
             </DialogContent>
         </Dialog>
@@ -252,7 +256,7 @@ export default function ViagensPage() {
         <TabsContent value="general">
           <TripsView 
             schedules={generalSchedules} 
-            onCardClick={handleCardClick} 
+            onCardClick={(schedule) => openModal('details', schedule)}
             onOpenChecklistModal={handleOpenChecklistModal}
             onOpenFinishModal={handleOpenFinishModal}
             />
@@ -260,7 +264,7 @@ export default function ViagensPage() {
         <TabsContent value="school">
           <TripsView 
             schedules={schoolSchedules} 
-            onCardClick={handleCardClick}
+            onCardClick={(schedule) => openModal('details', schedule)}
             onOpenChecklistModal={handleOpenChecklistModal}
             onOpenFinishModal={handleOpenFinishModal}
             />
@@ -268,7 +272,7 @@ export default function ViagensPage() {
       </Tabs>
       
       {/* Details Modal */}
-      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+      <Dialog open={activeModal === 'details'} onOpenChange={() => closeModal()}>
           <DialogContent>
               <ScrollArea className="max-h-[80vh] p-4">
               {selectedSchedule && (
@@ -314,10 +318,7 @@ export default function ViagensPage() {
                       </div>
                       {selectedSchedule.status === 'Agendada' && (
                         <div className='pt-4 flex justify-end'>
-                            <Button onClick={() => {
-                                setIsDetailsModalOpen(false);
-                                handleOpenChecklistModal(selectedSchedule);
-                            }}>
+                            <Button onClick={() => openModal('checklist', selectedSchedule)}>
                                 <ClipboardCheck className="mr-2 h-4 w-4"/>
                                 Verificar Checklist
                             </Button>
@@ -331,7 +332,7 @@ export default function ViagensPage() {
       </Dialog>
       
       {/* Finish Trip Modal */}
-       <Dialog open={isFinishModalOpen} onOpenChange={setIsFinishModalOpen}>
+       <Dialog open={activeModal === 'finish'} onOpenChange={() => closeModal()}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Finalizar Viagem</DialogTitle>
@@ -353,14 +354,14 @@ export default function ViagensPage() {
             />
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsFinishModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleFinishTrip}>Confirmar Finalização</Button>
+            <Button variant="outline" onClick={() => closeModal()}>Cancelar</Button>
+            <Button onClick={handleFinishTrip} disabled={!finalMileage}>Confirmar Finalização</Button>
           </div>
         </DialogContent>
       </Dialog>
       
       {/* Checklist Modal */}
-      <Dialog open={isChecklistModalOpen} onOpenChange={setIsChecklistModalOpen}>
+      <Dialog open={activeModal === 'checklist'} onOpenChange={() => closeModal()}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center">
@@ -388,14 +389,20 @@ export default function ViagensPage() {
               </div>
             ))}
           </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsChecklistModalOpen(false)}>Cancelar</Button>
-            <Button 
-              onClick={handleStartTrip} 
-              disabled={checkedItems.length < checklistItemsData.length}
-            >
-              <Play className="mr-2 h-4 w-4"/> Iniciar Viagem
+          <div className="flex justify-between gap-2">
+            <Button variant="destructive" onClick={() => handleCancelTrip(selectedSchedule!.id)}>
+                <Ban className="mr-2 h-4 w-4" />
+                Cancelar Viagem
             </Button>
+            <div className="flex gap-2">
+                <Button variant="outline" onClick={() => closeModal()}>Fechar</Button>
+                <Button 
+                onClick={handleStartTrip} 
+                disabled={checkedItems.length < checklistItemsData.length}
+                >
+                <Play className="mr-2 h-4 w-4"/> Iniciar Viagem
+                </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
