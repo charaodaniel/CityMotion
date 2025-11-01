@@ -12,8 +12,10 @@ import { PlusCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { QuickRequestForm } from '@/components/quick-request-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
 
 function EmployeeDashboard() {
+    const router = useRouter();
     return (
         <Card>
             <CardHeader>
@@ -23,7 +25,11 @@ function EmployeeDashboard() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <p>Para solicitar um veículo para uma viagem, clique no botão "Pedir Transporte" no canto superior direito.</p>
+                <p className="mb-4">Para solicitar um veículo para uma viagem, clique no botão abaixo.</p>
+                 <Button onClick={() => router.push('/')}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Solicitar um Transporte
+                </Button>
             </CardContent>
         </Card>
     )
@@ -59,25 +65,27 @@ export default function DashboardPage() {
                         Bem-vindo ao CityMotion.
                     </p>
                 </div>
-                <Dialog open={isRequestModalOpen} onOpenChange={setIsRequestModalOpen}>
-                    <DialogTrigger asChild>
-                        <Button>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Pedir Transporte
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-xl">
-                        <DialogHeader>
-                            <DialogTitle className="text-2xl">Solicitar um Transporte</DialogTitle>
-                            <DialogDescription>
-                                Preencha o formulário para fazer um pedido rápido. O gestor do seu setor será notificado.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <ScrollArea className="max-h-[70vh] p-4">
-                            <QuickRequestForm onFormSubmit={() => setIsRequestModalOpen(false)} />
-                        </ScrollArea>
-                    </DialogContent>
-                </Dialog>
+                {(userRole === 'admin' || userRole === 'manager') && (
+                    <Dialog open={isRequestModalOpen} onOpenChange={setIsRequestModalOpen}>
+                        <DialogTrigger asChild>
+                            <Button>
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Pedir Transporte
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-xl">
+                            <DialogHeader>
+                                <DialogTitle className="text-2xl">Solicitar um Transporte</DialogTitle>
+                                <DialogDescription>
+                                    Preencha o formulário para fazer um pedido rápido. O gestor do seu setor será notificado.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <ScrollArea className="max-h-[70vh] p-4">
+                                <QuickRequestForm onFormSubmit={() => setIsRequestModalOpen(false)} />
+                            </ScrollArea>
+                        </DialogContent>
+                    </Dialog>
+                )}
             </div>
             {renderDashboard()}
         </div>
