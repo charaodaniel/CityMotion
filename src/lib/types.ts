@@ -45,6 +45,8 @@ export type Schedule = {
   passengers?: Passenger[];
   startNotes?: string;
   endNotes?: string;
+  startChecklist?: string[];
+  endChecklist?: string[];
 };
 
 export type RequestPriority = 'Alta' | 'Média' | 'Baixa';

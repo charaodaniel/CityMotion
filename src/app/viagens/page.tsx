@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText } from 'lucide-react';
+import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText, Check } from 'lucide-react';
 import { schedules as initialSchedules, drivers as initialDrivers, vehicles as initialVehicles } from '@/lib/data';
 import type { Schedule, ScheduleStatus, Driver, Vehicle } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,21 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 
 type ModalState = 'details' | 'finish' | 'start-checklist' | 'form' | null;
+
+const startChecklistItems = [
+    'Nível de óleo e água verificado',
+    'Calibragem dos pneus verificada',
+    'Documentos do veículo (CRLV) conferidos',
+    'Limpeza interna e externa adequada'
+];
+
+const finishChecklistItems = [
+    'Veículo estacionado em local seguro',
+    'Chaves entregues ao setor responsável',
+    'Veículo sem novos danos aparentes',
+    'Veículo deixado limpo e organizado',
+];
+
 
 function getStatusVariant(status: ScheduleStatus) {
     switch (status) {
@@ -128,20 +143,6 @@ export default function ViagensPage() {
   
   const { toast } = useToast();
 
-  const startChecklistItems = [
-    'Nível de óleo e água verificado',
-    'Calibragem dos pneus verificada',
-    'Documentos do veículo (CRLV) conferidos',
-    'Limpeza interna e externa adequada'
-  ];
-
-  const finishChecklistItems = [
-    'Veículo estacionado em local seguro',
-    'Chaves entregues ao setor responsável',
-    'Veículo sem novos danos aparentes',
-    'Veículo deixado limpo e organizado',
-  ];
-
   const openModal = (modal: ModalState, schedule: Schedule | null = null) => {
     setSelectedSchedule(schedule);
     setActiveModal(modal);
@@ -156,7 +157,7 @@ export default function ViagensPage() {
       setNotes('');
   }
 
-  const updateScheduleStatus = (scheduleId: string, newStatus: ScheduleStatus, details?: { startNotes?: string, endNotes?: string, startMileage?: number, endMileage?: number }) => {
+  const updateScheduleStatus = (scheduleId: string, newStatus: ScheduleStatus, details?: { startNotes?: string, endNotes?: string, startMileage?: number, endMileage?: number, startChecklist?: string[], endChecklist?: string[] }) => {
     let updatedSchedules = [...schedules];
     let updatedDrivers = [...drivers];
     let updatedVehicles = [...vehicles];
@@ -184,10 +185,12 @@ export default function ViagensPage() {
       ...(newStatus === 'Em Andamento' && {
         startMileage: details?.startMileage,
         startNotes: details?.startNotes,
+        startChecklist: details?.startChecklist
       }),
       ...(newStatus === 'Concluída' && {
         endMileage: details?.endMileage,
         endNotes: details?.endNotes,
+        endChecklist: details?.endChecklist,
         arrivalTime: new Date().toLocaleString('pt-BR'),
       }),
     } : s);
@@ -199,13 +202,13 @@ export default function ViagensPage() {
 
   const handleStartTrip = () => {
     if (!selectedSchedule) return;
-    updateScheduleStatus(selectedSchedule.id, 'Em Andamento', { startNotes: notes, startMileage: startMileage });
+    updateScheduleStatus(selectedSchedule.id, 'Em Andamento', { startNotes: notes, startMileage: startMileage, startChecklist: checkedItems });
     closeModal();
   };
 
   const handleFinishTrip = () => {
     if (!selectedSchedule || !finalMileage) return;
-    updateScheduleStatus(selectedSchedule.id, 'Concluída', { endNotes: notes, endMileage: finalMileage });
+    updateScheduleStatus(selectedSchedule.id, 'Concluída', { endNotes: notes, endMileage: finalMileage, endChecklist: checkedItems });
     closeModal();
   };
   
@@ -334,29 +337,61 @@ export default function ViagensPage() {
                           <p className="text-lg">{selectedSchedule.departureTime}</p>
                       </div>
 
-                      {(selectedSchedule.status === 'Em Andamento' || selectedSchedule.status === 'Concluída') && selectedSchedule.startNotes && (
+                      {(selectedSchedule.status === 'Em Andamento' || selectedSchedule.status === 'Concluída') && selectedSchedule.startChecklist && (
                         <>
                           <Separator />
-                          <div>
-                            <span className="text-sm font-semibold text-muted-foreground flex items-center">
-                              <MessageSquareText className="mr-2 h-4 w-4" />
-                              Observações de Partida
+                           <div>
+                            <span className="text-sm font-semibold text-muted-foreground flex items-center mb-2">
+                              <ClipboardCheck className="mr-2 h-4 w-4" />
+                              Checklist de Partida
                             </span>
-                            <p className="text-sm mt-1 p-3 bg-muted/50 rounded-md">{selectedSchedule.startNotes}</p>
-                          </div>
+                            <div className='space-y-1 text-sm'>
+                              {selectedSchedule.startChecklist.map((item, index) => (
+                                <div key={index} className="flex items-center">
+                                  <Check className="h-4 w-4 mr-2 text-green-500" />
+                                  <span>{item}</span>
+                                </div>
+                              ))}
+                            </div>
+                           </div>
+                           {selectedSchedule.startNotes && (
+                            <div className='mt-2'>
+                              <span className="text-sm font-semibold text-muted-foreground flex items-center">
+                                <MessageSquareText className="mr-2 h-4 w-4" />
+                                Observações de Partida
+                              </span>
+                              <p className="text-sm mt-1 p-3 bg-muted/50 rounded-md">{selectedSchedule.startNotes}</p>
+                            </div>
+                          )}
                         </>
                       )}
 
-                       {selectedSchedule.status === 'Concluída' && selectedSchedule.endNotes && (
+                       {selectedSchedule.status === 'Concluída' && selectedSchedule.endChecklist && (
                         <>
                           <Separator />
                           <div>
-                            <span className="text-sm font-semibold text-muted-foreground flex items-center">
-                              <MessageSquareText className="mr-2 h-4 w-4" />
-                              Observações de Chegada
+                            <span className="text-sm font-semibold text-muted-foreground flex items-center mb-2">
+                              <ClipboardX className="mr-2 h-4 w-4" />
+                              Checklist de Chegada
                             </span>
-                            <p className="text-sm mt-1 p-3 bg-muted/50 rounded-md">{selectedSchedule.endNotes}</p>
-                          </div>
+                            <div className='space-y-1 text-sm'>
+                               {selectedSchedule.endChecklist.map((item, index) => (
+                                <div key={index} className="flex items-center">
+                                  <Check className="h-4 w-4 mr-2 text-green-500" />
+                                  <span>{item}</span>
+                                </div>
+                              ))}
+                            </div>
+                           </div>
+                           {selectedSchedule.endNotes && (
+                            <div className='mt-2'>
+                              <span className="text-sm font-semibold text-muted-foreground flex items-center">
+                                <MessageSquareText className="mr-2 h-4 w-4" />
+                                Observações de Chegada
+                              </span>
+                              <p className="text-sm mt-1 p-3 bg-muted/50 rounded-md">{selectedSchedule.endNotes}</p>
+                            </div>
+                          )}
                         </>
                       )}
 
