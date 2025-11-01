@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Car, Clock, User, CalendarDays } from 'lucide-react';
-import { workSchedules, schedules as initialSchedules } from '@/lib/data';
+import { workSchedules } from '@/lib/data';
 import type { Schedule, ScheduleStatus, WorkSchedule, WorkScheduleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';

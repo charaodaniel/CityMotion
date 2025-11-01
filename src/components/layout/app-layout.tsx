@@ -33,7 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 
 const navItems = [
-  { href: '/painel', label: 'Painel', icon: LayoutDashboard, roles: ['admin', 'manager', 'driver', 'employee'] },
+  { href: '/', label: 'Painel', icon: LayoutDashboard, roles: ['admin', 'manager', 'driver', 'employee'] },
   { href: '/setores', label: 'Setores', icon: Building, roles: ['admin'] },
   { href: '/motoristas', label: 'Motoristas', icon: User, roles: ['admin', 'manager'] },
   { href: '/veiculos', label: 'Veículos', icon: Car, roles: ['admin', 'manager'] },
@@ -54,10 +54,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { userRole, setUserRole } = useApp();
 
   const filteredNavItems = useMemo(() => {
-    // The dashboard page is now at /painel, so we need to adjust the href for the "Painel" item.
-    // The root page '/' is now public.
-    const items = navItems.map(item => item.href === '/' ? { ...item, href: '/painel' } : item);
-    return items.filter(item => item.roles.includes(userRole));
+    return navItems.filter(item => item.roles.includes(userRole));
   }, [userRole]);
 
   const filteredBottomNavItems = useMemo(() => {
@@ -106,7 +103,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname.startsWith(item.href) && (item.href !== '/painel' || pathname === '/painel')}
+                    isActive={pathname === item.href}
                     tooltip={item.label}
                   >
                     <Link href={item.href}>

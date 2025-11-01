@@ -15,7 +15,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useRouter } from 'next/navigation';
 
 function EmployeeDashboard() {
-    const router = useRouter();
+    const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+    
     return (
         <Card>
             <CardHeader>
@@ -26,10 +27,25 @@ function EmployeeDashboard() {
             </CardHeader>
             <CardContent>
                 <p className="mb-4">Para solicitar um veículo para uma viagem, clique no botão abaixo.</p>
-                 <Button onClick={() => router.push('/')}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Solicitar um Transporte
-                </Button>
+                 <Dialog open={isRequestModalOpen} onOpenChange={setIsRequestModalOpen}>
+                    <DialogTrigger asChild>
+                        <Button>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Solicitar um Transporte
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-xl">
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl">Solicitar um Transporte</DialogTitle>
+                            <DialogDescription>
+                                Preencha o formulário para fazer um pedido rápido. O gestor do seu setor será notificado.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <ScrollArea className="max-h-[70vh] p-4">
+                            <QuickRequestForm onFormSubmit={() => setIsRequestModalOpen(false)} />
+                        </ScrollArea>
+                    </DialogContent>
+                </Dialog>
             </CardContent>
         </Card>
     )
@@ -65,7 +81,7 @@ export default function DashboardPage() {
                         Bem-vindo ao CityMotion.
                     </p>
                 </div>
-                {(userRole === 'admin' || userRole === 'manager') && (
+                {(userRole === 'admin' || userRole === 'manager' || userRole === 'employee') && (
                     <Dialog open={isRequestModalOpen} onOpenChange={setIsRequestModalOpen}>
                         <DialogTrigger asChild>
                             <Button>
