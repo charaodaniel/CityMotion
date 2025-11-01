@@ -31,10 +31,8 @@ Este arquivo organiza as funcionalidades pendentes e melhorias a serem implement
     -   [x] Fazer com que a página exiba as informações do usuário "logado" (simulado pelo seletor de perfil).
     -   [x] O histórico de viagens na página de perfil deve ser do usuário selecionado.
 
-## 🛠️ Próximas Funcionalidades
-
--   [ ] **Aprimorar Painel Principal (`/`)**
-    -   [ ] Adicionar mais cartões de resumo (KPIs) ao `AdminDashboard`, como "Total de Veículos na Frota" e "Viagens em Andamento".
+-   [x] **Aprimorar Painel Principal (`/`)**
+    -   [x] Adicionar mais cartões de resumo (KPIs) ao `AdminDashboard`, como "Total de Veículos na Frota" e "Viagens em Andamento".
 
 ## ✨ Melhorias e UI/UX
 

@@ -3,8 +3,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Car, Clock, User, Pin, ArrowRight, Package, UserCheck } from 'lucide-react';
-import { schedules, drivers } from '@/lib/data';
+import { AlertTriangle, Car, Clock, User, Pin, ArrowRight, Package, UserCheck, Route } from 'lucide-react';
+import { drivers, vehicles } from '@/lib/data';
 import type { ScheduleStatus, RequestPriority } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import { OverviewChart } from '../overview-chart';
@@ -39,13 +39,25 @@ function getPriorityVariant(priority: RequestPriority) {
 }
 
 export default function AdminDashboard() {
-  const { vehicleRequests } = useApp();
+  const { vehicleRequests, schedules } = useApp();
   const availableDrivers = drivers.filter(d => d.status === 'Disponível').length;
   const pendingRequests = vehicleRequests.filter(r => r.status === 'Pendente');
+  const totalVehicles = vehicles.length;
+  const tripsInProgress = schedules.filter(s => s.status === 'Em Andamento').length;
 
   return (
     <div className='space-y-8'>
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total de Veículos</CardTitle>
+                <Car className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{totalVehicles}</div>
+                <p className="text-xs text-muted-foreground">Veículos na frota municipal</p>
+            </CardContent>
+        </Card>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Motoristas Disponíveis</CardTitle>
@@ -54,6 +66,16 @@ export default function AdminDashboard() {
             <CardContent>
                 <div className="text-2xl font-bold">{availableDrivers}</div>
                 <p className="text-xs text-muted-foreground">Motoristas prontos para novas viagens</p>
+            </CardContent>
+        </Card>
+         <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Viagens em Andamento</CardTitle>
+                <Route className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{tripsInProgress}</div>
+                <p className="text-xs text-muted-foreground">Veículos atualmente em percurso</p>
             </CardContent>
         </Card>
       </div>
