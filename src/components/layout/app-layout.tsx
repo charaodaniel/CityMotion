@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -33,24 +33,32 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 
 
 const navItems = [
-  { href: '/', label: 'Painel', icon: LayoutDashboard },
-  { href: '/setores', label: 'Setores', icon: Building },
-  { href: '/motoristas', label: 'Motoristas', icon: User },
-  { href: '/veiculos', label: 'Veículos', icon: Car },
-  { href: '/viagens', label: 'Viagens', icon: Route },
-  { href: '/escalas', label: 'Escalas', icon: CalendarClock },
-  { href: '/relatorios', label: 'Relatórios', icon: ScrollText },
+  { href: '/', label: 'Painel', icon: LayoutDashboard, roles: ['admin', 'manager', 'driver'] },
+  { href: '/setores', label: 'Setores', icon: Building, roles: ['admin'] },
+  { href: '/motoristas', label: 'Motoristas', icon: User, roles: ['admin', 'manager'] },
+  { href: '/veiculos', label: 'Veículos', icon: Car, roles: ['admin', 'manager'] },
+  { href: '/viagens', label: 'Viagens', icon: Route, roles: ['admin', 'manager', 'driver'] },
+  { href: '/escalas', label: 'Escalas', icon: CalendarClock, roles: ['admin', 'manager'] },
+  { href: '/relatorios', label: 'Relatórios', icon: ScrollText, roles: ['admin', 'manager'] },
 ];
 
 const bottomNavItems = [
-    { href: '/perfil', label: 'Meu Perfil', icon: UserCog },
-    { href: '/settings', label: 'Configurações', icon: Settings },
-    { href: '/support', label: 'Suporte', icon: LifeBuoy },
+    { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['admin', 'manager', 'driver'] },
+    { href: '/settings', label: 'Configurações', icon: Settings, roles: ['admin'] },
+    { href: '/support', label: 'Suporte', icon: LifeBuoy, roles: ['admin', 'driver'] },
 ]
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { userRole, setUserRole } = useApp();
+
+  const filteredNavItems = useMemo(() => {
+    return navItems.filter(item => item.roles.includes(userRole));
+  }, [userRole]);
+
+  const filteredBottomNavItems = useMemo(() => {
+    return bottomNavItems.filter(item => item.roles.includes(userRole));
+  }, [userRole]);
 
   const getRoleName = (role: string) => {
     switch (role) {
@@ -78,7 +86,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
-              {navItems.map((item) => (
+              {filteredNavItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
@@ -97,7 +105,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <SidebarFooter className='mt-auto'>
             <Separator className='mb-2' />
              <SidebarMenu>
-                {bottomNavItems.map((item) => (
+                {filteredBottomNavItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                         asChild
