@@ -24,7 +24,7 @@ export function Header() {
                 </Link>
                 <div className="ml-auto">
                     <Button asChild>
-                        <Link href="/painel">
+                        <Link href="/login">
                             <LogIn className="mr-2" />
                             Acessar Painel
                         </Link>
