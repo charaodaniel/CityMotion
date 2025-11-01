@@ -1,0 +1,50 @@
+
+[
+    { 
+        "id": "SCH001", 
+        "title": "Transporte de Paciente", 
+        "driver": "Maria Oliveira", 
+        "vehicle": "VW Gol (PM-002)", 
+        "origin": "Posto de Saúde Central", 
+        "destination": "Hospital Regional", 
+        "departureTime": "28/07/2024 08:00",
+        "arrivalTime": "28/07/2024 09:15",
+        "startMileage": 8500,
+        "endMileage": 8525,
+        "status": "Concluída",
+        "category": "Transporte de Paciente"
+    },
+    { 
+        "id": "SCH002", 
+        "title": "Entrega de Documentos", 
+        "driver": "Pedro Santos", 
+        "vehicle": "Renault Kwid (PM-003)", 
+        "origin": "Prefeitura", 
+        "destination": "Secretaria de Educação", 
+        "departureTime": "29/07/2024 09:30",
+        "status": "Em Andamento",
+        "category": "Entrega de Documentos"
+    },
+    { 
+        "id": "SCH003", 
+        "title": "Visita Técnica em Obra", 
+        "driver": "João da Silva", 
+        "vehicle": "Fiat Strada (PM-001)", 
+        "origin": "Secretaria de Obras", 
+        "destination": "Bairro Novo Horizonte", 
+        "departureTime": "30/07/2024 14:00",
+        "status": "Agendada",
+        "category": "Visita Técnica"
+    },
+     { 
+        "id": "SCH004", 
+        "title": "Inspeção Sanitária", 
+        "driver": "Carlos Pereira", 
+        "vehicle": "Fiat Mobi (PM-005)", 
+        "origin": "Vigilância Sanitária", 
+        "destination": "Restaurante Central", 
+        "departureTime": "27/07/2024 11:00",
+        "status": "Concluída",
+        "category": "Inspeção Sanitária"
+    }
+]

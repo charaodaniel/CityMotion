@@ -1,0 +1,21 @@
+
+{
+    "chartData": [
+        { "month": "Janeiro", "rides": 186, "drivers": 80 },
+        { "month": "Fevereiro", "rides": 305, "drivers": 92 },
+        { "month": "Março", "rides": 237, "drivers": 105 },
+        { "month": "Abril", "rides": 273, "drivers": 110 },
+        { "month": "Maio", "rides": 209, "drivers": 115 },
+        { "month": "Junho", "rides": 214, "drivers": 120 }
+    ],
+    "driverActivity": [
+        { "time": "00:00", "activeDrivers": 50, "onRide": 20 },
+        { "time": "03:00", "activeDrivers": 40, "onRide": 15 },
+        { "time": "06:00", "activeDrivers": 80, "onRide": 60 },
+        { "time": "09:00", "activeDrivers": 250, "onRide": 200 },
+        { "time": "12:00", "activeDrivers": 300, "onRide": 220 },
+        { "time": "15:00", "activeDrivers": 280, "onRide": 210 },
+        { "time": "18:00", "activeDrivers": 320, "onRide": 280 },
+        { "time": "21:00", "activeDrivers": 150, "onRide": 100 }
+    ]
+}

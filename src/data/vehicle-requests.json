@@ -1,0 +1,21 @@
+
+[
+    {
+        "id": "REQ001",
+        "title": "Buscar materiais de construção",
+        "sector": "Secretaria de Obras",
+        "details": "É necessário um veículo com caçamba para buscar cimento e areia no fornecedor X.",
+        "priority": "Alta",
+        "requestDate": "2024-07-29T10:00:00Z",
+        "status": "Pendente"
+    },
+    {
+        "id": "REQ002",
+        "title": "Levar equipe para evento",
+        "sector": "Secretaria de Cultura",
+        "details": "Transportar 3 pessoas da equipe de eventos para a Praça Central para a montagem do palco.",
+        "priority": "Média",
+        "requestDate": "2024-07-29T11:30:00Z",
+        "status": "Pendente"
+    }
+]
