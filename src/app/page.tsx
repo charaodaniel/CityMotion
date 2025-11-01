@@ -1,12 +1,20 @@
+
 "use client";
 
+import { useState } from 'react';
 import { useApp } from '@/contexts/app-provider';
 import AdminDashboard from '@/components/dashboards/admin-dashboard';
 import ManagerDashboard from '@/components/dashboards/manager-dashboard';
 import DriverDashboard from '@/components/dashboards/driver-dashboard';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScheduleTripForm } from '@/components/schedule-trip-form';
 
 export default function DashboardPage() {
     const { userRole } = useApp();
+    const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
 
     const renderDashboard = () => {
         switch (userRole) {
@@ -24,12 +32,33 @@ export default function DashboardPage() {
     return (
         <div className="flex-1 space-y-8 p-4 sm:p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">
-                    Painel de Controle
-                </h1>
-                <p className="text-muted-foreground">
-                    Bem-vindo ao CityMotion.
-                </p>
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        Painel de Controle
+                    </h1>
+                    <p className="text-muted-foreground">
+                        Bem-vindo ao CityMotion.
+                    </p>
+                </div>
+                <Dialog open={isRequestModalOpen} onOpenChange={setIsRequestModalOpen}>
+                    <DialogTrigger asChild>
+                        <Button>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Pedir Transporte
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-3xl">
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl">Solicitar um Transporte</DialogTitle>
+                            <DialogDescription>
+                                Preencha o formulário para solicitar um veículo e agendar uma viagem.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <ScrollArea className="max-h-[70vh] p-4">
+                            <ScheduleTripForm onFormSubmit={() => setIsRequestModalOpen(false)} />
+                        </ScrollArea>
+                    </DialogContent>
+                </Dialog>
             </div>
             {renderDashboard()}
         </div>

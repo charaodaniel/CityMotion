@@ -3,8 +3,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Clock, Package } from 'lucide-react';
-import { vehicleRequests as initialVehicleRequests } from '@/lib/data';
+import { AlertTriangle, Clock, Package, UserCheck } from 'lucide-react';
+import { vehicleRequests as initialVehicleRequests, drivers } from '@/lib/data';
 import type { RequestPriority, VehicleRequest } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -40,9 +40,23 @@ export default function ManagerDashboard() {
 
 
   const managerRequests = vehicleRequests.filter(r => r.sector === 'Secretaria de Obras' && r.status === 'Pendente');
+  const availableDrivers = drivers.filter(d => d.status === 'Disponível').length;
 
   return (
-    <div>
+    <div className='space-y-8'>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Motoristas Disponíveis</CardTitle>
+                <UserCheck className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{availableDrivers}</div>
+                <p className="text-xs text-muted-foreground">Motoristas prontos para novas viagens</p>
+            </CardContent>
+        </Card>
+      </div>
+
       <h2 className="text-2xl font-semibold mb-4">Solicitações Pendentes do Setor</h2>
       <div className="space-y-4">
         {managerRequests.length > 0 ? managerRequests.map((request) => (
