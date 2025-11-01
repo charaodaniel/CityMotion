@@ -169,12 +169,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                           <span>Meu Perfil</span>
                         </Link>
                       </DropdownMenuItem>
+                      {userRole === 'admin' && (
                        <DropdownMenuItem asChild>
                          <Link href="/settings">
                           <Settings className="mr-2 h-4 w-4" />
                           <span>Configurações</span>
                         </Link>
                       </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="mr-2 h-4 w-4" />
