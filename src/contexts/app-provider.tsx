@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { AppLayout } from '@/components/layout/app-layout';
 import { vehicleRequests as initialVehicleRequests } from '@/lib/data';
-import type { VehicleRequest } from '@/lib/types';
+import type { VehicleRequest, VehicleRequestStatus } from '@/lib/types';
 
 
 type UserRole = 'admin' | 'manager' | 'driver' | 'employee';
@@ -13,7 +13,7 @@ interface AppContextType {
   setUserRole: (role: UserRole) => void;
   vehicleRequests: VehicleRequest[];
   addVehicleRequest: (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => void;
-  updateVehicleRequestStatus: (id: string, status: 'Aprovada' | 'Rejeitada') => void;
+  updateVehicleRequestStatus: (id: string, status: VehicleRequestStatus) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -34,8 +34,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setVehicleRequests(prev => [newRequest, ...prev]);
   };
   
-  const updateVehicleRequestStatus = (id: string, status: 'Aprovada' | 'Rejeitada') => {
-    setVehicleRequests(prev => prev.filter(req => req.id !== id));
+  const updateVehicleRequestStatus = (id: string, status: VehicleRequestStatus) => {
+    setVehicleRequests(prev => 
+        prev.map(req => 
+            req.id === id ? { ...req, status: status } : req
+        )
+    );
   };
 
   return (

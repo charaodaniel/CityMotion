@@ -4,16 +4,16 @@ Este arquivo organiza as funcionalidades pendentes e melhorias a serem implement
 
 ## 🚀 Prioridade Alta
 
--   [ ] **Corrigir Navegação e Páginas Duplicadas**
+-   [x] **Corrigir Navegação e Páginas Duplicadas**
     -   [x] Renomear o link "Deslocamentos" para "Viagens" no menu lateral.
     -   [x] Ajustar a página `/escalas` para gerenciar escalas de trabalho (plantões, folgas) em vez de duplicar a página de viagens.
 
--   [ ] **Melhorar Página de Relatórios (`/relatorios`)**
+-   [x] **Melhorar Página de Relatórios (`/relatorios`)**
     -   [x] Adicionar cartões de resumo (KPIs) para "Total de Viagens", "Quilometragem Total" e "Veículo Mais Utilizado".
     -   [x] Garantir que os KPIs sejam atualizados com base nos filtros aplicados.
     -   [x] Adicionar filtros por "Motorista" e "Funcionário".
 
--   [ ] **Implementar Checklists de Viagem**
+-   [x] **Implementar Checklists de Viagem**
     -   [x] Criar modal de checklist de pré-viagem ao clicar em "Iniciar".
     -   [x] Incluir campo para KM inicial no checklist.
     -   [x] Incluir campo para observações no checklist.
@@ -26,7 +26,7 @@ Este arquivo organiza as funcionalidades pendentes e melhorias a serem implement
 -   [ ] **Implementar Fluxo de Aprovação de Viagens**
     -   [x] Conectar o formulário "Pedir Transporte" para que ele crie uma "Solicitação de Veículo" com status "Pendente".
     -   [x] Exibir solicitações pendentes no painel do "Gestor de Setor" (`ManagerDashboard`).
-    -   [ ] Implementar a lógica nos botões "Aprovar" e "Rejeitar" para que mudem o status da solicitação.
+    -   [x] Implementar a lógica nos botões "Aprovar" e "Rejeitar" para que mudem o status da solicitação.
     -   [ ] Uma vez aprovada, a solicitação deve se tornar uma viagem "Agendada" na página `/viagens`.
 
 -   [ ] **Dinamizar Página de Perfil (`/perfil`)**
