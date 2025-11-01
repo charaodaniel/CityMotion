@@ -34,12 +34,12 @@ function getStatusVariant(status: ScheduleStatus) {
 }
 
 const statusColumns: { title: string; status: ScheduleStatus }[] = [
-    { title: 'Agendados', status: 'Agendada' },
+    { title: 'Agendadas', status: 'Agendada' },
     { title: 'Em Andamento', status: 'Em Andamento' },
-    { title: 'Concluídos', status: 'Concluída' },
+    { title: 'Concluídas', status: 'Concluída' },
 ];
 
-function DisplacementsView({ 
+function TripsView({ 
     schedules, 
     onCardClick, 
     onUpdateSchedule, 
@@ -106,7 +106,7 @@ function DisplacementsView({
                             ))
                         ) : (
                             <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-                                Nenhum deslocamento nesta etapa.
+                                Nenhuma viagem nesta etapa.
                             </div>
                         )}
                     </div>
@@ -116,7 +116,7 @@ function DisplacementsView({
     )
 }
 
-export default function DeslocamentosPage() {
+export default function ViagensPage() {
   const [schedules, setSchedules] = useState<Schedule[]>(initialSchedules);
   const [drivers, setDrivers] = useState<Driver[]>(initialDrivers);
   const [vehicles, setVehicles] = useState<Vehicle[]>(initialVehicles);
@@ -206,24 +206,24 @@ export default function DeslocamentosPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline">
-            Painel de Deslocamentos
+            Painel de Viagens
           </h1>
           <p className="text-muted-foreground">
-            Acompanhe o status de todos os deslocamentos e linhas escolares.
+            Acompanhe o status de todas as viagens e linhas escolares.
           </p>
         </div>
         <Dialog open={isFormModalOpen} onOpenChange={setIsFormModalOpen}>
             <DialogTrigger asChild>
                 <Button className="bg-primary hover:bg-primary/90">
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Agendar Deslocamento
+                    Agendar Viagem
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl">Agendar Novo Deslocamento</DialogTitle>
+                    <DialogTitle className="text-2xl">Agendar Nova Viagem</DialogTitle>
                     <DialogDescription>
-                        Preencha o formulário para solicitar um veículo e agendar um deslocamento.
+                        Preencha o formulário para solicitar um veículo e agendar uma viagem.
                     </DialogDescription>
                 </DialogHeader>
                  <ScrollArea className="max-h-[70vh] p-4">
@@ -235,11 +235,11 @@ export default function DeslocamentosPage() {
 
       <Tabs defaultValue="general">
         <TabsList>
-          <TabsTrigger value="general">Deslocamentos Gerais ({generalSchedules.length})</TabsTrigger>
+          <TabsTrigger value="general">Viagens Gerais ({generalSchedules.length})</TabsTrigger>
           <TabsTrigger value="school">Linhas Escolares ({schoolSchedules.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="general">
-          <DisplacementsView 
+          <TripsView 
             schedules={generalSchedules} 
             onCardClick={handleCardClick} 
             onUpdateSchedule={handleUpdateSchedule}
@@ -247,7 +247,7 @@ export default function DeslocamentosPage() {
             />
         </TabsContent>
         <TabsContent value="school">
-          <DisplacementsView 
+          <TripsView 
             schedules={schoolSchedules} 
             onCardClick={handleCardClick}
             onUpdateSchedule={handleUpdateSchedule}
@@ -265,7 +265,7 @@ export default function DeslocamentosPage() {
                   <DialogHeader>
                       <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
                       <DialogDescription>
-                      Detalhes do deslocamento agendado.
+                      Detalhes da viagem agendada.
                       </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4 pr-4">

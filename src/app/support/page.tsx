@@ -5,7 +5,7 @@ import { Mail, Book, LifeBuoy } from 'lucide-react';
 const faqItems = [
   {
     question: "Como faço para solicitar um veículo?",
-    answer: "Na página 'Viagens', clique em 'Agendar Nova Viagem' e preencha o formulário com os detalhes do seu trajeto. Sua solicitação será enviada para aprovação."
+    answer: "Na página inicial, clique em 'Pedir Transporte' e preencha o formulário rápido. Sua solicitação será enviada para o gestor do seu setor."
   },
   {
     question: "Quem aprova minha solicitação de viagem?",

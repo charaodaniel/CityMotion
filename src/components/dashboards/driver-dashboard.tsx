@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -25,7 +26,7 @@ export default function DriverDashboard() {
 
   return (
     <div>
-        <h2 className="text-2xl font-semibold mb-4">Meus Próximos Deslocamentos</h2>
+        <h2 className="text-2xl font-semibold mb-4">Minhas Próximas Viagens</h2>
         <div className="space-y-4">
         {driverSchedules.length > 0 ? driverSchedules.map((schedule) => (
             <Card key={schedule.id}>
@@ -35,7 +36,7 @@ export default function DriverDashboard() {
                 <Badge variant={getStatusVariant(schedule.status)}>{schedule.status}</Badge>
                 </div>
                 <CardDescription className="flex items-center text-sm text-muted-foreground mt-2">
-                    <Clock className="mr-2 h-4 w-4" /> {schedule.time}
+                    <Clock className="mr-2 h-4 w-4" /> {schedule.departureTime}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
@@ -59,7 +60,7 @@ export default function DriverDashboard() {
             </Card>
         )) : (
             <div className="text-center text-muted-foreground p-8 border-dashed border-2 rounded-lg">
-                Você não tem nenhum deslocamento agendado no momento.
+                Você não tem nenhuma viagem agendada no momento.
             </div>
         )}
         </div>

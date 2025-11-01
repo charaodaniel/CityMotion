@@ -43,7 +43,7 @@ Listagem completa da frota municipal com informações como:
 - Registro de quilometragem atual e datas de manutenção.
 - Upload de documentos do veículo (licenciamento, seguro, inspeção).
 
-### 🧭 5. Escalas e Viagens (/escalas)
+### 🧭 5. Viagens e Escalas (/viagens, /escalas)
 Criação e agendamento de viagens oficiais, com informações de:
 - Setor solicitante
 - Motorista responsável
@@ -125,7 +125,8 @@ src/
  │    ├── setores/                # Páginas de gestão de setores
  │    ├── motoristas/             # Páginas de gestão de motoristas
  │    ├── veiculos/               # Páginas de gestão de veículos
- │    ├── escalas/                # Agendamento e registro de viagens
+ │    ├── viagens/                # Agendamento e registro de viagens
+ │    ├── escalas/                # Agendamento e registro de escalas de trabalho
  │    ├── relatorios/             # Relatórios e exportações
  │    └── api/                    # Endpoints de integração com backend
  │
