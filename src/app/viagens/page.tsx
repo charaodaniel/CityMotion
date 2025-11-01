@@ -88,14 +88,9 @@ function TripsView({
                                     </div>
                                     <CardContent className="p-2 pt-0">
                                          {schedule.status === 'Agendada' && (
-                                            <div className="flex gap-2">
-                                                <Button size="sm" className="w-full" onClick={() => onOpenChecklistModal(schedule)}>
-                                                    <Play className="mr-2 h-4 w-4"/> Iniciar
-                                                </Button>
-                                                {/* <Button size="sm" variant="destructive" className="w-full" onClick={() => onUpdateSchedule(schedule.id, 'Cancelada')}>
-                                                    <Ban className="mr-2 h-4 w-4"/> Cancelar
-                                                </Button> */}
-                                            </div>
+                                            <Button size="sm" className="w-full" onClick={() => onOpenChecklistModal(schedule)}>
+                                                <Play className="mr-2 h-4 w-4"/> Iniciar
+                                            </Button>
                                         )}
                                         {schedule.status === 'Em Andamento' && (
                                             <Button size="sm" className="w-full" onClick={() => onOpenFinishModal(schedule)}>
@@ -396,5 +391,3 @@ export default function ViagensPage() {
     </div>
   );
 }
-
-    
