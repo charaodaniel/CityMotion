@@ -25,7 +25,7 @@ Este arquivo organiza as funcionalidades pendentes e melhorias a serem implement
 
 -   [ ] **Implementar Fluxo de Aprovação de Viagens**
     -   [x] Conectar o formulário "Pedir Transporte" para que ele crie uma "Solicitação de Veículo" com status "Pendente".
-    -   [ ] Exibir solicitações pendentes no painel do "Gestor de Setor" (`ManagerDashboard`).
+    -   [x] Exibir solicitações pendentes no painel do "Gestor de Setor" (`ManagerDashboard`).
     -   [ ] Implementar a lógica nos botões "Aprovar" e "Rejeitar" para que mudem o status da solicitação.
     -   [ ] Uma vez aprovada, a solicitação deve se tornar uma viagem "Agendada" na página `/viagens`.
 

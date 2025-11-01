@@ -41,6 +41,7 @@ function getPriorityVariant(priority: RequestPriority) {
 export default function AdminDashboard() {
   const { vehicleRequests } = useApp();
   const availableDrivers = drivers.filter(d => d.status === 'Disponível').length;
+  const pendingRequests = vehicleRequests.filter(r => r.status === 'Pendente');
 
   return (
     <div className='space-y-8'>
@@ -98,9 +99,9 @@ export default function AdminDashboard() {
 
           {/* Coluna de Solicitações */}
           <div>
-            <h2 className="text-2xl font-semibold mb-4">Solicitações de Veículos</h2>
+            <h2 className="text-2xl font-semibold mb-4">Solicitações de Veículos Pendentes</h2>
             <div className="space-y-4">
-              {vehicleRequests.map((request) => (
+              {pendingRequests.map((request) => (
                 <Card key={request.id}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -123,9 +124,9 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               ))}
-              {vehicleRequests.length === 0 && (
+              {pendingRequests.length === 0 && (
                   <div className="text-center text-muted-foreground p-8 border-dashed border-2 rounded-lg">
-                      Nenhuma solicitação de veículo no momento.
+                      Nenhuma solicitação de veículo pendente no momento.
                   </div>
               )}
             </div>
