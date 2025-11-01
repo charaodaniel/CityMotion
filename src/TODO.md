@@ -27,11 +27,11 @@ Este arquivo organiza as funcionalidades pendentes e melhorias a serem implement
     -   [x] Implementar a lógica nos botões "Aprovar" e "Rejeitar" para que mudem o status da solicitação.
     -   [x] Uma vez aprovada, a solicitação deve se tornar uma viagem "Agendada" na página `/viagens`.
 
-## 🛠️ Próximas Funcionalidades
+-   [x] **Dinamizar Página de Perfil (`/perfil`)**
+    -   [x] Fazer com que a página exiba as informações do usuário "logado" (simulado pelo seletor de perfil).
+    -   [x] O histórico de viagens na página de perfil deve ser do usuário selecionado.
 
--   [ ] **Dinamizar Página de Perfil (`/perfil`)**
-    -   [ ] Fazer com que a página exiba as informações do usuário "logado" (simulado pelo seletor de perfil).
-    -   [ ] O histórico de viagens na página de perfil deve ser do usuário selecionado.
+## 🛠️ Próximas Funcionalidades
 
 -   [ ] **Aprimorar Painel Principal (`/`)**
     -   [ ] Adicionar mais cartões de resumo (KPIs) ao `AdminDashboard`, como "Total de Veículos na Frota" e "Viagens em Andamento".

@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useApp } from "@/contexts/app-provider";
 import { drivers, schedules } from "@/lib/data";
-import type { Schedule, ScheduleStatus } from "@/lib/types";
+import type { Driver, Schedule, ScheduleStatus } from "@/lib/types";
 import { User, Mail, Building, ShieldCheck } from "lucide-react";
+import { useMemo } from "react";
 
 function getStatusVariant(status: ScheduleStatus) {
   switch (status) {
@@ -26,10 +27,23 @@ function getStatusVariant(status: ScheduleStatus) {
 export default function ProfilePage() {
   const { userRole } = useApp();
   
-  // Simulating fetching the logged-in user's data
-  // In a real app, this would come from an authentication context
-  const currentUser = drivers.find(d => d.name === 'João da Silva');
-  const userSchedules = schedules.filter(s => s.driver === currentUser?.name);
+  const currentUser: Driver | undefined = useMemo(() => {
+    switch (userRole) {
+      case 'admin':
+        return drivers.find(d => d.id === '3'); // Pedro Santos (Administração)
+      case 'manager':
+        return drivers.find(d => d.id === '1'); // João da Silva (Obras)
+      case 'driver':
+        return drivers.find(d => d.id === '2'); // Maria Oliveira (Saúde)
+      default:
+        return drivers[0];
+    }
+  }, [userRole]);
+
+  const userSchedules = useMemo(() => {
+    return schedules.filter(s => s.driver === currentUser?.name);
+  }, [currentUser]);
+
 
   if (!currentUser) {
     return (
@@ -42,8 +56,9 @@ export default function ProfilePage() {
   const getRoleName = (role: string) => {
     switch (role) {
       case 'admin': return 'Administrador';
-      case 'manager': return 'Gestor';
+      case 'manager': return 'Gestor de Setor';
       case 'driver': return 'Motorista';
+      case 'employee': return 'Funcionário';
       default: return 'Desconhecido';
     }
   }
@@ -74,7 +89,7 @@ export default function ProfilePage() {
                 <CardContent className="space-y-4 text-sm">
                     <div className="flex items-center">
                         <Mail className="mr-3 h-4 w-4 text-muted-foreground" />
-                        <span>{currentUser.name.toLowerCase().replace(' ', '.')}@citymotion.com</span>
+                        <span>{currentUser.name.toLowerCase().replace(/\s+/g, '.')}@citymotion.com</span>
                     </div>
                      <div className="flex items-center">
                         <Building className="mr-3 h-4 w-4 text-muted-foreground" />
@@ -118,7 +133,7 @@ export default function ProfilePage() {
                                     <TableRow key={schedule.id}>
                                         <TableCell className="font-medium">{schedule.title}</TableCell>
                                         <TableCell>{schedule.vehicle}</TableCell>
-                                        <TableCell>{schedule.time.split(' - ')[0]}</TableCell>
+                                        <TableCell>{schedule.departureTime.split(' ')[0]}</TableCell>
                                         <TableCell>
                                             <Badge variant={getStatusVariant(schedule.status)}>{schedule.status}</Badge>
                                         </TableCell>
