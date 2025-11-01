@@ -18,11 +18,11 @@ import { format } from 'date-fns';
 import { sectors } from '@/lib/data';
 
 const formSchema = z.object({
-  title: z.string().min(5, "O motivo da viagem é obrigatório."),
+  title: z.string().optional(),
   sector: z.string().min(1, "O setor solicitante é obrigatório."),
-  destination: z.string().min(3, "O local de destino é obrigatório."),
-  departureDate: z.date({ required_error: "A data de partida é obrigatória." }),
-  departureTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Formato de hora inválido. Use HH:MM."),
+  destination: z.string().optional(),
+  departureDate: z.date().optional(),
+  departureTime: z.string().optional(),
   description: z.string().optional(),
 });
 
@@ -86,7 +86,7 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Motivo da Viagem</FormLabel>
+              <FormLabel>Motivo da Viagem (Opcional)</FormLabel>
               <FormControl>
                 <Input placeholder="Ex: Levar documentos ao Fórum" {...field} />
               </FormControl>
@@ -100,7 +100,7 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
             name="destination"
             render={({ field }) => (
             <FormItem>
-                <FormLabel>Destino</FormLabel>
+                <FormLabel>Destino (Opcional)</FormLabel>
                 <FormControl>
                 <Input placeholder="Endereço ou local de destino" {...field} />
                 </FormControl>
@@ -115,7 +115,7 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
                 name="departureDate"
                 render={({ field }) => (
                 <FormItem className="flex flex-col">
-                    <FormLabel>Data Desejada</FormLabel>
+                    <FormLabel>Data Desejada (Opcional)</FormLabel>
                     <Popover>
                     <PopoverTrigger asChild>
                         <FormControl>
@@ -144,7 +144,7 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
                 name="departureTime"
                 render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Horário</FormLabel>
+                    <FormLabel>Horário (Opcional)</FormLabel>
                     <FormControl>
                     <Input type="time" {...field} />
                     </FormControl>
