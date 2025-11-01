@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck } from 'lucide-react';
+import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX } from 'lucide-react';
 import { schedules as initialSchedules, drivers as initialDrivers, vehicles as initialVehicles } from '@/lib/data';
 import type { Schedule, ScheduleStatus, Driver, Vehicle } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 
-type ModalState = 'details' | 'finish' | 'checklist' | 'form' | null;
+type ModalState = 'details' | 'finish' | 'start-checklist' | 'form' | null;
 
 function getStatusVariant(status: ScheduleStatus) {
     switch (status) {
@@ -124,15 +124,22 @@ export default function ViagensPage() {
   const [startMileage, setStartMileage] = useState<number | undefined>();
   const [finalMileage, setFinalMileage] = useState<number | undefined>();
   const [checkedItems, setCheckedItems] = useState<string[]>([]);
-  const [checklistNotes, setChecklistNotes] = useState('');
+  const [notes, setNotes] = useState('');
   
   const { toast } = useToast();
 
-  const checklistItemsData = [
+  const startChecklistItems = [
     'Nível de óleo e água verificado',
     'Calibragem dos pneus verificada',
     'Documentos do veículo (CRLV) conferidos',
     'Limpeza interna e externa adequada'
+  ];
+
+  const finishChecklistItems = [
+    'Veículo estacionado em local seguro',
+    'Chaves entregues ao setor responsável',
+    'Veículo sem novos danos aparentes',
+    'Veículo deixado limpo e organizado',
   ];
 
   const openModal = (modal: ModalState, schedule: Schedule | null = null) => {
@@ -146,7 +153,7 @@ export default function ViagensPage() {
       setStartMileage(undefined);
       setFinalMileage(undefined);
       setCheckedItems([]);
-      setChecklistNotes('');
+      setNotes('');
   }
 
   const updateScheduleStatus = (scheduleId: string, newStatus: ScheduleStatus) => {
@@ -177,10 +184,11 @@ export default function ViagensPage() {
       ...(newStatus === 'Concluída' && {
         endMileage: finalMileage,
         arrivalTime: new Date().toLocaleString('pt-BR'),
+        notes: notes,
       }),
       ...(newStatus === 'Em Andamento' && {
         startMileage: startMileage,
-        notes: checklistNotes,
+        notes: notes,
       })
     } : s);
 
@@ -209,7 +217,7 @@ export default function ViagensPage() {
   const handleOpenChecklistModal = (schedule: Schedule) => {
     const vehicle = vehicles.find(v => schedule.vehicle.includes(v.licensePlate));
     setStartMileage(vehicle?.mileage);
-    openModal('checklist', schedule);
+    openModal('start-checklist', schedule);
   };
 
   const handleOpenFinishModal = (schedule: Schedule) => {
@@ -327,7 +335,7 @@ export default function ViagensPage() {
                       </div>
                       {selectedSchedule.status === 'Agendada' && (
                         <div className='pt-4 flex justify-end'>
-                            <Button onClick={() => openModal('checklist', selectedSchedule)}>
+                            <Button onClick={() => openModal('start-checklist', selectedSchedule)}>
                                 <ClipboardCheck className="mr-2 h-4 w-4"/>
                                 Verificar Checklist
                             </Button>
@@ -340,37 +348,65 @@ export default function ViagensPage() {
           </DialogContent>
       </Dialog>
       
-      {/* Finish Trip Modal */}
+      {/* Finish Trip Modal (Post-Checklist) */}
        <Dialog open={activeModal === 'finish'} onOpenChange={() => closeModal()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Finalizar Viagem</DialogTitle>
-            <DialogDescription>Confirme a finalização da viagem e informe a quilometragem final.</DialogDescription>
+            <DialogTitle className="flex items-center"><ClipboardX className="mr-2 h-5 w-5" />Checklist de Pós-Viagem</DialogTitle>
+            <DialogDescription>Verifique todos os itens para finalizar a viagem.</DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
-              <div className="flex items-baseline gap-2">
-                <Gauge className="h-5 w-5 text-muted-foreground"/>
-                <Label htmlFor="finalMileage" className="text-right">
-                  Quilometragem Final
-                </Label>
+            <div className="space-y-2">
+                <div className="flex items-baseline gap-2">
+                    <Gauge className="h-5 w-5 text-muted-foreground"/>
+                    <Label htmlFor="finalMileage">Quilometragem Final</Label>
+                </div>
+                <Input
+                id="finalMileage"
+                type="number"
+                value={finalMileage}
+                onChange={(e) => setFinalMileage(Number(e.target.value))}
+                placeholder="KM final do veículo"
+                />
+            </div>
+            <Separator />
+             {finishChecklistItems.map((item, index) => (
+              <div key={index} className="flex items-center space-x-2">
+                <Checkbox 
+                  id={`finish-checklist-${index}`}
+                  onCheckedChange={() => handleChecklistItem(item)}
+                  checked={checkedItems.includes(item)}
+                />
+                <label htmlFor={`finish-checklist-${index}`} className="text-sm font-medium">
+                  {item}
+                </label>
               </div>
-            <Input
-              id="finalMileage"
-              type="number"
-              value={finalMileage}
-              onChange={(e) => setFinalMileage(Number(e.target.value))}
-              placeholder="KM final do veículo"
-            />
+            ))}
+            <Separator />
+             <div className="space-y-2">
+                <Label htmlFor="finish-notes">Observações Finais (opcional)</Label>
+                <Textarea 
+                    id="finish-notes"
+                    placeholder="Relate qualquer problema ou ocorrência durante a viagem."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                />
+            </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => closeModal()}>Cancelar</Button>
-            <Button onClick={handleFinishTrip} disabled={!finalMileage}>Confirmar Finalização</Button>
+            <Button 
+                onClick={handleFinishTrip} 
+                disabled={checkedItems.length < finishChecklistItems.length || !finalMileage}
+            >
+                Confirmar Finalização
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
       
-      {/* Checklist Modal */}
-      <Dialog open={activeModal === 'checklist'} onOpenChange={() => closeModal()}>
+      {/* Start Checklist Modal */}
+      <Dialog open={activeModal === 'start-checklist'} onOpenChange={() => closeModal()}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center">
@@ -396,7 +432,7 @@ export default function ViagensPage() {
                 />
             </div>
             <Separator />
-            {checklistItemsData.map((item, index) => (
+            {startChecklistItems.map((item, index) => (
               <div key={index} className="flex items-center space-x-2">
                 <Checkbox 
                   id={`checklist-${index}`}
@@ -417,8 +453,8 @@ export default function ViagensPage() {
                 <Textarea 
                     id="checklist-notes"
                     placeholder="Ex: Pequeno arranhão na porta direita."
-                    value={checklistNotes}
-                    onChange={(e) => setChecklistNotes(e.target.value)}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
                 />
             </div>
           </div>
@@ -431,7 +467,7 @@ export default function ViagensPage() {
                 <Button variant="outline" onClick={() => closeModal()}>Fechar</Button>
                 <Button 
                 onClick={handleStartTrip} 
-                disabled={checkedItems.length < checklistItemsData.length || !startMileage}
+                disabled={checkedItems.length < startChecklistItems.length || !startMileage}
                 >
                 <Play className="mr-2 h-4 w-4"/> Iniciar Viagem
                 </Button>
@@ -442,3 +478,5 @@ export default function ViagensPage() {
     </div>
   );
 }
+
+    
