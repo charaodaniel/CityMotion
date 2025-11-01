@@ -28,7 +28,7 @@ export default function LoginPage() {
       setUserRole('employee');
     }
 
-    router.push('/');
+    router.push('/dashboard');
   };
 
   return (

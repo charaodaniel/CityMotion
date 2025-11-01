@@ -33,7 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 
 const navItems = [
-  { href: '/', label: 'Painel', icon: LayoutDashboard, roles: ['admin', 'manager', 'driver', 'employee'] },
+  { href: '/dashboard', label: 'Painel', icon: LayoutDashboard, roles: ['admin', 'manager', 'driver', 'employee'] },
   { href: '/setores', label: 'Setores', icon: Building, roles: ['admin'] },
   { href: '/motoristas', label: 'Motoristas', icon: User, roles: ['admin', 'manager'] },
   { href: '/veiculos', label: 'Veículos', icon: Car, roles: ['admin', 'manager'] },
