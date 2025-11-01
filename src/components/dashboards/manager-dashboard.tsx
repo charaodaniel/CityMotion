@@ -4,11 +4,11 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Clock, Package, UserCheck } from 'lucide-react';
-import { vehicleRequests as initialVehicleRequests, drivers } from '@/lib/data';
+import { drivers } from '@/lib/data';
 import type { RequestPriority, VehicleRequest } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useApp } from '@/contexts/app-provider';
 
 function getPriorityVariant(priority: RequestPriority) {
   switch (priority) {
@@ -24,11 +24,11 @@ function getPriorityVariant(priority: RequestPriority) {
 }
 
 export default function ManagerDashboard() {
-  const [vehicleRequests, setVehicleRequests] = useState<VehicleRequest[]>(initialVehicleRequests);
   const { toast } = useToast();
+  const { vehicleRequests, updateVehicleRequestStatus } = useApp();
 
   const handleRequest = (id: string, approved: boolean) => {
-    setVehicleRequests(vehicleRequests.filter(req => req.id !== id));
+    updateVehicleRequestStatus(id, approved ? 'Aprovada' : 'Rejeitada');
     const request = vehicleRequests.find(req => req.id === id);
     if (request) {
       toast({

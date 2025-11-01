@@ -16,14 +16,17 @@ import { CalendarIcon } from 'lucide-react';
 import { Calendar } from './ui/calendar';
 import { format } from 'date-fns';
 import { sectors } from '@/lib/data';
+import { useApp } from '@/contexts/app-provider';
+import type { VehicleRequest } from '@/lib/types';
+
 
 const formSchema = z.object({
-  title: z.string().optional(),
+  title: z.string().min(1, "O motivo da viagem é obrigatório."),
   sector: z.string().min(1, "O setor solicitante é obrigatório."),
   destination: z.string().optional(),
   departureDate: z.date().optional(),
   departureTime: z.string().optional(),
-  description: z.string().optional(),
+  details: z.string().optional(),
 });
 
 interface QuickRequestFormProps {
@@ -32,6 +35,7 @@ interface QuickRequestFormProps {
 
 export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
   const { toast } = useToast();
+  const { addVehicleRequest } = useApp();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,15 +44,23 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
       sector: '',
       destination: '',
       departureTime: '',
-      description: '',
+      details: '',
     },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log("Novo Pedido Rápido:", values);
+    
+    const requestData = {
+        title: values.title,
+        sector: values.sector,
+        details: `${values.destination ? `Destino: ${values.destination}. ` : ''}${values.details || ''}`,
+    }
+    
+    addVehicleRequest(requestData);
+
     toast({
       title: "Pedido Enviado!",
-      description: "Sua solicitação foi enviada. O gestor do setor e os motoristas disponíveis foram notificados.",
+      description: "Sua solicitação foi enviada. O gestor do setor será notificado.",
     });
     onFormSubmit();
     form.reset();
@@ -86,7 +98,7 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Motivo da Viagem (Opcional)</FormLabel>
+              <FormLabel>Motivo da Viagem</FormLabel>
               <FormControl>
                 <Input placeholder="Ex: Levar documentos ao Fórum" {...field} />
               </FormControl>
@@ -156,7 +168,7 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
 
         <FormField
           control={form.control}
-          name="description"
+          name="details"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Observações (Opcional)</FormLabel>
