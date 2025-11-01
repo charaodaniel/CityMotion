@@ -39,11 +39,11 @@ Este arquivo organiza as funcionalidades pendentes e melhorias a serem implement
 -   [x] **Criar Página de Login (Visual)**
     -   [x] Desenvolver a interface da página de login, sem a lógica de autenticação por enquanto.
 
+-   [x] **Gerenciamento de Documentos**
+    -   [x] Implementar a lógica para upload e visualização de documentos para veículos e motoristas.
+
 -   [ ] **Internacionalização (Tradução)**
     -   [ ] Traduzir componentes de UI que ainda exibem textos em inglês (ex: `Calendar`).
-
--   [ ] **Gerenciamento de Documentos**
-    -   [ ] Implementar a lógica para upload e visualização de documentos para veículos e motoristas.
 
 ## 🔮 Futuro (Pós-Apresentação)
 

@@ -53,7 +53,12 @@ export function RegisterDriverForm({ onFormSubmit, existingDriver }: RegisterDri
   }, [isEditMode, existingDriver, form]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    onFormSubmit(values);
+    const dataToSubmit: Partial<Driver> = {
+      ...values,
+      idPhoto: values.idPhoto?.[0]?.name,
+      cnhPhoto: values.cnhPhoto?.[0]?.name,
+    };
+    onFormSubmit(dataToSubmit);
     toast({
       title: isEditMode ? "Cadastro Atualizado" : "Cadastro Enviado",
       description: `O cadastro do motorista foi ${isEditMode ? 'atualizado' : 'realizado'} com sucesso.`,

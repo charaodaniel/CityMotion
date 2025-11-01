@@ -7,6 +7,8 @@ export type Driver = {
   sector: string;
   cnh?: string;
   matricula?: string;
+  idPhoto?: string;
+  cnhPhoto?: string;
 };
 
 export type VehicleStatus = 'Disponível' | 'Em Serviço' | 'Em Viagem' | 'Manutenção';

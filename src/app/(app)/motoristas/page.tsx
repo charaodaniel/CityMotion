@@ -8,12 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { PlusCircle, User, ShieldCheck, Edit } from 'lucide-react';
+import { PlusCircle, User, ShieldCheck, Edit, FileText, Link as LinkIcon } from 'lucide-react';
 import { RegisterDriverForm } from '@/components/register-driver-form';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Link from 'next/link';
 
 function getStatusVariant(status: DriverStatus) {
   switch (status) {
@@ -60,7 +61,6 @@ export default function DriversPage() {
 
   const handleFormSubmit = (newDriverData: Partial<Driver>) => {
     if (modalMode === 'edit' && selectedDriver) {
-      // @ts-ignore
       setDrivers(drivers.map(d => d.id === selectedDriver.id ? { ...d, ...newDriverData } : d));
     } else {
       const newDriver: Driver = {
@@ -68,7 +68,6 @@ export default function DriversPage() {
         status: 'Disponível',
         ...newDriverData
       } as Driver;
-      // @ts-ignore
       setDrivers([...drivers, newDriver]);
     }
     closeModal();
@@ -140,6 +139,31 @@ export default function DriversPage() {
                         {selectedDriver && <Badge variant={getStatusVariant(selectedDriver.status)}>{selectedDriver.status}</Badge>}
                     </div>
                 </div>
+                {(selectedDriver?.idPhoto || selectedDriver?.cnhPhoto) && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h3 className="text-base font-semibold mb-3 flex items-center">
+                        <FileText className="mr-2 h-4 w-4" />
+                        Documentos
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        {selectedDriver.idPhoto && (
+                          <Link href="#" className="flex items-center text-primary hover:underline">
+                            <LinkIcon className="mr-2 h-4 w-4" />
+                            <span>Foto 3x4: {selectedDriver.idPhoto}</span>
+                          </Link>
+                        )}
+                        {selectedDriver.cnhPhoto && (
+                          <Link href="#" className="flex items-center text-primary hover:underline">
+                            <LinkIcon className="mr-2 h-4 w-4" />
+                            <span>CNH: {selectedDriver.cnhPhoto}</span>
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
                 <div className="flex justify-end pt-4">
                     <Button variant="outline" onClick={() => handleOpenEditModal(selectedDriver!)}>
                         <Edit className="mr-2 h-4 w-4"/>
