@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 
 type ModalState = 'details' | 'finish' | 'checklist' | 'form' | null;
 
@@ -122,6 +123,7 @@ export default function ViagensPage() {
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [finalMileage, setFinalMileage] = useState<number | undefined>();
   const [checkedItems, setCheckedItems] = useState<string[]>([]);
+  const [checklistNotes, setChecklistNotes] = useState('');
   
   const { toast } = useToast();
 
@@ -142,6 +144,7 @@ export default function ViagensPage() {
       // Reset dependent states
       setFinalMileage(undefined);
       setCheckedItems([]);
+      setChecklistNotes('');
   }
 
   const updateScheduleStatus = (scheduleId: string, newStatus: ScheduleStatus) => {
@@ -174,6 +177,9 @@ export default function ViagensPage() {
         startMileage: vehicle?.mileage,
         arrivalTime: new Date().toLocaleString('pt-BR'),
       }),
+      ...(newStatus === 'Em Andamento' && {
+        notes: checklistNotes,
+      })
     } : s);
 
     setSchedules(updatedSchedules);
@@ -388,6 +394,15 @@ export default function ViagensPage() {
                 </label>
               </div>
             ))}
+            <div className="space-y-2">
+                <Label htmlFor="checklist-notes">Observações (opcional)</Label>
+                <Textarea 
+                    id="checklist-notes"
+                    placeholder="Ex: Pequeno arranhão na porta direita."
+                    value={checklistNotes}
+                    onChange={(e) => setChecklistNotes(e.target.value)}
+                />
+            </div>
           </div>
           <div className="flex justify-between gap-2">
             <Button variant="destructive" onClick={() => handleCancelTrip(selectedSchedule!.id)}>
