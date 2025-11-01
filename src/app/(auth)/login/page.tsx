@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useApp } from '@/contexts/app-provider';
-import { CarFront, LogIn } from 'lucide-react';
+import { CarFront, LogIn, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -33,8 +33,8 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
-        <div className="flex justify-center mb-6">
+      <div className="w-full max-w-md space-y-8">
+        <div className="flex justify-center">
             <div className="flex items-center gap-3 text-foreground">
                 <div className="bg-foreground text-background p-2.5 rounded-lg">
                     <CarFront className="h-7 w-7" />
@@ -85,7 +85,24 @@ export default function LoginPage() {
             </form>
           </CardContent>
         </Card>
-         <p className="px-8 text-center text-sm text-muted-foreground mt-6">
+        
+        <Card className="bg-muted/50">
+          <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <Users className="mr-2 h-5 w-5" />
+                Credenciais de Teste
+              </CardTitle>
+              <CardDescription>Use os e-mails abaixo para acessar como diferentes perfis (a senha pode ser qualquer uma).</CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+              <p><strong>Admin:</strong> <button onClick={() => setEmail('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
+              <p><strong>Gestor:</strong> <button onClick={() => setEmail('manager@citymotion.com')} className="text-primary hover:underline">manager@citymotion.com</button></p>
+              <p><strong>Motorista:</strong> <button onClick={() => setEmail('driver@citymotion.com')} className="text-primary hover:underline">driver@citymotion.com</button></p>
+              <p><strong>Funcionário:</strong> <button onClick={() => setEmail('employee@citymotion.com')} className="text-primary hover:underline">employee@citymotion.com</button></p>
+          </CardContent>
+        </Card>
+
+         <p className="px-8 text-center text-sm text-muted-foreground">
             Ao clicar em continuar, você concorda com nossos{' '}
             <a
               href="#"
