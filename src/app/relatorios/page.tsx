@@ -57,7 +57,9 @@ export default function ReportsPage() {
   };
 
   const filteredSchedules = schedules.filter(s => {
-    const scheduleDate = new Date(s.departureTime.split(' ')[0].split('/').reverse().join('-'));
+    const scheduleDateParts = s.departureTime.split(' ')[0].split('/');
+    const scheduleDate = new Date(`${scheduleDateParts[2]}-${scheduleDateParts[1]}-${scheduleDateParts[0]}`);
+
     const isAfterFrom = dateRange.from ? scheduleDate >= dateRange.from : true;
     const isBeforeTo = dateRange.to ? scheduleDate <= dateRange.to : true;
     // @ts-ignore
@@ -274,12 +276,17 @@ export default function ReportsPage() {
         <CardContent>
             {filteredSchedules.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredSchedules.map((schedule) => (
+                    {filteredSchedules.map((schedule) => {
+                        const arrivalDate = schedule.arrivalTime 
+                            ? new Date(schedule.arrivalTime.split(' ')[0].split('/').reverse().join('-') + 'T' + schedule.arrivalTime.split(' ')[1])
+                            : null;
+
+                        return (
                         <Card key={schedule.id} onClick={() => handleCardClick(schedule)} className="cursor-pointer hover:shadow-md transition-shadow">
                             <CardHeader className="pb-4">
                                 <CardTitle className="text-base">{schedule.title}</CardTitle>
                                 <CardDescription className="flex items-center text-xs">
-                                    <Clock className="mr-1.5 h-3 w-3" /> Concluído em: {schedule.arrivalTime ? format(new Date(schedule.arrivalTime), 'dd/MM/yyyy') : 'N/A'}
+                                    <Clock className="mr-1.5 h-3 w-3" /> Concluído em: {arrivalDate ? format(arrivalDate, 'dd/MM/yyyy') : 'N/A'}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="text-xs space-y-2">
@@ -300,7 +307,7 @@ export default function ReportsPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                    ))}
+                    )})}
                 </div>
             ) : (
                 <div className="text-center text-muted-foreground py-8">
@@ -381,5 +388,3 @@ export default function ReportsPage() {
     </div>
   );
 }
-
-    
