@@ -52,7 +52,7 @@ export type Schedule = {
 };
 
 export type WorkScheduleStatus = 'Agendada' | 'Em Andamento' | 'Concluída';
-export type WorkScheduleType = "Jornada Regular" | "Plantão" | "Sobreaviso" | "Folga" | "Férias";
+export type WorkScheduleType = "Jornada Regular" | "Plantão" | "Sobreaviso" | "Folga" | "Férias" | "Hora Extra" | "Evento Especial";
 
 
 export type WorkSchedule = {

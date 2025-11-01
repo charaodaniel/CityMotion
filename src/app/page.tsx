@@ -4,41 +4,19 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText, Check } from 'lucide-react';
-import { drivers as initialDrivers, vehicles as initialVehicles } from '@/lib/data';
-import type { Schedule, ScheduleStatus, Driver, Vehicle } from '@/lib/types';
+import { Car, Clock, User, CalendarDays } from 'lucide-react';
+import { workSchedules, schedules as initialSchedules } from '@/lib/data';
+import type { Schedule, ScheduleStatus, WorkSchedule, WorkScheduleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { ScheduleTripForm } from '@/components/schedule-trip-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
 import { useApp } from '@/contexts/app-provider';
 
-type ModalState = 'details' | 'finish' | 'start-checklist' | 'form' | null;
+type ModalState = 'details-trip' | 'details-work' | null;
 
-const startChecklistItems = [
-    'Nível de óleo e água verificado',
-    'Calibragem dos pneus verificada',
-    'Documentos do veículo (CRLV) conferidos',
-    'Limpeza interna e externa adequada'
-];
-
-const finishChecklistItems = [
-    'Veículo estacionado em local seguro',
-    'Chaves entregues ao setor responsável',
-    'Veículo sem novos danos aparentes',
-    'Veículo deixado limpo e organizado',
-];
-
-
-function getStatusVariant(status: ScheduleStatus) {
+function getTripStatusVariant(status: ScheduleStatus) {
     switch (status) {
       case 'Agendada':
         return 'secondary';
@@ -52,8 +30,20 @@ function getStatusVariant(status: ScheduleStatus) {
         return 'outline';
     }
 }
+function getWorkStatusVariant(status: WorkScheduleStatus) {
+    switch (status) {
+      case 'Agendada':
+        return 'secondary';
+      case 'Em Andamento':
+        return 'default';
+      case 'Concluída':
+        return 'outline';
+      default:
+        return 'outline';
+    }
+}
 
-const statusColumns: { title: string; status: ScheduleStatus }[] = [
+const tripStatusColumns: { title: string; status: ScheduleStatus }[] = [
     { title: 'Agendadas', status: 'Agendada' },
     { title: 'Em Andamento', status: 'Em Andamento' },
     { title: 'Concluídas', status: 'Concluída' },
@@ -73,7 +63,7 @@ function TripsView({
     
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-            {statusColumns.map(column => (
+            {tripStatusColumns.map(column => (
                 <div key={column.status} className="flex flex-col gap-4">
                     <h2 className="text-xl font-semibold tracking-tight">{column.title} ({schedulesByStatus(column.status).length})</h2>
                     <div className="bg-muted/50 rounded-lg p-4 space-y-4 min-h-[200px]">
@@ -116,160 +106,162 @@ function TripsView({
     )
 }
 
+function WorkSchedulesView({ 
+    schedules, 
+    onCardClick,
+}: { 
+    schedules: WorkSchedule[], 
+    onCardClick: (schedule: WorkSchedule) => void,
+}) {
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+            {schedules.map(schedule => (
+                <Card 
+                    key={schedule.id} 
+                    onClick={() => onCardClick(schedule)} 
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                >
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <CalendarDays className="h-4 w-4 text-muted-foreground"/> 
+                          {schedule.title}
+                        </CardTitle>
+                        <CardDescription asChild className="flex items-center text-xs pt-1">
+                           <div>
+                            <Badge variant="outline">{schedule.type}</Badge>
+                           </div>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-sm space-y-3">
+                        <div className="flex items-center">
+                            <User className="mr-2 h-4 w-4" />
+                            <span>{schedule.employee}</span>
+                        </div>
+                        <div className="flex items-center text-xs text-muted-foreground">
+                            <Clock className="mr-2 h-4 w-4" />
+                            <span>{schedule.startDate} - {schedule.endDate}</span>
+                        </div>
+                         <div className="pt-2">
+                           <Badge variant={getWorkStatusVariant(schedule.status)}>{schedule.status}</Badge>
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    )
+}
+
 export default function HomePage() {
-  const { schedules, setSchedules } = useApp();
+  const { schedules } = useApp();
   const [activeModal, setActiveModal] = useState<ModalState>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  const [selectedWorkSchedule, setSelectedWorkSchedule] = useState<WorkSchedule | null>(null);
 
-  const openModal = (modal: ModalState, schedule: Schedule | null = null) => {
-    setSelectedSchedule(schedule);
+  const openModal = (modal: ModalState, schedule: Schedule | WorkSchedule | null = null) => {
+    if (modal === 'details-trip') {
+        setSelectedSchedule(schedule as Schedule);
+    } else if (modal === 'details-work') {
+        setSelectedWorkSchedule(schedule as WorkSchedule);
+    }
     setActiveModal(modal);
   };
   
   const closeModal = () => {
-      openModal(null);
+      setActiveModal(null);
+      setSelectedSchedule(null);
+      setSelectedWorkSchedule(null);
   }
 
   const allSchedules = schedules.filter(s => s.status !== 'Cancelada');
-  const schoolSchedules = allSchedules.filter(s => s.category.toLowerCase().includes('escolar'));
-  const generalSchedules = allSchedules.filter(s => !s.category.toLowerCase().includes('escolar'));
 
   return (
     <div className="container mx-auto p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline">
-            Painel de Viagens
+            Painel Geral de Atividades
           </h1>
           <p className="text-muted-foreground">
-            Acompanhe o status de todas as viagens e linhas escolares.
+            Acompanhe o status das viagens da frota e das escalas de trabalho.
           </p>
         </div>
       </div>
 
-      <Tabs defaultValue="general">
+      <Tabs defaultValue="trips">
         <TabsList>
-          <TabsTrigger value="general">Viagens Gerais ({generalSchedules.length})</TabsTrigger>
-          <TabsTrigger value="school">Linhas Escolares ({schoolSchedules.length})</TabsTrigger>
+          <TabsTrigger value="trips">Viagens ({allSchedules.length})</TabsTrigger>
+          <TabsTrigger value="work-schedules">Escalas de Trabalho ({workSchedules.length})</TabsTrigger>
         </TabsList>
-        <TabsContent value="general">
+        <TabsContent value="trips">
           <TripsView 
-            schedules={generalSchedules} 
-            onCardClick={(schedule) => openModal('details', schedule)}
+            schedules={allSchedules} 
+            onCardClick={(schedule) => openModal('details-trip', schedule)}
             />
         </TabsContent>
-        <TabsContent value="school">
-          <TripsView 
-            schedules={schoolSchedules} 
-            onCardClick={(schedule) => openModal('details', schedule)}
-            />
+        <TabsContent value="work-schedules">
+          <WorkSchedulesView
+            schedules={workSchedules}
+            onCardClick={(schedule) => openModal('details-work', schedule)}
+           />
         </TabsContent>
       </Tabs>
       
       {/* Details Modal */}
-      <Dialog open={activeModal === 'details'} onOpenChange={() => closeModal()}>
+      <Dialog open={!!activeModal} onOpenChange={() => closeModal()}>
           <DialogContent>
               <ScrollArea className="max-h-[80vh] p-4">
-              {selectedSchedule && (
+              {activeModal === 'details-trip' && selectedSchedule && (
                   <>
-                  <DialogHeader>
-                      <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
-                      <DialogDescription>
-                      Detalhes da viagem agendada.
-                      </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4 pr-4">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
+                        <DialogDescription>Detalhes da viagem agendada.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4 pr-4">
                         <div>
                             <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                            <div>
-                                <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
-                            </div>
+                            <div><Badge variant={getTripStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge></div>
                         </div>
                         <Separator />
+                        <div><span className="text-sm font-semibold text-muted-foreground">Motorista</span><p className="text-lg">{selectedSchedule.driver}</p></div>
+                        <Separator />
+                        <div><span className="text-sm font-semibold text-muted-foreground">Veículo</span><p className="text-lg">{selectedSchedule.vehicle}</p></div>
+                        <Separator />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div><span className="text-sm font-semibold text-muted-foreground">Origem</span><p className="text-lg">{selectedSchedule.origin}</p></div>
+                            <div><span className="text-sm font-semibold text-muted-foreground">Destino</span><p className="text-lg">{selectedSchedule.destination}</p></div>
+                        </div>
+                        <Separator />
+                        <div><span className="text-sm font-semibold text-muted-foreground">Data e Horário</span><p className="text-lg">{selectedSchedule.departureTime}</p></div>
+                    </div>
+                  </>
+              )}
+               {activeModal === 'details-work' && selectedWorkSchedule && (
+                  <>
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl">{selectedWorkSchedule.title}</DialogTitle>
+                        <DialogDescription>Detalhes da escala agendada.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4 pr-4">
+                        <div><span className="text-sm font-semibold text-muted-foreground">Tipo</span><p className="text-lg">{selectedWorkSchedule.type}</p></div>
+                        <Separator />
+                        <div><span className="text-sm font-semibold text-muted-foreground">Funcionário</span><p className="text-lg">{selectedWorkSchedule.employee}</p></div>
+                        <Separator />
+                        <div><span className="text-sm font-semibold text-muted-foreground">Período</span><p className="text-lg">{selectedWorkSchedule.startDate} até {selectedWorkSchedule.endDate}</p></div>
+                        <Separator />
+                        {selectedWorkSchedule.description && (
+                        <>
+                            <div>
+                            <span className="text-sm font-semibold text-muted-foreground">Observações</span>
+                            <p className="text-base mt-1">{selectedWorkSchedule.description}</p>
+                            </div>
+                            <Separator />
+                        </>
+                        )}
                         <div>
-                          <span className="text-sm font-semibold text-muted-foreground">Motorista</span>
-                          <p className="text-lg">{selectedSchedule.driver}</p>
-                      </div>
-                      <Separator />
-                      <div>
-                          <span className="text-sm font-semibold text-muted-foreground">Veículo</span>
-                          <p className="text-lg">{selectedSchedule.vehicle}</p>
-                      </div>
-                      <Separator />
-                      <div className="grid grid-cols-2 gap-4">
-                          <div>
-                              <span className="text-sm font-semibold text-muted-foreground">Origem</span>
-                              <p className="text-lg">{selectedSchedule.origin}</p>
-                          </div>
-                          <div>
-                              <span className="text-sm font-semibold text-muted-foreground">Destino</span>
-                              <p className="text-lg">{selectedSchedule.destination}</p>
-                          </div>
-                      </div>
-                      <Separator />
-                      <div>
-                          <span className="text-sm font-semibold text-muted-foreground">Data e Horário</span>
-                          <p className="text-lg">{selectedSchedule.departureTime}</p>
-                      </div>
-
-                      {(selectedSchedule.status === 'Em Andamento' || selectedSchedule.status === 'Concluída') && selectedSchedule.startChecklist && (
-                        <>
-                          <Separator />
-                           <div>
-                            <span className="text-sm font-semibold text-muted-foreground flex items-center mb-2">
-                              <ClipboardCheck className="mr-2 h-4 w-4" />
-                              Checklist de Partida
-                            </span>
-                            <div className='space-y-1 text-sm'>
-                              {selectedSchedule.startChecklist.map((item, index) => (
-                                <div key={index} className="flex items-center">
-                                  <Check className="h-4 w-4 mr-2 text-green-500" />
-                                  <span>{item}</span>
-                                </div>
-                              ))}
-                            </div>
-                           </div>
-                           {selectedSchedule.startNotes && (
-                            <div className='mt-2'>
-                              <span className="text-sm font-semibold text-muted-foreground flex items-center">
-                                <MessageSquareText className="mr-2 h-4 w-4" />
-                                Observações de Partida
-                              </span>
-                              <p className="text-sm mt-1 p-3 bg-muted/50 rounded-md">{selectedSchedule.startNotes}</p>
-                            </div>
-                          )}
-                        </>
-                      )}
-
-                       {selectedSchedule.status === 'Concluída' && selectedSchedule.endChecklist && (
-                        <>
-                          <Separator />
-                          <div>
-                            <span className="text-sm font-semibold text-muted-foreground flex items-center mb-2">
-                              <ClipboardX className="mr-2 h-4 w-4" />
-                              Checklist de Chegada
-                            </span>
-                            <div className='space-y-1 text-sm'>
-                               {selectedSchedule.endChecklist.map((item, index) => (
-                                <div key={index} className="flex items-center">
-                                  <Check className="h-4 w-4 mr-2 text-green-500" />
-                                  <span>{item}</span>
-                                </div>
-                              ))}
-                            </div>
-                           </div>
-                           {selectedSchedule.endNotes && (
-                            <div className='mt-2'>
-                              <span className="text-sm font-semibold text-muted-foreground flex items-center">
-                                <MessageSquareText className="mr-2 h-4 w-4" />
-                                Observações de Chegada
-                              </span>
-                              <p className="text-sm mt-1 p-3 bg-muted/50 rounded-md">{selectedSchedule.endNotes}</p>
-                            </div>
-                          )}
-                        </>
-                      )}
-                  </div>
+                            <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                            <div><Badge variant={getWorkStatusVariant(selectedWorkSchedule.status)}>{selectedWorkSchedule.status}</Badge></div>
+                        </div>
+                    </div>
                   </>
               )}
               </ScrollArea>
