@@ -3,9 +3,9 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Clock, User } from 'lucide-react';
-import { schedules } from '@/lib/data';
-import type { Schedule, ScheduleStatus } from '@/lib/types';
+import { PlusCircle, Clock, User, CalendarDays } from 'lucide-react';
+import { workSchedules } from '@/lib/data';
+import type { WorkSchedule, WorkScheduleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useState } from 'react';
@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { CreateScheduleForm } from '@/components/create-schedule-form';
 import { Separator } from '@/components/ui/separator';
 
-function getStatusVariant(status: ScheduleStatus) {
+function getStatusVariant(status: WorkScheduleStatus) {
     switch (status) {
       case 'Agendada':
         return 'secondary';
@@ -26,27 +26,17 @@ function getStatusVariant(status: ScheduleStatus) {
     }
 }
 
-const statusColumns: { title: string; status: ScheduleStatus }[] = [
-    { title: 'Agendadas', status: 'Agendada' },
-    { title: 'Em Andamento', status: 'Em Andamento' },
-    { title: 'Concluídas', status: 'Concluída' },
-];
-
 export default function SchedulesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<WorkSchedule | null>(null);
 
-  const handleCardClick = (schedule: Schedule) => {
+  const handleCardClick = (schedule: WorkSchedule) => {
     setSelectedSchedule(schedule);
   };
 
   const closeDetailsModal = () => {
     setSelectedSchedule(null);
   };
-
-  const schedulesByStatus = (status: ScheduleStatus) => {
-    return schedules.filter(s => s.status === status);
-  }
 
   return (
     <div className="container mx-auto p-4 sm:p-8">
@@ -80,40 +70,37 @@ export default function SchedulesPage() {
         </Dialog>
       </div>
 
-      {schedules.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {statusColumns.map(column => (
-                <div key={column.status} className="flex flex-col gap-4">
-                    <h2 className="text-xl font-semibold tracking-tight">{column.title} ({schedulesByStatus(column.status).length})</h2>
-                    <div className="bg-muted/50 rounded-lg p-4 space-y-4 min-h-[200px]">
-                        {schedulesByStatus(column.status).length > 0 ? (
-                            schedulesByStatus(column.status).map(schedule => (
-                                <Card 
-                                    key={schedule.id} 
-                                    onClick={() => handleCardClick(schedule)} 
-                                    className="cursor-pointer hover:shadow-md transition-shadow"
-                                >
-                                    <CardHeader className="pb-4">
-                                        <CardTitle className="text-base">{schedule.title}</CardTitle>
-                                        <CardDescription className="flex items-center text-xs">
-                                            <Clock className="mr-1.5 h-3 w-3" /> {schedule.time}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="text-xs space-y-2">
-                                        <div className="flex items-center">
-                                            <User className="mr-2 h-3 w-3" />
-                                            <span>{schedule.driver}</span>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-                                Nenhuma escala nesta etapa.
-                            </div>
-                        )}
-                    </div>
-                </div>
+      {workSchedules.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {workSchedules.map(schedule => (
+                <Card 
+                    key={schedule.id} 
+                    onClick={() => handleCardClick(schedule)} 
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                >
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <CalendarDays className="h-4 w-4 text-muted-foreground"/> 
+                          {schedule.title}
+                        </CardTitle>
+                        <CardDescription className="flex items-center text-xs pt-1">
+                           <Badge variant="outline">{schedule.type}</Badge>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-sm space-y-3">
+                        <div className="flex items-center">
+                            <User className="mr-2 h-4 w-4" />
+                            <span>{schedule.employee}</span>
+                        </div>
+                        <div className="flex items-center text-xs text-muted-foreground">
+                            <Clock className="mr-2 h-4 w-4" />
+                            <span>{schedule.startDate} - {schedule.endDate}</span>
+                        </div>
+                         <div className="pt-2">
+                           <Badge variant={getStatusVariant(schedule.status)}>{schedule.status}</Badge>
+                        </div>
+                    </CardContent>
+                </Card>
             ))}
         </div>
       ) : (
@@ -137,16 +124,30 @@ export default function SchedulesPage() {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4 pr-4">
+                     <div>
+                        <span className="text-sm font-semibold text-muted-foreground">Tipo</span>
+                        <p className="text-lg">{selectedSchedule.type}</p>
+                    </div>
+                    <Separator />
                     <div>
-                        <span className="text-sm font-semibold text-muted-foreground">Responsável</span>
-                        <p className="text-lg">{selectedSchedule.driver}</p>
+                        <span className="text-sm font-semibold text-muted-foreground">Funcionário</span>
+                        <p className="text-lg">{selectedSchedule.employee}</p>
                     </div>
                     <Separator />
                      <div>
-                        <span className="text-sm font-semibold text-muted-foreground">Horário</span>
-                        <p className="text-lg">{selectedSchedule.time}</p>
+                        <span className="text-sm font-semibold text-muted-foreground">Período</span>
+                        <p className="text-lg">{selectedSchedule.startDate} até {selectedSchedule.endDate}</p>
                     </div>
                     <Separator />
+                    {selectedSchedule.description && (
+                      <>
+                        <div>
+                          <span className="text-sm font-semibold text-muted-foreground">Observações</span>
+                          <p className="text-base mt-1">{selectedSchedule.description}</p>
+                        </div>
+                        <Separator />
+                      </>
+                    )}
                     <div>
                         <span className="text-sm font-semibold text-muted-foreground">Status</span>
                         <div>

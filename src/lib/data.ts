@@ -1,10 +1,11 @@
-import type { Driver, Vehicle, Schedule, VehicleRequest, Sector } from './types';
+import type { Driver, Vehicle, Schedule, VehicleRequest, Sector, WorkSchedule } from './types';
 
 import sectorsData from '@/data/sectors.json';
 import driversData from '@/data/drivers.json';
 import vehiclesData from '@/data/vehicles.json';
 import schedulesData from '@/data/schedules.json';
 import vehicleRequestsData from '@/data/vehicle-requests.json';
+import workSchedulesData from '@/data/work-schedules.json';
 import { chartData as chartDataJson, driverActivity as driverActivityJson } from '@/data/charts.json';
 
 
@@ -12,6 +13,7 @@ export const sectors: Sector[] = sectorsData;
 export let drivers: Driver[] = driversData;
 export let vehicles: Vehicle[] = vehiclesData;
 export let schedules: Schedule[] = schedulesData;
+export let workSchedules: WorkSchedule[] = workSchedulesData;
 export let vehicleRequests: VehicleRequest[] = vehicleRequestsData;
 
 export const chartData = chartDataJson;

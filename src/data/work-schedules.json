@@ -1,0 +1,41 @@
+
+[
+    {
+        "id": "WS001",
+        "title": "Plantão Fim de Semana",
+        "employee": "João da Silva",
+        "type": "Plantão",
+        "status": "Agendada",
+        "startDate": "03/08/2024",
+        "endDate": "04/08/2024",
+        "description": "Plantão de 24h para emergências do setor de obras."
+    },
+    {
+        "id": "WS002",
+        "title": "Jornada Regular - Agosto",
+        "employee": "Maria Oliveira",
+        "type": "Jornada Regular",
+        "status": "Em Andamento",
+        "startDate": "01/08/2024",
+        "endDate": "31/08/2024"
+    },
+    {
+        "id": "WS003",
+        "title": "Folga Compensatória",
+        "employee": "Pedro Santos",
+        "type": "Folga",
+        "status": "Concluída",
+        "startDate": "29/07/2024",
+        "endDate": "29/07/2024"
+    },
+    {
+        "id": "WS004",
+        "title": "Férias",
+        "employee": "Ana Souza",
+        "type": "Férias",
+        "status": "Em Andamento",
+        "startDate": "15/07/2024",
+        "endDate": "05/08/2024",
+        "description": "Retorno previsto para 06/08/2024."
+    }
+]

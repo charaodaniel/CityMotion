@@ -49,6 +49,22 @@ export type Schedule = {
   endChecklist?: string[];
 };
 
+export type WorkScheduleStatus = 'Agendada' | 'Em Andamento' | 'Concluída';
+export type WorkScheduleType = "Jornada Regular" | "Plantão" | "Sobreaviso" | "Folga" | "Férias";
+
+
+export type WorkSchedule = {
+  id: string;
+  title: string;
+  employee: string;
+  type: WorkScheduleType;
+  status: WorkScheduleStatus;
+  startDate: string;
+  endDate: string;
+  description?: string;
+};
+
+
 export type RequestPriority = 'Alta' | 'Média' | 'Baixa';
 
 export type VehicleRequestStatus = 'Pendente' | 'Aprovada' | 'Rejeitada';
