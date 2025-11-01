@@ -5,14 +5,29 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useApp } from '@/contexts/app-provider';
 import { CarFront, LogIn } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setUserRole } = useApp();
+  const [email, setEmail] = useState('admin@citymotion.com');
 
   const handleLogin = (event: React.FormEvent) => {
     event.preventDefault();
+
+    if (email.startsWith('admin')) {
+      setUserRole('admin');
+    } else if (email.startsWith('manager')) {
+      setUserRole('manager');
+    } else if (email.startsWith('driver')) {
+      setUserRole('driver');
+    } else {
+      setUserRole('employee');
+    }
+
     router.push('/');
   };
 
@@ -45,7 +60,8 @@ export default function LoginPage() {
                   type="email"
                   placeholder="seu.email@prefeitura.gov.br"
                   required
-                  defaultValue="admin@citymotion.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-2">

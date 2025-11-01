@@ -45,7 +45,7 @@ const navItems = [
 const bottomNavItems = [
     { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['admin', 'manager', 'driver', 'employee'] },
     { href: '/settings', label: 'Configurações', icon: Settings, roles: ['admin'] },
-    { href: '/support', label: 'Suporte', icon: LifeBuoy, roles: ['admin', 'driver', 'employee'] },
+    { href: '/support', label: 'Suporte', icon: LifeBuoy, roles: ['admin', 'manager', 'driver', 'employee'] },
 ]
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -120,45 +120,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     </SidebarMenuButton>
                     </SidebarMenuItem>
                 ))}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton tooltip='Trocar Perfil'>
-                                <Users />
-                                <span>Trocar Perfil</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent side="right" align="start" className="mb-2">
-                        <DropdownMenuLabel>Simular Perfil</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setUserRole('admin')}>
-                          <Avatar className="h-6 w-6 mr-2">
-                            <AvatarFallback>A</AvatarFallback>
-                          </Avatar>
-                          <span>Administrador</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setUserRole('manager')}>
-                           <Avatar className="h-6 w-6 mr-2">
-                            <AvatarFallback>G</AvatarFallback>
-                          </Avatar>
-                          <span>Gestor de Setor</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setUserRole('driver')}>
-                           <Avatar className="h-6 w-6 mr-2">
-                            <AvatarFallback>M</AvatarFallback>
-                          </Avatar>
-                          <span>Motorista</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setUserRole('employee')}>
-                           <Avatar className="h-6 w-6 mr-2">
-                            <AvatarFallback>F</AvatarFallback>
-                          </Avatar>
-                          <span>Funcionário</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
                  <div className="flex items-center gap-2 p-2 mt-2 border-t border-sidebar-border">
                     <Avatar className="h-8 w-8">
                         <AvatarFallback>{getInitials(userRole)}</AvatarFallback>
