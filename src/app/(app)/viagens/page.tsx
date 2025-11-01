@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText, Check } from 'lucide-react';
+import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText, Check, Fuel } from 'lucide-react';
 import { drivers as initialDrivers, vehicles as initialVehicles } from '@/lib/data';
 import type { Schedule, ScheduleStatus, Driver, Vehicle } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +21,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { useApp } from '@/contexts/app-provider';
 
-type ModalState = 'details' | 'finish' | 'start-checklist' | 'form' | null;
+type ModalState = 'details' | 'finish' | 'start-checklist' | 'form' | 'refueling' | null;
 
 const startChecklistItems = [
     'Nível de óleo e água verificado',
@@ -234,6 +234,16 @@ export default function ViagensPage() {
     setCheckedItems(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
   }
 
+  const handleRefuelingSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Here you would handle the form data submission, e.g., send to a server.
+    toast({
+        title: "Abastecimento Registrado",
+        description: "As informações de abastecimento foram salvas com sucesso."
+    });
+    closeModal();
+  }
+
   const allSchedules = schedules.filter(s => s.status !== 'Cancelada');
   const schoolSchedules = allSchedules.filter(s => s.category.toLowerCase().includes('escolar'));
   const generalSchedules = allSchedules.filter(s => !s.category.toLowerCase().includes('escolar'));
@@ -397,14 +407,20 @@ export default function ViagensPage() {
                         </>
                       )}
 
-                      {selectedSchedule.status === 'Agendada' && (
-                        <div className='pt-4 flex justify-end'>
-                            <Button onClick={() => openModal('start-checklist', selectedSchedule)}>
-                                <ClipboardCheck className="mr-2 h-4 w-4"/>
-                                Verificar Checklist
-                            </Button>
+                        <div className='pt-4 flex justify-end gap-2'>
+                            {selectedSchedule.status === 'Agendada' && (
+                                <Button onClick={() => openModal('start-checklist', selectedSchedule)}>
+                                    <ClipboardCheck className="mr-2 h-4 w-4"/>
+                                    Ver Checklist
+                                </Button>
+                            )}
+                             {selectedSchedule.status === 'Em Andamento' && (
+                                <Button variant="outline" onClick={() => openModal('refueling', selectedSchedule)}>
+                                    <Fuel className="mr-2 h-4 w-4" />
+                                    Registrar Abastecimento
+                                </Button>
+                            )}
                         </div>
-                      )}
                   </div>
                   </>
               )}
@@ -539,6 +555,46 @@ export default function ViagensPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+       {/* Refueling Modal */}
+      <Dialog open={activeModal === 'refueling'} onOpenChange={closeModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Fuel className="mr-2 h-5 w-5" />
+              Registrar Abastecimento
+            </DialogTitle>
+            <DialogDescription>
+              Preencha os dados do abastecimento realizado durante a viagem.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleRefuelingSubmit} className="py-4 space-y-4">
+             <div className="space-y-2">
+                <Label htmlFor="refuel-mileage">Quilometragem</Label>
+                <Input id="refuel-mileage" type="number" placeholder="KM no momento do abastecimento" required />
+            </div>
+             <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="refuel-liters">Litros</Label>
+                    <Input id="refuel-liters" type="number" step="0.01" placeholder="0.00" required />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="refuel-price">Valor Total (R$)</Label>
+                    <Input id="refuel-price" type="number" step="0.01" placeholder="0.00" required />
+                </div>
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="refuel-receipt">Foto do Recibo (Opcional)</Label>
+                <Input id="refuel-receipt" type="file" accept="image/*" />
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={closeModal}>Cancelar</Button>
+                <Button type="submit">Salvar Registro</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+

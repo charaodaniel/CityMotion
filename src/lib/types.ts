@@ -1,3 +1,4 @@
+
 export type DriverStatus = 'Disponível' | 'Em Viagem' | 'Afastado' | 'Em Serviço';
 
 export type Driver = {
@@ -31,6 +32,13 @@ export type Passenger = {
   document: string;
 };
 
+export type Refueling = {
+  mileage: number;
+  liters: number;
+  price: number;
+  receiptPhoto?: string;
+};
+
 export type Schedule = {
   id: string;
   title: string;
@@ -49,6 +57,7 @@ export type Schedule = {
   endNotes?: string;
   startChecklist?: string[];
   endChecklist?: string[];
+  refuelings?: Refueling[];
 };
 
 export type WorkScheduleStatus = 'Agendada' | 'Em Andamento' | 'Concluída';
