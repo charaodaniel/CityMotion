@@ -312,6 +312,17 @@ export default function ViagensPage() {
                           <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
                       </div>
                       </div>
+                      {selectedSchedule.status === 'Agendada' && (
+                        <div className='pt-4 flex justify-end'>
+                            <Button onClick={() => {
+                                setIsDetailsModalOpen(false);
+                                handleOpenChecklistModal(selectedSchedule);
+                            }}>
+                                <ClipboardCheck className="mr-2 h-4 w-4"/>
+                                Verificar Checklist
+                            </Button>
+                        </div>
+                      )}
                   </div>
                   </>
               )}
