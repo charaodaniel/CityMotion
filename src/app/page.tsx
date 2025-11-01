@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState } from 'react';
@@ -13,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/app-provider';
+import { Header } from '@/components/layout/header';
 
 type ModalState = 'details-trip' | 'details-work' | null;
 
@@ -176,98 +176,101 @@ export default function HomePage() {
 
 
   return (
-    <div className="container mx-auto p-4 sm:p-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight font-headline">
-            Painel de Atividades em Aberto
-          </h1>
-          <p className="text-muted-foreground">
-            Acompanhe o status das viagens e escalas de trabalho ativas.
-          </p>
+    <>
+      <Header />
+      <div className="container mx-auto p-4 sm:p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight font-headline">
+              Painel de Atividades em Aberto
+            </h1>
+            <p className="text-muted-foreground">
+              Acompanhe o status das viagens e escalas de trabalho ativas.
+            </p>
+          </div>
         </div>
-      </div>
 
-      <Tabs defaultValue="trips">
-        <TabsList>
-          <TabsTrigger value="trips">Viagens ({openSchedules.length})</TabsTrigger>
-          <TabsTrigger value="work-schedules">Escalas de Trabalho ({openWorkSchedules.length})</TabsTrigger>
-        </TabsList>
-        <TabsContent value="trips">
-          <TripsView 
-            schedules={openSchedules} 
-            onCardClick={(schedule) => openModal('details-trip', schedule)}
+        <Tabs defaultValue="trips">
+          <TabsList>
+            <TabsTrigger value="trips">Viagens ({openSchedules.length})</TabsTrigger>
+            <TabsTrigger value="work-schedules">Escalas de Trabalho ({openWorkSchedules.length})</TabsTrigger>
+          </TabsList>
+          <TabsContent value="trips">
+            <TripsView 
+              schedules={openSchedules} 
+              onCardClick={(schedule) => openModal('details-trip', schedule)}
+              />
+          </TabsContent>
+          <TabsContent value="work-schedules">
+            <WorkSchedulesView
+              schedules={openWorkSchedules}
+              onCardClick={(schedule) => openModal('details-work', schedule)}
             />
-        </TabsContent>
-        <TabsContent value="work-schedules">
-          <WorkSchedulesView
-            schedules={openWorkSchedules}
-            onCardClick={(schedule) => openModal('details-work', schedule)}
-           />
-        </TabsContent>
-      </Tabs>
-      
-      {/* Details Modal */}
-      <Dialog open={!!activeModal} onOpenChange={() => closeModal()}>
-          <DialogContent>
-              <ScrollArea className="max-h-[80vh] p-4">
-              {activeModal === 'details-trip' && selectedSchedule && (
-                  <>
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
-                        <DialogDescription>Detalhes da viagem agendada.</DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4 pr-4">
-                        <div>
-                            <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                            <div><Badge variant={getTripStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge></div>
-                        </div>
-                        <Separator />
-                        <div><span className="text-sm font-semibold text-muted-foreground">Motorista</span><p className="text-lg">{selectedSchedule.driver}</p></div>
-                        <Separator />
-                        <div><span className="text-sm font-semibold text-muted-foreground">Veículo</span><p className="text-lg">{selectedSchedule.vehicle}</p></div>
-                        <Separator />
-                        <div className="grid grid-cols-2 gap-4">
-                            <div><span className="text-sm font-semibold text-muted-foreground">Origem</span><p className="text-lg">{selectedSchedule.origin}</p></div>
-                            <div><span className="text-sm font-semibold text-muted-foreground">Destino</span><p className="text-lg">{selectedSchedule.destination}</p></div>
-                        </div>
-                        <Separator />
-                        <div><span className="text-sm font-semibold text-muted-foreground">Data e Horário</span><p className="text-lg">{selectedSchedule.departureTime}</p></div>
-                    </div>
-                  </>
-              )}
-               {activeModal === 'details-work' && selectedWorkSchedule && (
-                  <>
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl">{selectedWorkSchedule.title}</DialogTitle>
-                        <DialogDescription>Detalhes da escala agendada.</DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4 pr-4">
-                        <div><span className="text-sm font-semibold text-muted-foreground">Tipo</span><p className="text-lg">{selectedWorkSchedule.type}</p></div>
-                        <Separator />
-                        <div><span className="text-sm font-semibold text-muted-foreground">Funcionário</span><p className="text-lg">{selectedWorkSchedule.employee}</p></div>
-                        <Separator />
-                        <div><span className="text-sm font-semibold text-muted-foreground">Período</span><p className="text-lg">{selectedWorkSchedule.startDate} até {selectedWorkSchedule.endDate}</p></div>
-                        <Separator />
-                        {selectedWorkSchedule.description && (
-                        <>
-                            <div>
-                            <span className="text-sm font-semibold text-muted-foreground">Observações</span>
-                            <p className="text-base mt-1">{selectedWorkSchedule.description}</p>
-                            </div>
-                            <Separator />
-                        </>
-                        )}
-                        <div>
-                            <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                            <div><Badge variant={getWorkStatusVariant(selectedWorkSchedule.status)}>{selectedWorkSchedule.status}</Badge></div>
-                        </div>
-                    </div>
-                  </>
-              )}
-              </ScrollArea>
-          </DialogContent>
-      </Dialog>
-    </div>
+          </TabsContent>
+        </Tabs>
+        
+        {/* Details Modal */}
+        <Dialog open={!!activeModal} onOpenChange={() => closeModal()}>
+            <DialogContent>
+                <ScrollArea className="max-h-[80vh] p-4">
+                {activeModal === 'details-trip' && selectedSchedule && (
+                    <>
+                      <DialogHeader>
+                          <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
+                          <DialogDescription>Detalhes da viagem agendada.</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4 pr-4">
+                          <div>
+                              <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                              <div><Badge variant={getTripStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge></div>
+                          </div>
+                          <Separator />
+                          <div><span className="text-sm font-semibold text-muted-foreground">Motorista</span><p className="text-lg">{selectedSchedule.driver}</p></div>
+                          <Separator />
+                          <div><span className="text-sm font-semibold text-muted-foreground">Veículo</span><p className="text-lg">{selectedSchedule.vehicle}</p></div>
+                          <Separator />
+                          <div className="grid grid-cols-2 gap-4">
+                              <div><span className="text-sm font-semibold text-muted-foreground">Origem</span><p className="text-lg">{selectedSchedule.origin}</p></div>
+                              <div><span className="text-sm font-semibold text-muted-foreground">Destino</span><p className="text-lg">{selectedSchedule.destination}</p></div>
+                          </div>
+                          <Separator />
+                          <div><span className="text-sm font-semibold text-muted-foreground">Data e Horário</span><p className="text-lg">{selectedSchedule.departureTime}</p></div>
+                      </div>
+                    </>
+                )}
+                {activeModal === 'details-work' && selectedWorkSchedule && (
+                    <>
+                      <DialogHeader>
+                          <DialogTitle className="text-2xl">{selectedWorkSchedule.title}</DialogTitle>
+                          <DialogDescription>Detalhes da escala agendada.</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4 pr-4">
+                          <div><span className="text-sm font-semibold text-muted-foreground">Tipo</span><p className="text-lg">{selectedWorkSchedule.type}</p></div>
+                          <Separator />
+                          <div><span className="text-sm font-semibold text-muted-foreground">Funcionário</span><p className="text-lg">{selectedWorkSchedule.employee}</p></div>
+                          <Separator />
+                          <div><span className="text-sm font-semibold text-muted-foreground">Período</span><p className="text-lg">{selectedWorkSchedule.startDate} até {selectedWorkSchedule.endDate}</p></div>
+                          <Separator />
+                          {selectedWorkSchedule.description && (
+                          <>
+                              <div>
+                              <span className="text-sm font-semibold text-muted-foreground">Observações</span>
+                              <p className="text-base mt-1">{selectedWorkSchedule.description}</p>
+                              </div>
+                              <Separator />
+                          </>
+                          )}
+                          <div>
+                              <span className="text-sm font-semibold text-muted-foreground">Status</span>
+                              <div><Badge variant={getWorkStatusVariant(selectedWorkSchedule.status)}>{selectedWorkSchedule.status}</Badge></div>
+                          </div>
+                      </div>
+                    </>
+                )}
+                </ScrollArea>
+            </DialogContent>
+        </Dialog>
+      </div>
+    </>
   );
 }
