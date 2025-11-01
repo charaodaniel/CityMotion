@@ -46,7 +46,6 @@ function getWorkStatusVariant(status: WorkScheduleStatus) {
 const tripStatusColumns: { title: string; status: ScheduleStatus }[] = [
     { title: 'Agendadas', status: 'Agendada' },
     { title: 'Em Andamento', status: 'Em Andamento' },
-    { title: 'Concluídas', status: 'Concluída' },
 ];
 
 function TripsView({ 
@@ -62,7 +61,7 @@ function TripsView({
     }
     
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             {tripStatusColumns.map(column => (
                 <div key={column.status} className="flex flex-col gap-4">
                     <h2 className="text-xl font-semibold tracking-tight">{column.title} ({schedulesByStatus(column.status).length})</h2>
@@ -172,35 +171,37 @@ export default function HomePage() {
       setSelectedWorkSchedule(null);
   }
 
-  const allSchedules = schedules.filter(s => s.status !== 'Cancelada');
+  const openSchedules = schedules.filter(s => s.status === 'Agendada' || s.status === 'Em Andamento');
+  const openWorkSchedules = workSchedules.filter(s => s.status !== 'Concluída');
+
 
   return (
     <div className="container mx-auto p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline">
-            Painel Geral de Atividades
+            Painel de Atividades em Aberto
           </h1>
           <p className="text-muted-foreground">
-            Acompanhe o status das viagens da frota e das escalas de trabalho.
+            Acompanhe o status das viagens e escalas de trabalho ativas.
           </p>
         </div>
       </div>
 
       <Tabs defaultValue="trips">
         <TabsList>
-          <TabsTrigger value="trips">Viagens ({allSchedules.length})</TabsTrigger>
-          <TabsTrigger value="work-schedules">Escalas de Trabalho ({workSchedules.length})</TabsTrigger>
+          <TabsTrigger value="trips">Viagens ({openSchedules.length})</TabsTrigger>
+          <TabsTrigger value="work-schedules">Escalas de Trabalho ({openWorkSchedules.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="trips">
           <TripsView 
-            schedules={allSchedules} 
+            schedules={openSchedules} 
             onCardClick={(schedule) => openModal('details-trip', schedule)}
             />
         </TabsContent>
         <TabsContent value="work-schedules">
           <WorkSchedulesView
-            schedules={workSchedules}
+            schedules={openWorkSchedules}
             onCardClick={(schedule) => openModal('details-work', schedule)}
            />
         </TabsContent>
