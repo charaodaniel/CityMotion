@@ -1,8 +1,8 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { vehicleRequests as initialVehicleRequests, schedules as initialSchedules, drivers, vehicles } from '@/lib/data';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { drivers, vehicles } from '@/lib/data';
 import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus } from '@/lib/types';
 import { format } from 'date-fns';
 
@@ -23,8 +23,30 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [userRole, setUserRole] = useState<UserRole>('admin');
-  const [vehicleRequests, setVehicleRequests] = useState<VehicleRequest[]>(initialVehicleRequests);
-  const [schedules, setSchedules] = useState<Schedule[]>(initialSchedules);
+  const [vehicleRequests, setVehicleRequests] = useState<VehicleRequest[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [schedulesRes, requestsRes] = await Promise.all([
+            fetch('/api/data?type=schedules'),
+            fetch('/api/data?type=vehicle-requests')
+        ]);
+        if (!schedulesRes.ok || !requestsRes.ok) {
+            throw new Error('Failed to fetch initial data');
+        }
+        const schedulesData = await schedulesRes.json();
+        const requestsData = await requestsRes.json();
+        setSchedules(schedulesData);
+        setVehicleRequests(requestsData);
+      } catch (error) {
+        console.error("Could not fetch data:", error);
+      }
+    }
+    fetchData();
+  }, []);
+
 
   const addVehicleRequest = (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => {
     const newRequest: VehicleRequest = {
