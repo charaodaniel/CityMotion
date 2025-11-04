@@ -13,24 +13,24 @@ O CityMotion é um sistema web projetado para transformar a maneira como sua pre
 
 -   **Acompanhar sua Frota em Tempo Real:** Saiba instantaneamente quais veículos estão disponíveis, em viagem ou em manutenção.
 -   **Automatizar Solicitações e Agendamentos:** Simplifique o processo de pedido e aprovação de viagens com um fluxo de trabalho inteligente.
--   **Gerenciar Recursos com Eficiência:** Tenha controle total sobre os veículos, motoristas e setores da sua prefeitura.
--   **Gerar Relatórios Detalhados:** Emita relatórios com filtros avançados para analisar o uso da frota, quilometragem e custos.
+-   **Gerenciar Recursos com Eficiência:** Tenha controle total sobre os veículos, funcionários e setores da sua prefeitura.
+-   **Gerar Relatórios Detalhados:** Emita relatórios em PDF com filtros avançados para analisar o uso da frota, quilometragem e custos.
 -   **Garantir a Segurança:** Implemente checklists de pré e pós-viagem para garantir a segurança dos motoristas e a manutenção dos veículos.
 -   **Identificação Moderna:** Forneça crachás virtuais com QR Code para todos os funcionários, facilitando a identificação em qualquer lugar.
 
 ---
 
-## ✅ Funcionalidades Já Implementadas
+## ✅ Funcionalidades da Versão Alpha
 
-O CityMotion já conta com um conjunto robusto de funcionalidades prontas para uso:
+O CityMotion já conta com um conjunto robusto de funcionalidades prontas para uso e demonstração:
 
 ### **Painel de Controle Dinâmico**
 Uma tela inicial que se adapta ao perfil do usuário (Administrador, Gestor, Motorista ou Funcionário), exibindo as informações e ações mais relevantes para cada um.
 
 ### **Gestão Completa de Recursos**
 -   **Veículos:** Cadastre, edite e gerencie todos os veículos da frota, incluindo informações de modelo, placa, setor, quilometragem e status.
--   **Motoristas:** Mantenha um registro completo dos motoristas, com seus dados, documentos, setor e histórico.
--   **Setores:** Organize a prefeitura em setores (Saúde, Educação, Obras) para vincular veículos e motoristas.
+-   **Funcionários:** Mantenha um registro completo dos funcionários, com seus dados, documentos, setor e histórico.
+-   **Setores:** Organize a prefeitura em setores (Saúde, Educação, Obras) para vincular veículos e funcionários.
 
 ### **Fluxo de Viagens Inteligente**
 1.  **Solicitação Rápida:** Um funcionário pode pedir um transporte através de um formulário simples.
@@ -43,31 +43,34 @@ Acompanhe o ciclo de vida de cada viagem de forma visual e intuitiva:
 -   **Em Andamento:** Viagens que estão ocorrendo agora.
 -   **Concluídas:** Histórico de viagens finalizadas.
 
-### **Checklists de Segurança**
+### **Checklists de Segurança e Relatórios de Sinistro**
 -   **Pré-viagem:** Antes de iniciar um trajeto, o motorista preenche um checklist digital (nível de óleo, pneus, etc.) e informa a quilometragem inicial.
--   **Pós-viagem:** Ao finalizar, o motorista informa a quilometragem final e preenche um checklist de chegada, garantindo que o veículo está em boas condições.
+-   **Pós-viagem:** Ao finalizar, o motorista informa a quilometragem final e preenche um checklist de chegada.
+-   **Relatório de Sinistro:** Em caso de incidentes, o motorista pode abrir um chamado diretamente pela tela da viagem, anexando fotos e detalhes.
 
 ### **Crachá Virtual com QR Code**
--   Cada funcionário possui um **crachá virtual** acessível por um link exclusivo.
--   O crachá exibe nome, foto, matrícula e um **QR Code único**.
--   Ao escanear o QR Code, é possível visualizar o crachá online, garantindo que as informações estejam sempre atualizadas.
--   **Função de Impressão:** O crachá pode ser impresso para uso em cartões de visita ou crachás físicos.
+-   Cada funcionário possui um **crachá virtual** acessível por um link exclusivo, com nome, foto, matrícula e um QR Code para validação online.
+-   O crachá pode ser impresso para uso físico.
 
 ### **Relatórios e Análises**
 Gere relatórios em PDF com filtros avançados por período, setor, veículo ou motorista, e acompanhe KPIs como quilometragem total e veículo mais utilizado.
 
----
-
-## 🔮 O Futuro do CityMotion (Próximos Passos)
-
-Estamos em constante evolução! Nossas próximas prioridades incluem:
-
--   [ ] **Internacionalização (Tradução):** Finalizar a tradução de todos os componentes da interface para o português (pt-BR), garantindo uma experiência 100% localizada.
--   [ ] **Página de Perfil Dinâmica:** Fazer com que a página de perfil exiba as informações e o histórico de viagens do usuário que está logado no sistema.
--   [ ] **Gerenciamento de Documentos:** Implementar a funcionalidade de upload e visualização de arquivos (como CNH, CRLV, fotos de recibos) diretamente no sistema.
--   [ ] **Integração com Backend Real:** Substituir o "pseudo-banco" de dados atual por uma integração com um banco de dados robusto em nuvem, preparando o sistema para produção.
--   [ ] **Página de Login Funcional:** Desenvolver a interface visual da página de login.
+### **Gestão de Manutenção e Escalas**
+-   **Manutenção:** Solicite e acompanhe o status das manutenções (corretivas e preventivas) e peça a compra de peças necessárias.
+-   **Escalas:** Crie e gerencie escalas de trabalho, plantões e folgas para os funcionários.
 
 ---
 
-**CityMotion — Mobilidade, transparência e eficiência para a frota pública municipal.**
+## 🔮 Próximos Passos (Roadmap Pós-Alpha)
+
+Após a validação desta versão Alpha, nossas prioridades incluem:
+
+-   [ ] **Integração com Backend Real:** Substituir o sistema de dados simulados por uma integração com um banco de dados robusto em nuvem (como Firebase ou PocketBase) para garantir a persistência e segurança dos dados.
+-   [ ] **Autenticação Real:** Implementar um sistema de login e senha seguro para substituir a simulação de perfis.
+-   [ ] **Gerenciamento de Documentos:** Implementar a funcionalidade de upload e armazenamento seguro de arquivos (como CNH, CRLV, fotos de recibos).
+-   [ ] **Notificações em Tempo Real:** Adicionar alertas para notificar gestores sobre novas solicitações ou motoristas sobre viagens agendadas.
+-   [ ] **Painel de Administração de Perfis:** Criar uma interface para que o Administrador possa gerenciar os perfis e permissões dos usuários.
+
+---
+
+**CityMotion — Mobilidade, transparência e eficiência para a gestão pública municipal.**
