@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, Menu, Settings, LifeBuoy, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Car, Menu, Settings, Activity, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
