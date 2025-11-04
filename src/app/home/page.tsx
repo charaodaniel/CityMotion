@@ -27,23 +27,17 @@ function getStatusVariant(status: WorkScheduleStatus) {
 }
 
 export default function HomePage() {
-  const { workSchedules, currentUser, isLoading: isAppLoading } = useApp();
+  const { workSchedules, currentUser, isLoading } = useApp();
   const router = useRouter();
   const [selectedSchedule, setSelectedSchedule] = useState<WorkSchedule | null>(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // We only check for redirection after the app has finished loading its initial data.
-    if (!isAppLoading) {
-      if (currentUser) {
-        router.replace('/dashboard');
-      } else {
-        // If not logged in, show the public page.
-        setIsCheckingAuth(false);
-      }
+    // If a user is logged in (based on the simulation), redirect to the dashboard.
+    // We don't need to wait for data loading to be complete, just the user check.
+    if (currentUser) {
+      router.replace('/dashboard');
     }
-  }, [currentUser, isAppLoading, router]);
-
+  }, [currentUser, router]);
 
   const handleCardClick = (schedule: WorkSchedule) => {
     setSelectedSchedule(schedule);
@@ -53,8 +47,16 @@ export default function HomePage() {
     setSelectedSchedule(null);
   };
   
-  if (isAppLoading || isCheckingAuth) {
+  // Show loading skeleton only while initial data is being fetched
+  // and no user is determined yet. Once currentUser is null, we can show the page.
+  if (isLoading && !currentUser) {
     return <Loading />;
+  }
+
+  // If a user is found, this component will trigger the redirect and show a loading state
+  // to avoid a flash of the public page.
+  if (currentUser) {
+     return <Loading />;
   }
 
   return (

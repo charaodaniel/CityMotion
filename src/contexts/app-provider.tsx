@@ -89,6 +89,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     async function fetchData() {
+      setIsLoading(true);
       try {
         // Por enquanto, esta API simulada /api/data continua a funcionar.
         // A lógica de `getApiUrl` está aqui para quando você refatorar para
@@ -121,7 +122,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   
   // This is the core of the user simulation
   const currentUser = useMemo(() => {
-    if (!employees.length || !userEmailForSimulation) return null;
+    if (isLoading || !employees.length || !userEmailForSimulation) return null;
+    
+    // Fallback for empty email, ensuring no user is selected
+    if (userEmailForSimulation === '') return null;
 
     if (userEmailForSimulation.startsWith('admin')) {
       return employees.find(e => e.name === 'Júlio César') || null; // The Mayor (simulated Admin)
@@ -138,7 +142,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     
     // Fallback or default user
     return null;
-  }, [userEmailForSimulation, employees]);
+  }, [userEmailForSimulation, employees, isLoading]);
 
 
   const addVehicleRequest = (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => {
