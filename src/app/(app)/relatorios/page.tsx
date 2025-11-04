@@ -5,7 +5,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileDown, Car, Clock, User, Filter, Calendar as CalendarIcon, Gauge, Route, Trophy } from 'lucide-react';
-import { schedules, sectors, vehicles, drivers } from '@/lib/data';
+import { sectors, vehicles, drivers } from '@/lib/data';
 import type { Schedule, ScheduleStatus } from '@/lib/types';
 import { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -45,12 +45,29 @@ function getStatusVariant(status: ScheduleStatus) {
 
 export default function ReportsPage() {
   const { userRole } = useApp();
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [dateRange, setDateRange] = useState<{from: Date | undefined, to: Date | undefined}>({ from: undefined, to: undefined });
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchSchedules() {
+      try {
+        const response = await fetch('/api/data');
+        if (!response.ok) {
+          throw new Error('Failed to fetch schedules');
+        }
+        const data = await response.json();
+        setSchedules(data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchSchedules();
+  }, []);
 
   const currentUser = useMemo(() => {
     if (userRole !== 'driver') return null;
