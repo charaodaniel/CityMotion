@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useApp } from '@/contexts/app-provider';
 import { CarFront, LogIn, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useState } from 'react';
 
 export default function LoginPage() {
@@ -37,14 +38,14 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="flex justify-center">
-            <div className="flex items-center gap-3 text-foreground">
+            <Link href="/home" className="flex items-center gap-3 text-foreground">
                 <div className="bg-foreground text-background p-2.5 rounded-lg">
                     <CarFront className="h-7 w-7" />
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter">
                 CityMotion
                 </h1>
-          </div>
+          </Link>
         </div>
         <Card>
           <CardHeader>
