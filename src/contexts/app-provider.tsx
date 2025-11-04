@@ -75,6 +75,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (status === 'Aprovada' && requestToProcess) {
       const request = requestToProcess;
+        // Simulação da lógica de alocação de recursos
         const availableDriver = drivers.find(d => d.status === 'Disponível');
         const availableVehicle = vehicles.find(v => v.status === 'Disponível');
 
