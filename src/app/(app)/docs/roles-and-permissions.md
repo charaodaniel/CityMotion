@@ -36,32 +36,26 @@ O **Gestor** é, tipicamente, o Secretário de uma pasta (Saúde, Obras, Educaç
 
 ---
 
-## 3. Motorista (Driver)
+## 3. Funcionário (Employee)
 
-O **Motorista** é um tipo de funcionário cujo foco está na execução das viagens. Seu painel é simplificado para otimizar suas tarefas diárias.
+Este é o perfil padrão para a maioria dos servidores da prefeitura, incluindo motoristas, professores, médicos, técnicos, etc.
 
--   **Visão:** Focada em suas próprias atividades.
--   **Permissões:**
-    -   Visualiza as viagens que foram **atribuídas a ele**.
-    -   **Inicia e Finaliza** viagens, preenchendo os checklists de pré e pós-viagem.
-    -   Registra quilometragem e abastecimentos.
--   **Histórico:** Acessa o histórico de relatórios apenas das viagens que ele mesmo realizou (seja como motorista ou passageiro). Ele não pode ver o histórico de outros motoristas.
-
-> **E-mail de teste:** `driver@citymotion.com` (simula a motorista Maria Oliveira)
-
----
-
-## 4. Funcionário (Employee)
-
-Este é o perfil padrão para a maioria dos servidores da prefeitura (professores, médicos, técnicos, etc.) que precisam solicitar transporte para realizar suas atividades.
-
--   **Visão:** A mais restrita, focada em suas próprias solicitações.
+-   **Visão:** A mais restrita, focada em suas próprias solicitações e atividades.
 -   **Principal Função:**
     -   **Solicitar um transporte** através do formulário "Pedir Transporte".
--   **Permissões:**
+-   **Funções Específicas do Cargo:**
+    -   Se um funcionário tiver o cargo de **Motorista**, sua interface será adaptada. Ele poderá:
+        -   Visualizar as viagens que foram **atribuídas a ele**.
+        -   **Iniciar e Finalizar** viagens, preenchendo os checklists de pré e pós-viagem.
+        -   Registrar quilometragem e abastecimentos.
+        -   Acessar o histórico de relatórios apenas das viagens que ele mesmo realizou.
+-   **Permissões Gerais de Funcionário:**
     -   Pode visualizar o status de suas próprias solicitações (Pendente, Aprovada, Rejeitada).
     -   Acessa sua página de perfil para ver seu histórico de solicitações.
     -   Acessa seu crachá virtual.
--   **Restrições:** Não tem acesso a painéis de gestão, viagens de outros funcionários ou relatórios gerais.
+-   **Restrições:** Não tem acesso a painéis de gestão, viagens de outros funcionários ou relatórios gerais (a menos que seja um motorista visualizando seu próprio histórico).
 
-> **E-mail de teste:** `employee@citymotion.com` (simula a funcionária Ana Souza)
+> **E-mails de teste:** 
+> - `employee@citymotion.com` (simula a funcionária Ana Souza)
+> - `driver@citymotion.com` (simula a motorista Maria Oliveira, que é um tipo de funcionário)
+

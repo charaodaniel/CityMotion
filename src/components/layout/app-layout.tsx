@@ -33,29 +33,38 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 
 const navItems = [
-  { href: '/dashboard', label: 'Painel', icon: LayoutDashboard, roles: ['admin', 'manager', 'driver', 'employee'] },
+  { href: '/dashboard', label: 'Painel', icon: LayoutDashboard, roles: ['admin', 'manager', 'employee'] },
   { href: '/setores', label: 'Setores', icon: Building, roles: ['admin'] },
   { href: '/funcionarios', label: 'Funcionários', icon: Users, roles: ['admin', 'manager'] },
   { href: '/veiculos', label: 'Veículos', icon: Car, roles: ['admin', 'manager'] },
-  { href: '/viagens', label: 'Viagens', icon: Route, roles: ['admin', 'manager', 'driver'] },
+  { href: '/viagens', label: 'Viagens', icon: Route, roles: ['admin', 'manager', 'employee'] }, // Employee can be a driver
   { href: '/escalas', label: 'Escalas', icon: CalendarClock, roles: ['admin', 'manager'] },
-  { href: '/relatorios', label: 'Relatórios', icon: ScrollText, roles: ['admin', 'manager', 'driver'] },
+  { href: '/relatorios', label: 'Relatórios', icon: ScrollText, roles: ['admin', 'manager', 'employee'] }, // Employee can be a driver
 ];
 
 const bottomNavItems = [
-    { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['admin', 'manager', 'driver', 'employee'] },
+    { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['admin', 'manager', 'employee'] },
     { href: '/settings', label: 'Configurações', icon: Settings, roles: ['admin'] },
-    { href: '/support', label: 'Suporte', icon: LifeBuoy, roles: ['admin', 'manager', 'driver', 'employee'] },
+    { href: '/support', label: 'Suporte', icon: LifeBuoy, roles: ['admin', 'manager', 'employee'] },
 ]
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { userRole, setUserRole } = useApp();
+  const { userRole, setUserRole, currentUser } = useApp();
+
+  const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
 
   const filteredNavItems = useMemo(() => {
-    return navItems.filter(item => item.roles.includes(userRole));
-  }, [userRole]);
+    return navItems.filter(item => {
+      if (!item.roles.includes(userRole)) return false;
+      // Special logic for drivers (who are employees)
+      if (item.href === '/viagens' || item.href === '/relatorios') {
+        return userRole !== 'employee' || isCurrentUserDriver;
+      }
+      return true;
+    });
+  }, [userRole, isCurrentUserDriver]);
 
   const filteredBottomNavItems = useMemo(() => {
     return bottomNavItems.filter(item => item.roles.includes(userRole));
@@ -65,19 +74,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     switch (role) {
       case 'admin': return 'Administrador';
       case 'manager': return 'Gestor de Setor';
-      case 'driver': return 'Motorista';
-      case 'employee': return 'Funcionário';
+      case 'employee': return currentUser?.role || 'Funcionário'; // Show specific role if available
       default: return 'Desconhecido'
     }
   }
-  const getInitials = (role: string) => {
-    switch (role) {
-        case 'admin': return 'AD';
-        case 'manager': return 'GS';
-        case 'driver': return 'MT';
-        case 'employee': return 'FN';
-        default: return 'U';
-    }
+  const getInitials = (name?: string) => {
+    return name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
   }
   
   const handleLogout = () => {
@@ -148,17 +150,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                         <Avatar className='h-9 w-9'>
-                          <AvatarImage src={`https://avatar.vercel.sh/${userRole}`} alt="Avatar" />
-                          <AvatarFallback>{getInitials(userRole)}</AvatarFallback>
+                          <AvatarImage src={`https://avatar.vercel.sh/${currentUser?.id}`} alt="Avatar" />
+                          <AvatarFallback>{getInitials(currentUser?.name)}</AvatarFallback>
                         </Avatar>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel className='font-normal'>
                         <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">{getRoleName(userRole)}</p>
+                          <p className="text-sm font-medium leading-none">{currentUser?.name || getRoleName(userRole)}</p>
                           <p className="text-xs leading-none text-muted-foreground">
-                            {userRole}@citymotion.com
+                            {getRoleName(userRole)}
                           </p>
                         </div>
                       </DropdownMenuLabel>

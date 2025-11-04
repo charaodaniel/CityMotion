@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useApp } from '@/contexts/app-provider';
 import AdminDashboard from '@/components/dashboards/admin-dashboard';
 import ManagerDashboard from '@/components/dashboards/manager-dashboard';
@@ -16,6 +16,15 @@ import { useRouter } from 'next/navigation';
 
 function EmployeeDashboard() {
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+    const { currentUser } = useApp();
+
+    const isDriver = useMemo(() => {
+        return currentUser?.role.toLowerCase().includes('motorista');
+    }, [currentUser]);
+
+    if (isDriver) {
+        return <DriverDashboard />;
+    }
     
     return (
         <Card>
@@ -61,8 +70,6 @@ export default function DashboardPage() {
                 return <AdminDashboard />;
             case 'manager':
                 return <ManagerDashboard />;
-            case 'driver':
-                return <DriverDashboard />;
             case 'employee':
                 return <EmployeeDashboard />;
             default:

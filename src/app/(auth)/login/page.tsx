@@ -23,7 +23,7 @@ export default function LoginPage() {
     } else if (email.startsWith('manager')) {
       setUserRole('manager');
     } else if (email.startsWith('driver')) {
-      setUserRole('driver');
+      setUserRole('employee'); // Drivers are now handled as employees
     } else {
       setUserRole('employee');
     }
@@ -97,8 +97,8 @@ export default function LoginPage() {
           <CardContent className="text-sm space-y-2">
               <p><strong>Administrador:</strong> <button onClick={() => setEmail('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
               <p><strong>Gestor (Secretário):</strong> <button onClick={() => setEmail('manager@citymotion.com')} className="text-primary hover:underline">manager@citymotion.com</button></p>
-              <p><strong>Motorista:</strong> <button onClick={() => setEmail('driver@citymotion.com')} className="text-primary hover:underline">driver@citymotion.com</button></p>
-              <p><strong>Funcionário:</strong> <button onClick={() => setEmail('employee@citymotion.com')} className="text-primary hover:underline">employee@citymotion.com</button></p>
+              <p><strong>Motorista (Funcionário):</strong> <button onClick={() => setEmail('driver@citymotion.com')} className="text-primary hover:underline">driver@citymotion.com</button></p>
+              <p><strong>Funcionário Padrão:</strong> <button onClick={() => setEmail('employee@citymotion.com')} className="text-primary hover:underline">employee@citymotion.com</button></p>
           </CardContent>
         </Card>
 

@@ -2,16 +2,17 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from 'react';
 import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule } from '@/lib/types';
 import { format } from 'date-fns';
 
 
-type UserRole = 'admin' | 'manager' | 'driver' | 'employee';
+type UserRole = 'admin' | 'manager' | 'employee';
 
 interface AppContextType {
   userRole: UserRole;
   setUserRole: (role: UserRole) => void;
+  currentUser: Employee | null;
   
   schedules: Schedule[];
   setSchedules: React.Dispatch<React.SetStateAction<Schedule[]>>;
@@ -38,6 +39,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [userRole, setUserRole] = useState<UserRole>('admin');
+  const [userEmailForSimulation, setUserEmailForSimulation] = useState('admin@citymotion.com');
   
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [vehicleRequests, setVehicleRequests] = useState<VehicleRequest[]>([]);
@@ -67,13 +69,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchData();
   }, []);
 
+  const setRoleAndSimulatedEmail = (role: UserRole) => {
+      setUserRole(role);
+      // This is a helper to determine which user to show based on login email
+      if (role === 'admin') setUserEmailForSimulation('admin@citymotion.com');
+      else if (role === 'manager') setUserEmailForSimulation('manager@citymotion.com');
+      else setUserEmailForSimulation('employee@citymotion.com'); // Default employee
+  }
+  
+  // This is the core of the user simulation
+  const currentUser = useMemo(() => {
+    if (!employees.length) return null;
+
+    if (userEmailForSimulation.startsWith('admin')) {
+      return employees.find(e => e.name === 'Júlio César'); // The Mayor
+    }
+    if (userEmailForSimulation.startsWith('manager')) {
+      return employees.find(e => e.name === 'Ricardo Nunes'); // Head of Obras
+    }
+    if (userEmailForSimulation.startsWith('driver')) {
+      return employees.find(e => e.name === 'Maria Oliveira'); // A driver
+    }
+    // Default employee
+    return employees.find(e => e.name === 'Ana Souza'); // A teacher
+  }, [userEmailForSimulation, employees]);
+
 
   const addVehicleRequest = (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => {
     const newRequest: VehicleRequest = {
       ...request,
       id: `REQ${Date.now()}`,
       status: 'Pendente',
-      requester: 'Ana Souza', // Simulating the employee 'Ana Souza' is always the requester
+      requester: currentUser?.name || 'Funcionário Desconhecido',
       requestDate: new Date().toISOString(),
       priority: request.priority || 'Baixa',
       details: request.details || 'N/A'
@@ -125,7 +152,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{ 
-        userRole, setUserRole, 
+        userRole, 
+        setUserRole: setRoleAndSimulatedEmail, 
+        currentUser,
         schedules, setSchedules, 
         vehicleRequests, addVehicleRequest, updateVehicleRequestStatus,
         employees, setEmployees,
