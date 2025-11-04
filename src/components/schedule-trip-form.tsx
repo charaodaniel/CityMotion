@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from 'react';
@@ -47,11 +48,15 @@ export function ScheduleTripForm({ onFormSubmit }: ScheduleTripFormProps) {
   const drivers = employees.filter(e => e.role === 'Motorista');
 
   const tripCategoriesBySector: Record<string, string[]> = {
-    "Secretaria de Saúde": ["Transporte de Paciente", "Consulta Agendada", "Entrega de Medicamentos"],
-    "Secretaria de Educação": ["Transporte Escolar Diário", "Viagem Pedagógica", "Transporte de Professores"],
-    "Secretaria de Obras": ["Visita Técnica", "Transporte de Material", "Inspeção de Obra"],
-    "Administração": ["Entrega de Documentos", "Reunião Externa", "Serviço Bancário"],
-    "Vigilância Sanitária": ["Inspeção Sanitária", "Coleta de Amostras", "Ação Educativa"],
+    "Secretaria de Saúde": ["Transporte de Paciente", "Consulta Agendada", "Entrega de Medicamentos", "Visita Domiciliar"],
+    "Secretaria de Educação, Cultura, Desporto e Lazer": ["Transporte Escolar", "Viagem Pedagógica", "Transporte de Professores", "Evento Cultural"],
+    "Secretaria de Obras, Viação e Urbanismo": ["Visita Técnica", "Transporte de Material", "Inspeção de Obra", "Manutenção de Vias"],
+    "Secretaria de Administração e Planejamento": ["Entrega de Documentos", "Reunião Externa", "Serviço Bancário", "Recursos Humanos"],
+    "Gabinete do Prefeito": ["Agenda Oficial", "Visita a Comunidades", "Reunião Governamental"],
+    "Secretaria da Fazenda": ["Coleta de Tributos", "Fiscalização", "Serviços de Contabilidade"],
+    "Secretaria de Assistência Social": ["Visita Domiciliar", "Acompanhamento Familiar", "Entrega de Benefícios"],
+    "Secretaria de Agricultura e Meio Ambiente": ["Inspeção Rural", "Fiscalização Ambiental", "Apoio ao Produtor"],
+    "Secretaria de Turismo e Desenvolvimento Econômico": ["Visita a Pontos Turísticos", "Apoio a Eventos", "Fomento ao Comércio"],
   };
 
   const form = useForm<z.infer<typeof formSchema>>({

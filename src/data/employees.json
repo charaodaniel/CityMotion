@@ -1,0 +1,18 @@
+
+[
+  { "id": "1", "name": "João da Silva", "role": "Motorista", "cnh": "123456789", "sector": "Secretaria de Obras, Viação e Urbanismo", "status": "Em Serviço", "matricula": "M-001" },
+  { "id": "2", "name": "Maria Oliveira", "role": "Motorista de Ambulância", "cnh": "987654321", "sector": "Secretaria de Saúde", "status": "Disponível", "matricula": "M-002" },
+  { "id": "3", "name": "Pedro Santos", "role": "Assessor de Comunicação", "cnh": null, "sector": "Gabinete do Prefeito", "status": "Disponível", "matricula": "ADM-003" },
+  { "id": "4", "name": "Ana Souza", "role": "Professora", "cnh": null, "sector": "Secretaria de Educação, Cultura, Desporto e Lazer", "status": "Afastado", "matricula": "EDU-004" },
+  { "id": "5", "name": "Carlos Pereira", "role": "Agente de Arrecadação", "cnh": null, "sector": "Secretaria da Fazenda", "status": "Disponível", "matricula": "FAZ-005" },
+  { "id": "6", "name": "Lúcia Ferreira", "role": "Enfermeira", "cnh": null, "sector": "Secretaria de Saúde", "status": "Disponível", "matricula": "SAU-006" },
+  { "id": "7", "name": "Roberto Alves", "role": "Operador de Máquinas", "cnh": "456456456", "sector": "Secretaria de Obras, Viação e Urbanismo", "status": "Disponível", "matricula": "OBR-007" },
+  { "id": "8", "name": "Fernanda Costa", "role": "Assistente Social", "cnh": "789789789", "sector": "Secretaria de Assistência Social", "status": "Disponível", "matricula": "SOC-008" },
+  { "id": "9", "name": "Marcos Lima", "role": "Motorista Escolar", "cnh": "111222333", "sector": "Secretaria de Educação, Cultura, Desporto e Lazer", "status": "Em Viagem", "matricula": "M-009" },
+  { "id": "10", "name": "Beatriz Rocha", "role": "Médica Clínica Geral", "cnh": null, "sector": "Secretaria de Saúde", "status": "Disponível", "matricula": "SAU-010" },
+  { "id": "11", "name": "Júlio César", "role": "Prefeito", "cnh": null, "sector": "Gabinete do Prefeito", "status": "Em Serviço", "matricula": "GP-001" },
+  { "id": "12", "name": "Ricardo Nunes", "role": "Engenheiro Civil", "cnh": "444555666", "sector": "Secretaria de Obras, Viação e Urbanismo", "status": "Disponível", "matricula": "OBR-012" },
+  { "id": "13", "name": "Laura Martins", "role": "Psicóloga", "cnh": null, "sector": "Secretaria de Assistência Social", "status": "Disponível", "matricula": "SOC-013" },
+  { "id": "14", "name": "Felipe Arruda", "role": "Veterinário", "cnh": null, "sector": "Secretaria de Agricultura e Meio Ambiente", "status": "Em Viagem", "matricula": "AGR-014" },
+  { "id": "15", "name": "Patrícia Borges", "role": "Secretária de Administração", "cnh": null, "sector": "Secretaria de Administração e Planejamento", "status": "Disponível", "matricula": "ADM-001" }
+]

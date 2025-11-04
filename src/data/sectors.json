@@ -1,8 +1,12 @@
 
 [
-  { "id": "SEC01", "name": "Secretaria de Saúde", "description": "Gestão de saúde pública, hospitais e postos de saúde.", "vehicleCount": 2, "driverCount": 3 },
-  { "id": "SEC02", "name": "Secretaria de Obras", "description": "Manutenção de vias, construções e infraestrutura urbana.", "vehicleCount": 1, "driverCount": 1 },
-  { "id": "SEC03", "name": "Secretaria de Educação", "description": "Administração de escolas, creches e transporte escolar.", "vehicleCount": 1, "driverCount": 1 },
-  { "id": "SEC04", "name": "Administração", "description": "Serviços gerais, finanças e recursos humanos da prefeitura.", "vehicleCount": 1, "driverCount": 1 },
-  { "id": "SEC05", "name": "Vigilância Sanitária", "description": "Fiscalização e controle sanitário de estabelecimentos.", "vehicleCount": 1, "driverCount": 1 }
+  { "id": "SEC01", "name": "Gabinete do Prefeito", "description": "Assessoramento direto ao Prefeito e Vice-Prefeito.", "vehicleCount": 1, "driverCount": 1 },
+  { "id": "SEC02", "name": "Secretaria de Administração e Planejamento", "description": "Gestão de pessoal, patrimônio, planejamento e modernização administrativa.", "vehicleCount": 2, "driverCount": 2 },
+  { "id": "SEC03", "name": "Secretaria da Fazenda", "description": "Responsável pela gestão financeira, tributária e contábil do município.", "vehicleCount": 1, "driverCount": 1 },
+  { "id": "SEC04", "name": "Secretaria de Educação, Cultura, Desporto e Lazer", "description": "Administração de escolas, creches, transporte escolar e fomento à cultura e esporte.", "vehicleCount": 5, "driverCount": 5 },
+  { "id": "SEC05", "name": "Secretaria de Saúde", "description": "Gestão de saúde pública, hospitais, postos de saúde e vigilância sanitária.", "vehicleCount": 8, "driverCount": 8 },
+  { "id": "SEC06", "name": "Secretaria de Obras, Viação e Urbanismo", "description": "Manutenção de vias, construções, infraestrutura urbana e serviços urbanos.", "vehicleCount": 10, "driverCount": 12 },
+  { "id": "SEC07", "name": "Secretaria de Assistência Social", "description": "Políticas de assistência social, proteção a famílias, crianças, adolescentes e idosos.", "vehicleCount": 3, "driverCount": 3 },
+  { "id": "SEC08", "name": "Secretaria de Agricultura e Meio Ambiente", "description": "Apoio ao produtor rural, desenvolvimento agrário e políticas ambientais.", "vehicleCount": 4, "driverCount": 4 },
+  { "id": "SEC09", "name": "Secretaria de Turismo e Desenvolvimento Econômico", "description": "Fomento ao turismo, desenvolvimento econômico, indústria e comércio.", "vehicleCount": 1, "driverCount": 1 }
 ]
