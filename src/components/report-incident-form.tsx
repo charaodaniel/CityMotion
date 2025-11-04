@@ -36,7 +36,7 @@ export function ReportIncidentForm({ schedule, onFormSubmit }: ReportIncidentFor
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>>) => {
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
     if (!schedule) return;
     
     // In a real app, this would be sent to a server/API
