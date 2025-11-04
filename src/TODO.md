@@ -2,37 +2,18 @@
 
 Este arquivo organiza as funcionalidades pendentes e melhorias a serem implementadas no projeto CityMotion.
 
-## ✅ Funcionalidades Concluídas (Milestones)
-
--   [x] **Interface e Navegação Básica:** Estrutura inicial do layout, menu lateral e navegação entre páginas.
--   [x] **Gestão de Recursos (CRUD Visual):**
-    -   [x] Cadastro, visualização, edição e detalhamento de **Veículos**.
-    -   [x] Cadastro, visualização, edição e detalhamento de **Funcionários**.
-    -   [x] Cadastro, visualização, edição e detalhamento de **Setores**.
--   [x] **Painel de Viagens (Kanban):** Visualização de viagens nas colunas "Agendadas", "Em Andamento" e "Concluídas".
--   [x] **Checklists de Viagem (Pré e Pós):** Implementação de modais para checklists de segurança antes e depois das viagens.
--   [x] **Fluxo Completo de Solicitação e Aprovação:**
-    -   [x] Funcionário solicita um transporte.
-    -   [x] Gestor do setor recebe a notificação no painel.
-    -   [x] Gestor aprova ou rejeita, gerando a viagem.
--   [x] **Página de Relatórios Melhorada:** Com KPIs e filtros dinâmicos.
--   [x] **Crachá Virtual com QR Code:** Geração de um crachá virtual para cada funcionário.
--   [x] **Central de Ajuda:** Seção de documentação no estilo SaaS.
--   [x] **Hierarquia de Perfis e Permissões (Simulação):** Regras de visibilidade para diferentes perfis.
--   [x] **Página de Login (Visual e Funcional para Simulação):** Interface de login que permite alternar entre os perfis.
--   [x] **Página de Configurações Avançada:** Com abas para identidade visual, operações e monitoramento.
--   [x] **Painel de Administração de Perfis:** Interface para o Admin atribuir perfis.
--   [x] **Página de Perfil 100% Dinâmica:** Exibe informações do usuário "logado".
--   [x] **Estrutura do Banco de Dados:** Criação do arquivo `database.sql` com o esquema das tabelas.
-
 ## 🚀 Próximas Funcionalidades (Roadmap)
 
--   [ ] **Integração com Backend e Banco de Dados (SQLite):**
-    -   [ ] **Construir o Servidor Node.js:** Utilizar o guia em `docs/BACKEND_GUIDE.md` para criar o servidor Express.
-    -   [ ] **Inicializar o Banco de Dados:** Usar o arquivo `src/data/database.sql` para criar e popular o banco de dados `citymotion.db`.
-    -   [ ] **Implementar Autenticação Real:** Substituir o `AppProvider` de simulação por chamadas reais à nova API de login (`/api/login`), armazenando o token JWT no cliente.
-    -   [ ] **Refatorar as Páginas:** Modificar as páginas (Veículos, Funcionários, Viagens, etc.) para buscar e enviar dados para a nova API do Node.js em vez de usar os dados estáticos.
-    -   [ ] **Implementar Upload de Arquivos:** Criar a lógica no servidor para receber e salvar os arquivos de documentos (CNH, CRLV, etc.) em uma pasta `uploads`.
+-   [ ] **Conectar Front-end com a Nova API (Back-end):**
+    -   [ ] **Refatorar o `AppProvider`:** Substituir a lógica de busca de dados do `useEffect` que consome a API de simulação (`/api/data`) para consumir a nova API do back-end (`http://localhost:3001/api/data`).
+    -   [ ] **Implementar Autenticação Real:**
+        -   Modificar a página de `Login` para fazer uma requisição `POST` para `http://localhost:3001/api/login`.
+        -   Após o login, armazenar o token JWT recebido (no `localStorage` ou em um cookie).
+        -   Adicionar o token (`Authorization: Bearer <token>`) em todas as requisições subsequentes para as rotas protegidas da API.
+    -   [ ] **Refatorar Funções de Mutação:** Atualizar as funções que adicionam ou modificam dados (ex: `addVehicleRequest`, `updateScheduleStatus`) para que, em vez de alterarem o estado local, façam requisições `POST` ou `PUT` para a API do back-end.
+
+-   [ ] **Implementar Upload de Arquivos no Back-end:**
+    -   [ ] Criar a lógica no servidor Node.js para receber e salvar os arquivos de documentos (CNH, CRLV, etc.) em uma pasta (ex: `backend/uploads`).
 
 -   [ ] **Internacionalização (Tradução Completa):**
     -   [ ] Traduzir todos os componentes de UI que ainda exibem textos em inglês (ex: `Calendar`, textos de bibliotecas).
