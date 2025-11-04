@@ -78,7 +78,7 @@ const docsSidebarNavItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { userRole, setUserRole, currentUser, isLoading } = useApp();
+  const { userRole, logout, currentUser, isLoading } = useApp();
 
   const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
   const isDocsPage = pathname.startsWith('/docs');
@@ -115,7 +115,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
   
   const handleLogout = () => {
-    setUserRole('employee', ''); // Reset to a default role and clear simulated email
+    logout();
     router.push('/login');
   }
 

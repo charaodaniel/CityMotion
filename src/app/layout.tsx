@@ -4,6 +4,8 @@ import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import 'jwt-decode';
+
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 

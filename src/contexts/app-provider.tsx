@@ -2,29 +2,30 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus } from '@/lib/types';
 import { format } from 'date-fns';
-import Loading from '@/app/loading';
-
-// Define a interface para o objeto exposto pelo preload.js
-declare global {
-  interface Window {
-    electronAPI?: {
-      getApiConfig: () => Promise<{ serverIp: string }>;
-    };
-  }
-}
-
+import { jwtDecode } from 'jwt-decode'; // Usaremos para extrair o papel do token
 
 type UserRole = 'admin' | 'manager' | 'employee';
 
+// Interface para o payload decodificado do JWT
+interface DecodedToken {
+  id: string;
+  name: string;
+  role: string; // Ex: 'Prefeito', 'Engenheiro Civil', 'Motorista'
+  sector: string;
+  iat: number;
+  exp: number;
+}
+
 interface AppContextType {
   isLoading: boolean;
+  token: string | null;
   userRole: UserRole;
-  setUserRole: (role: UserRole, email?: string) => void;
-  userEmailForSimulation: string;
   currentUser: Employee | null;
+  login: (token: string) => Promise<void>;
+  logout: () => void;
   
   schedules: Schedule[];
   setSchedules: React.Dispatch<React.SetStateAction<Schedule[]>>;
@@ -49,15 +50,15 @@ interface AppContextType {
   setMaintenanceRequests: React.Dispatch<React.SetStateAction<MaintenanceRequest[]>>;
   addMaintenanceRequest: (request: Omit<MaintenanceRequest, 'id' | 'status' | 'requestDate' | 'requesterName'>) => void;
   updateMaintenanceRequestStatus: (id: string, status: MaintenanceRequestStatus) => void;
-
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole>('employee');
-  const [userEmailForSimulation, setUserEmailForSimulation] = useState('');
+  const [currentUser, setCurrentUser] = useState<Employee | null>(null);
   
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [vehicleRequests, setVehicleRequests] = useState<VehicleRequest[]>([]);
@@ -67,80 +68,78 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([]);
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
 
-
-  useEffect(() => {
-    async function getApiUrl() {
-        let baseUrl = 'http://localhost:3001'; // Padrão para desenvolvimento web
-
-        // Se estiver rodando no Electron, tenta ler a configuração
-        if (window.electronAPI) {
-            try {
-                const config = await window.electronAPI.getApiConfig();
-                if (config.serverIp) {
-                    baseUrl = `http://${config.serverIp}:3001`;
-                    console.log(`Conectando ao servidor customizado: ${baseUrl}`);
-                } else {
-                    console.log("Nenhum IP customizado. Usando localhost como padrão.");
-                }
-            } catch (error) {
-                console.error("Erro ao obter configuração da API via Electron, usando localhost.", error);
-            }
+  const fetchData = useCallback(async (authToken: string) => {
+    setIsLoading(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      const response = await fetch(`${apiUrl}/data`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
         }
-        return `${baseUrl}/api`;
-    }
-
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        const response = await fetch('/api/data?type=all');
-        if (!response.ok) {
-            throw new Error('Failed to fetch initial data');
-        }
-        const data = await response.json();
-        setSchedules(data.schedules);
-        setVehicleRequests(data.requests);
-        setVehicles(data.vehicles);
-        setEmployees(data.employees);
-        setSectors(data.sectors);
-        setWorkSchedules(data.workSchedules);
-        setMaintenanceRequests(data.maintenanceRequests);
-      } catch (error) {
-        console.error("Could not fetch data:", error);
-      } finally {
-        setIsLoading(false);
+      });
+      if (!response.ok) {
+        throw new Error('Falha ao buscar dados do servidor.');
       }
+      const data = await response.json();
+      setSchedules(data.schedules || []);
+      setVehicleRequests(data.requests || []);
+      setVehicles(data.vehicles || []);
+      setEmployees(data.employees || []);
+      setSectors(data.sectors || []);
+      setWorkSchedules(data.workSchedules || []);
+      setMaintenanceRequests(data.maintenanceRequests || []);
+      
+      // Encontra o usuário logado na lista de funcionários recebida
+      const decodedToken = jwtDecode<DecodedToken>(authToken);
+      const loggedUser = data.employees.find((emp: Employee) => emp.id === decodedToken.id);
+      if(loggedUser) {
+        setCurrentUser(loggedUser);
+        // Define o userRole com base no cargo
+        const roleString = loggedUser.role.toLowerCase();
+        if (roleString.includes('prefeito')) setUserRole('admin');
+        else if (roleString.includes('gestor') || roleString.includes('engenheiro')) setUserRole('manager');
+        else setUserRole('employee');
+      }
+
+    } catch (error) {
+      console.error("Não foi possível buscar os dados:", error);
+      logout(); // Desloga o usuário se a busca de dados falhar (ex: token expirado)
+    } finally {
+      setIsLoading(false);
     }
-    fetchData();
   }, []);
 
-  const setRoleAndSimulatedEmail = (role: UserRole, email: string = '') => {
-      setUserRole(role);
-      setUserEmailForSimulation(email);
-  }
-  
-  // This is the core of the user simulation
-  const currentUser = useMemo(() => {
-    if (!employees.length || !userEmailForSimulation) return null;
-    
-    // Fallback for empty email, ensuring no user is selected
-    if (userEmailForSimulation === '') return null;
+  const login = useCallback(async (authToken: string) => {
+    localStorage.setItem('authToken', authToken);
+    setToken(authToken);
+    await fetchData(authToken);
+  }, [fetchData]);
 
-    if (userEmailForSimulation.startsWith('admin')) {
-      return employees.find(e => e.name === 'Júlio César') || null; // The Mayor (simulated Admin)
+  const logout = () => {
+    localStorage.removeItem('authToken');
+    setToken(null);
+    setCurrentUser(null);
+    setUserRole('employee');
+    setSchedules([]);
+    setVehicleRequests([]);
+    setVehicles([]);
+    setEmployees([]);
+    setSectors([]);
+    setWorkSchedules([]);
+    setMaintenanceRequests([]);
+  };
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('authToken');
+    if (storedToken) {
+      // Aqui, você pode adicionar uma lógica para verificar a validade do token
+      // antes de tentar buscar os dados. Por simplicidade, vamos direto.
+      setToken(storedToken);
+      fetchData(storedToken);
+    } else {
+      setIsLoading(false); // Se não há token, não há o que carregar
     }
-    if (userEmailForSimulation.startsWith('manager')) {
-      return employees.find(e => e.name === 'Ricardo Nunes') || null; // Head of Obras (simulated Manager)
-    }
-    if (userEmailForSimulation.startsWith('driver')) {
-      return employees.find(e => e.name === 'Maria Oliveira') || null; // A driver
-    }
-    if (userEmailForSimulation.startsWith('employee')) {
-      return employees.find(e => e.name === 'Ana Souza') || null; // A teacher
-    }
-    
-    // Fallback or default user
-    return null;
-  }, [userEmailForSimulation, employees]);
+  }, [fetchData]);
 
 
   const addVehicleRequest = (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => {
@@ -171,7 +170,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (status === 'Aprovada' && requestToProcess) {
       const request = requestToProcess;
-        // Simulação da lógica de alocação de recursos
         const availableDriver = employees.find(d => d.status === 'Disponível' && d.sector === request.sector && d.role.toLowerCase().includes('motorista'));
         const availableVehicle = vehicles.find(v => v.status === 'Disponível' && v.sector === request.sector);
 
@@ -185,15 +183,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 destination: request.details.split("Destino: ")[1]?.split('.')[0] || "Não especificado",
                 departureTime: format(new Date(), "dd/MM/yyyy HH:mm"),
                 status: 'Agendada',
-                category: request.sector, // Or a more specific category from the request
+                category: request.sector,
             };
             setSchedules(prevSchedules => [newSchedule, ...prevSchedules]);
-             // Update driver and vehicle status to show they are allocated
             setEmployees(employees.map(d => d.id === availableDriver.id ? { ...d, status: 'Em Serviço' } : d));
             setVehicles(vehicles.map(v => v.id === availableVehicle.id ? { ...v, status: 'Em Serviço' } : v));
         } else {
             console.warn("No available driver or vehicle for the approved request.");
-            // For this simulation, we'll leave it as approved but unassigned. A real system might queue it.
         }
     }
   };
@@ -227,10 +223,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider value={{ 
         isLoading,
-        userRole, 
-        setUserRole: setRoleAndSimulatedEmail,
-        userEmailForSimulation,
+        token,
+        userRole,
         currentUser,
+        login,
+        logout,
         schedules, setSchedules, 
         vehicleRequests, addVehicleRequest, updateVehicleRequestStatus,
         employees, setEmployees,

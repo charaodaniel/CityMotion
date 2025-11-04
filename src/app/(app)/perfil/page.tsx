@@ -28,12 +28,11 @@ function getStatusVariant(status: VehicleRequestStatus) {
 }
 
 export default function ProfilePage() {
-  const { currentUser, userEmailForSimulation, vehicleRequests, isLoading } = useApp();
+  const { currentUser, vehicleRequests, isLoading } = useApp();
 
   const userRequests = useMemo(() => {
     if (!currentUser) return [];
     
-    // Encontra as solicitações feitas pelo usuário atual.
     return vehicleRequests.filter(req => req.requester === currentUser.name);
 
   }, [currentUser, vehicleRequests]);
@@ -88,7 +87,7 @@ export default function ProfilePage() {
                 <CardContent className="space-y-4 text-sm">
                     <div className="flex items-center">
                         <Mail className="mr-3 h-4 w-4 text-muted-foreground" />
-                        <span>{userEmailForSimulation || 'Não disponível'}</span>
+                        <span>{currentUser.email || 'Não disponível'}</span>
                     </div>
                      <div className="flex items-center">
                         <Building className="mr-3 h-4 w-4 text-muted-foreground" />

@@ -6,33 +6,60 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useApp } from '@/contexts/app-provider';
-import { CarFront, LogIn, Users } from 'lucide-react';
+import { CarFront, LogIn, Users, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUserRole } = useApp();
+  const { login } = useApp();
+  const { toast } = useToast();
   const [email, setEmail] = useState('admin@citymotion.com');
+  const [password, setPassword] = useState('123456');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (event: React.FormEvent) => {
+  const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
+    setIsLoading(true);
 
-    let role: 'admin' | 'manager' | 'employee' = 'employee';
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      const response = await fetch(`${apiUrl}/login`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+      });
 
-    if (email.startsWith('admin')) {
-      role = 'admin';
-    } else if (email.startsWith('manager')) {
-      role = 'manager';
-    } else {
-      role = 'employee';
+      const data = await response.json();
+
+      if (!response.ok) {
+          throw new Error(data.message || 'Falha na autenticação.');
+      }
+      
+      // Chama a função de login do contexto para salvar o token e o usuário
+      await login(data.token);
+
+      router.push('/dashboard');
+
+    } catch (error: any) {
+        toast({
+            title: "Erro de Login",
+            description: error.message || "Não foi possível conectar ao servidor. Verifique se ele está rodando.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsLoading(false);
     }
-    
-    setUserRole(role, email);
-
-    router.push('/dashboard');
   };
+
+  const handleSimulatedLogin = (simulatedEmail: string) => {
+    setEmail(simulatedEmail);
+    setPassword('123456'); // Senha padrão para todos os usuários de teste
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -65,6 +92,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
               <div className="space-y-2">
@@ -78,11 +106,17 @@ export default function LoginPage() {
                     id="password" 
                     type="password" 
                     required 
-                    defaultValue="123456"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
                 />
               </div>
-              <Button type="submit" className="w-full">
-                <LogIn className="mr-2 h-4 w-4" />
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <LogIn className="mr-2 h-4 w-4" />
+                )}
                 Entrar
               </Button>
             </form>
@@ -95,13 +129,13 @@ export default function LoginPage() {
                 <Users className="mr-2 h-5 w-5" />
                 Perfis de Teste
               </CardTitle>
-              <CardDescription>Use os e-mails abaixo para simular o acesso com diferentes perfis (a senha pode ser qualquer uma).</CardDescription>
+              <CardDescription>Clique em um e-mail abaixo para preencher os campos de login (a senha padrão é "123456").</CardDescription>
           </CardHeader>
           <CardContent className="text-sm space-y-2">
-              <p><strong>Administrador (Prefeito):</strong> <button onClick={() => setEmail('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
-              <p><strong>Gestor (Secretário):</strong> <button onClick={() => setEmail('manager@citymotion.com')} className="text-primary hover:underline">manager@citymotion.com</button></p>
-              <p><strong>Motorista (Funcionário):</strong> <button onClick={() => setEmail('driver@citymotion.com')} className="text-primary hover:underline">driver@citymotion.com</button></p>
-              <p><strong>Funcionário Padrão:</strong> <button onClick={() => setEmail('employee@citymotion.com')} className="text-primary hover:underline">employee@citymotion.com</button></p>
+              <p><strong>Administrador (Prefeito):</strong> <button onClick={() => handleSimulatedLogin('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
+              <p><strong>Gestor (Engenheiro):</strong> <button onClick={() => handleSimulatedLogin('manager@citymotion.com')} className="text-primary hover:underline">manager@citymotion.com</button></p>
+              <p><strong>Motorista:</strong> <button onClick={() => handleSimulatedLogin('driver@citymotion.com')} className="text-primary hover:underline">driver@citymotion.com</button></p>
+              <p><strong>Funcionário (Professor):</strong> <button onClick={() => handleSimulatedLogin('employee@citymotion.com')} className="text-primary hover:underline">employee@citymotion.com</button></p>
           </CardContent>
         </Card>
 
