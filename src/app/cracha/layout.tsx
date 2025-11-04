@@ -1,8 +1,12 @@
 
+'use client'
+import { AppProvider } from "@/contexts/app-provider";
+
+
 export default function BadgeLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return <AppProvider>{children}</AppProvider>;
 }

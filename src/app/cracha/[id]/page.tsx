@@ -5,31 +5,48 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { employees } from '@/lib/data';
 import type { Employee } from '@/lib/types';
 import { Building, CarFront, ScanLine, User, Printer, Briefcase } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { useApp } from '@/contexts/app-provider';
 
 export default function BadgePage() {
   const params = useParams();
   const { id } = params;
+  const { employees } = useApp(); // Usando o contexto para obter os funcionários
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(true);
   const [badgeUrl, setBadgeUrl] = useState('');
 
   useEffect(() => {
     // This ensures window is defined, running only on the client side.
-    setBadgeUrl(window.location.href);
-
-    // Simulate fetching data
-    const foundEmployee = employees.find(d => d.id === id);
-    if (foundEmployee) {
-      setEmployee(foundEmployee);
+    if (typeof window !== 'undefined') {
+      setBadgeUrl(window.location.href);
     }
-    setLoading(false);
-  }, [id]);
+
+    if (employees.length > 0) {
+        const foundEmployee = employees.find(d => d.id === id);
+        if (foundEmployee) {
+          setEmployee(foundEmployee);
+        }
+        setLoading(false);
+    }
+
+  }, [id, employees]);
+
+  // Se os funcionários ainda não carregaram no contexto, esperamos
+  useEffect(() => {
+    if(loading && employees.length > 0) {
+       const foundEmployee = employees.find(d => d.id === id);
+        if (foundEmployee) {
+          setEmployee(foundEmployee);
+        }
+        setLoading(false);
+    }
+  }, [employees, loading, id])
+
 
   if (loading) {
     return (
