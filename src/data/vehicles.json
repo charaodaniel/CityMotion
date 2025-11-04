@@ -1,8 +1,10 @@
 
 [
   { "id": "V1", "driverName": "João da Silva", "vehicleModel": "Fiat Strada", "licensePlate": "PM-001", "status": "Em Serviço", "destination": "Hospital Municipal", "mileage": 15000, "sector": "Secretaria de Obras" },
-  { "id": "V2", "vehicleModel": "VW Gol", "licensePlate": "PM-002", "status": "Disponível", "mileage": 8500, "sector": "Secretaria de Saúde" },
-  { "id": "V3", "vehicleModel": "Renault Kwid", "licensePlate": "PM-003", "status": "Disponível", "mileage": 22000, "sector": "Administração" },
+  { "id": "V2", "vehicleModel": "VW Gol", "licensePlate": "PM-002", "status": "Disponível", "mileage": 8525, "sector": "Secretaria de Saúde" },
+  { "id": "V3", "vehicleModel": "Renault Kwid", "licensePlate": "PM-003", "status": "Em Viagem", "destination": "Secretaria de Educação", "mileage": 22000, "sector": "Administração" },
   { "id": "V4", "vehicleModel": "Chevrolet Onix", "licensePlate": "PM-004", "status": "Manutenção", "mileage": 41000, "sector": "Secretaria de Educação" },
-  { "id": "V5", "driverName": "Carlos Pereira", "vehicleModel": "Fiat Mobi", "licensePlate": "PM-005", "status": "Em Viagem", "destination": "Uruguaiana/RS", "mileage": 5200, "sector": "Vigilância Sanitária" }
+  { "id": "V5", "driverName": "Carlos Pereira", "vehicleModel": "Fiat Mobi", "licensePlate": "PM-005", "status": "Em Viagem", "destination": "Uruguaiana/RS", "mileage": 5200, "sector": "Vigilância Sanitária" },
+  { "id": "V6", "vehicleModel": "Toyota Hilux", "licensePlate": "PM-006", "status": "Disponível", "mileage": 32000, "sector": "Secretaria de Obras" },
+  { "id": "V7", "vehicleModel": "Hyundai HB20", "licensePlate": "PM-007", "status": "Disponível", "mileage": 1200, "sector": "Administração" }
 ]

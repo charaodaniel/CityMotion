@@ -11,6 +11,10 @@
         "arrivalTime": "28/07/2024 09:15",
         "startMileage": 8500,
         "endMileage": 8525,
+        "startChecklist": ["Nível de óleo e água verificado", "Calibragem dos pneus verificada"],
+        "endChecklist": ["Veículo estacionado em local seguro", "Chaves entregues ao setor responsável"],
+        "startNotes": "Veículo em perfeitas condições.",
+        "endNotes": "Viagem tranquila, sem intercorrências.",
         "status": "Concluída",
         "category": "Transporte de Paciente"
     },
@@ -22,6 +26,9 @@
         "origin": "Prefeitura", 
         "destination": "Secretaria de Educação", 
         "departureTime": "29/07/2024 09:30",
+        "startMileage": 22000,
+        "startChecklist": ["Nível de óleo e água verificado", "Calibragem dos pneus verificada", "Documentos do veículo (CRLV) conferidos", "Limpeza interna e externa adequada"],
+        "startNotes": "Iniciando viagem para entrega de documentos importantes.",
         "status": "Em Andamento",
         "category": "Entrega de Documentos"
     },
@@ -44,7 +51,32 @@
         "origin": "Vigilância Sanitária", 
         "destination": "Restaurante Central", 
         "departureTime": "27/07/2024 11:00",
+        "arrivalTime": "27/07/2024 12:30",
+        "startMileage": 5150,
+        "endMileage": 5165,
         "status": "Concluída",
         "category": "Inspeção Sanitária"
+    },
+    { 
+        "id": "SCH005", 
+        "title": "Linha Escolar - Rota 3", 
+        "driver": "Ana Souza", 
+        "vehicle": "Chevrolet Onix (PM-004)", 
+        "origin": "Garagem Central", 
+        "destination": "Escola Municipal Monteiro Lobato", 
+        "departureTime": "31/07/2024 06:30",
+        "status": "Agendada",
+        "category": "Transporte Escolar Diário"
+    },
+    { 
+        "id": "SCH006", 
+        "title": "Reunião Externa", 
+        "driver": "Fernanda Costa", 
+        "vehicle": "Hyundai HB20 (PM-007)", 
+        "origin": "Paço Municipal", 
+        "destination": "Câmara de Vereadores", 
+        "departureTime": "31/07/2024 10:00",
+        "status": "Agendada",
+        "category": "Reunião Externa"
     }
 ]

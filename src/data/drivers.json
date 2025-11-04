@@ -5,5 +5,7 @@
   { "id": "3", "name": "Pedro Santos", "cnh": "112233445", "sector": "Administração", "status": "Disponível", "matricula": "M-003" },
   { "id": "4", "name": "Ana Souza", "cnh": "556677889", "sector": "Secretaria de Educação", "status": "Afastado", "matricula": "M-004" },
   { "id": "5", "name": "Carlos Pereira", "cnh": "998877665", "sector": "Vigilância Sanitária", "status": "Em Viagem", "matricula": "M-005" },
-  { "id": "6", "name": "Lúcia Ferreira", "cnh": "123123123", "sector": "Secretaria de Saúde", "status": "Disponível", "matricula": "M-006" }
+  { "id": "6", "name": "Lúcia Ferreira", "cnh": "123123123", "sector": "Secretaria de Saúde", "status": "Disponível", "matricula": "M-006" },
+  { "id": "7", "name": "Roberto Alves", "cnh": "456456456", "sector": "Secretaria de Obras", "status": "Disponível", "matricula": "M-007" },
+  { "id": "8", "name": "Fernanda Costa", "cnh": "789789789", "sector": "Administração", "status": "Disponível", "matricula": "M-008" }
 ]

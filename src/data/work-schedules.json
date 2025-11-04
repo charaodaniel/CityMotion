@@ -37,5 +37,15 @@
         "startDate": "15/07/2024",
         "endDate": "05/08/2024",
         "description": "Retorno previsto para 06/08/2024."
+    },
+    {
+        "id": "WS005",
+        "title": "Sobreaviso - Noturno",
+        "employee": "Carlos Pereira",
+        "type": "Sobreaviso",
+        "status": "Agendada",
+        "startDate": "01/08/2024",
+        "endDate": "07/08/2024",
+        "description": "Disponível para chamados de emergência da vigilância sanitária no período noturno."
     }
 ]

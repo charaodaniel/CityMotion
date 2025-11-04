@@ -17,5 +17,23 @@
         "priority": "Média",
         "requestDate": "2024-07-29T11:30:00Z",
         "status": "Pendente"
+    },
+    {
+        "id": "REQ003",
+        "title": "Transporte de paciente para fisioterapia",
+        "sector": "Secretaria de Saúde",
+        "details": "Paciente: Sr. José, precisa de transporte para sessão de fisioterapia no Centro de Reabilitação.",
+        "priority": "Alta",
+        "requestDate": "2024-07-30T08:00:00Z",
+        "status": "Aprovada"
+    },
+    {
+        "id": "REQ004",
+        "title": "Coleta de amostras de água",
+        "sector": "Vigilância Sanitária",
+        "details": "Realizar coleta em 3 pontos distintos da cidade para análise da qualidade da água.",
+        "priority": "Média",
+        "requestDate": "2024-07-30T09:15:00Z",
+        "status": "Pendente"
     }
 ]
