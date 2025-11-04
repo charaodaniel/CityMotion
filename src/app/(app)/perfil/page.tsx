@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useApp } from "@/contexts/app-provider";
-import type { Employee, VehicleRequest, VehicleRequestStatus } from "@/lib/types";
+import type { VehicleRequest, VehicleRequestStatus } from "@/lib/types";
 import { User, Mail, Building, ShieldCheck, Briefcase } from "lucide-react";
 import { useMemo } from "react";
 import { format } from "date-fns";
@@ -26,60 +26,21 @@ function getStatusVariant(status: VehicleRequestStatus) {
 }
 
 export default function ProfilePage() {
-  const { userRole, employees, vehicleRequests } = useApp();
-  
-  const { currentUser, userEmail } = useMemo(() => {
-    let user: Employee | undefined;
-    let email: string = 'user@citymotion.com';
-
-    // This simulation should be replaced by real auth data
-    switch (userRole) {
-      case 'admin':
-        user = employees.find(d => d.name === 'Pedro Santos');
-        email = 'admin@citymotion.com';
-        break;
-      case 'manager':
-        user = employees.find(d => d.name === 'João da Silva');
-        email = 'manager@citymotion.com';
-        break;
-      case 'driver':
-        user = employees.find(d => d.name === 'Maria Oliveira');
-        email = 'driver@citymotion.com';
-        break;
-      case 'employee':
-        user = employees.find(d => d.name === 'Ana Souza');
-        email = 'employee@citymotion.com';
-        break;
-      default:
-        user = employees[0];
-        if (user) {
-          email = `${user.name.toLowerCase().replace(/\s+/g, '.')}@citymotion.com`;
-        }
-    }
-    return { currentUser: user, userEmail: email };
-  }, [userRole, employees]);
+  const { currentUser, userEmailForSimulation, vehicleRequests } = useApp();
 
   const userRequests = useMemo(() => {
-    // This is a simulation. In a real app, you'd filter by the logged-in user's ID.
     if (!currentUser) return [];
     
-    if (userRole === 'employee') {
-      // Find requests made by 'Ana Souza' (our simulated employee)
-      return vehicleRequests.filter(req => 
-        req.requester?.toLowerCase().includes('ana souza')
-      );
-    }
-    
-    // For drivers, managers, admins, find trips they are the driver for
+    // Find requests where the current user is the requester.
     return vehicleRequests.filter(req => req.requester === currentUser.name);
 
-  }, [currentUser, userRole, vehicleRequests]);
+  }, [currentUser, vehicleRequests]);
 
 
   if (!currentUser) {
     return (
       <div className="container mx-auto p-4 sm:p-8">
-        <p>Usuário não encontrado.</p>
+        <p>Usuário não encontrado ou não está logado.</p>
       </div>
     );
   }
@@ -110,7 +71,7 @@ export default function ProfilePage() {
                 <CardContent className="space-y-4 text-sm">
                     <div className="flex items-center">
                         <Mail className="mr-3 h-4 w-4 text-muted-foreground" />
-                        <span>{userEmail}</span>
+                        <span>{userEmailForSimulation}</span>
                     </div>
                      <div className="flex items-center">
                         <Building className="mr-3 h-4 w-4 text-muted-foreground" />
