@@ -76,17 +76,17 @@ Após a validação desta versão Alpha, nossas prioridades para transformar o p
 -   [ ] **Sistema de Autenticação Próprio e Seguro:**
     -   Implementar um sistema de login e senha seguro, utilizando tecnologias como JWT (JSON Web Tokens), para substituir a simulação de perfis e garantir que cada usuário acesse apenas as informações e funcionalidades permitidas para seu cargo.
 
--   [ ] **Configuração de Acesso Externo via Proxy Reverso (Nginx):**
-    -   Para permitir que motoristas em trânsito acessem o sistema de seus dispositivos móveis, será configurado um proxy reverso com Nginx e um certificado SSL (via Let's Encrypt). Isso garante um acesso **seguro (HTTPS)** a partir da internet, direcionando o tráfego para o servidor local na intranet sem expor o servidor principal diretamente.
-
 -   [ ] **Solução de Armazenamento de Arquivos no Servidor Local:**
     -   Implementar a funcionalidade de upload e armazenamento seguro de arquivos (como CNH, CRLV, fotos de sinistros e recibos) diretamente na infraestrutura da prefeitura.
 
+-   [ ] **Configuração de Acesso Externo via Proxy Reverso (Nginx):**
+    -   Para permitir que motoristas em trânsito acessem o sistema de seus dispositivos móveis, será configurado um proxy reverso com Nginx e um certificado SSL (via Let's Encrypt). Isso garante um acesso **seguro (HTTPS)** a partir da internet, direcionando o tráfego para o servidor local na intranet sem expor o servidor principal diretamente.
+
+-   [ ] **Build para Desktop com Electron:**
+    -   Empacotar a aplicação como um programa de desktop utilizando Electron. Isso facilitará a distribuição e o acesso nas máquinas dos funcionários da prefeitura, garantindo uma experiência de uso uniforme e controlada dentro da intranet.
+
 -   [ ] **Notificações em Tempo Real:**
     -   Adicionar um sistema de alertas para notificar gestores sobre novas solicitações ou motoristas sobre viagens agendadas, utilizando tecnologias como WebSockets.
-
--   [ ] **Painel de Administração de Perfis e Permissões:**
-    -   Criar uma interface para que o Administrador do sistema possa gerenciar os perfis e as permissões dos usuários de forma autônoma.
 
 ---
 

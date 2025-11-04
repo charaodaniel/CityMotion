@@ -68,22 +68,25 @@ Acompanhe o ciclo de vida de cada viagem de forma visual e intuitiva nas colunas
 
 ## 🔮 Próximos Passos (Roadmap Pós-Alpha)
 
-Após a validação desta versão Alpha, nossas prioridades para transformar o protótipo em uma solução de produção incluem:
+Após a validação desta versão Alpha, nossas prioridades para transformar o protótipo em uma solução de produção para rodar na intranet da prefeitura incluem:
 
--   [ ] **Integração com Backend Real (Firebase):**
-    -   Substituir o sistema de dados simulados (JSON) por uma integração com um banco de dados robusto em nuvem (Firebase Firestore) para garantir a persistência, segurança e escalabilidade dos dados.
+-   [ ] **Integração com Backend e Banco de Dados Local:**
+    -   Substituir o sistema de dados simulados (JSON) por uma integração com uma API e um banco de dados real (como PostgreSQL, MySQL ou outro) que rodará nos servidores da prefeitura. Isso garantirá a persistência, segurança e centralização total dos dados.
 
--   [ ] **Sistema de Autenticação Real:**
-    -   Implementar um sistema de login e senha seguro (Firebase Authentication) para substituir a simulação de perfis, garantindo que cada usuário acesse apenas suas informações.
+-   [ ] **Sistema de Autenticação Próprio e Seguro:**
+    -   Implementar um sistema de login e senha seguro, utilizando tecnologias como JWT (JSON Web Tokens), para substituir a simulação de perfis e garantir que cada usuário acesse apenas as informações e funcionalidades permitidas para seu cargo.
 
--   [ ] **Gerenciamento de Documentos (Upload):**
-    -   Implementar a funcionalidade de upload e armazenamento seguro de arquivos (como CNH, CRLV, fotos de recibos) utilizando o Firebase Storage.
+-   [ ] **Solução de Armazenamento de Arquivos no Servidor Local:**
+    -   Implementar a funcionalidade de upload e armazenamento seguro de arquivos (como CNH, CRLV, fotos de sinistros e recibos) diretamente na infraestrutura da prefeitura.
+
+-   [ ] **Configuração de Acesso Externo via Proxy Reverso (Nginx):**
+    -   Para permitir que motoristas em trânsito acessem o sistema de seus dispositivos móveis, será configurado um proxy reverso com Nginx e um certificado SSL (via Let's Encrypt). Isso garante um acesso **seguro (HTTPS)** a partir da internet, direcionando o tráfego para o servidor local na intranet sem expor o servidor principal diretamente.
+
+-   [ ] **Build para Desktop com Electron:**
+    -   Empacotar a aplicação como um programa de desktop utilizando Electron. Isso facilitará a distribuição e o acesso nas máquinas dos funcionários da prefeitura, garantindo uma experiência de uso uniforme e controlada dentro da intranet.
 
 -   [ ] **Notificações em Tempo Real:**
-    -   Adicionar um sistema de alertas para notificar gestores sobre novas solicitações ou motoristas sobre viagens agendadas.
-
--   [ ] **Painel de Administração de Perfis:**
-    -   Criar uma interface para que o Administrador possa gerenciar os perfis e permissões dos usuários de forma autônoma.
+    -   Adicionar um sistema de alertas para notificar gestores sobre novas solicitações ou motoristas sobre viagens agendadas, utilizando tecnologias como WebSockets.
 
 ---
 
