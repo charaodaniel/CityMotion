@@ -97,7 +97,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (status === 'Aprovada' && requestToProcess) {
       const request = requestToProcess;
         // Simulação da lógica de alocação de recursos
-        const availableDriver = employees.find(d => d.status === 'Disponível' && d.sector === request.sector && d.role === 'Motorista');
+        const availableDriver = employees.find(d => d.status === 'Disponível' && d.sector === request.sector && d.role.toLowerCase().includes('motorista'));
         const availableVehicle = vehicles.find(v => v.status === 'Disponível' && v.sector === request.sector);
 
         if (availableDriver && availableVehicle) {
@@ -113,14 +113,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 category: request.sector, // Or a more specific category from the request
             };
             setSchedules(prevSchedules => [newSchedule, ...prevSchedules]);
-             // Update driver and vehicle status
+             // Update driver and vehicle status to show they are allocated
             setEmployees(employees.map(d => d.id === availableDriver.id ? { ...d, status: 'Em Serviço' } : d));
             setVehicles(vehicles.map(v => v.id === availableVehicle.id ? { ...v, status: 'Em Serviço' } : v));
         } else {
-            // Handle case where no driver or vehicle is available
-             console.warn("No available driver or vehicle for the approved request.");
-             // Optionally, revert the request status or keep it as 'Approved' but unassigned.
-             // For this simulation, we'll leave it as approved.
+            console.warn("No available driver or vehicle for the approved request.");
+            // For this simulation, we'll leave it as approved but unassigned. A real system might queue it.
         }
     }
   };

@@ -90,13 +90,13 @@ export default function LoginPage() {
           <CardHeader>
               <CardTitle className="text-lg flex items-center">
                 <Users className="mr-2 h-5 w-5" />
-                Credenciais de Teste
+                Perfis de Teste
               </CardTitle>
-              <CardDescription>Use os e-mails abaixo para acessar como diferentes perfis (a senha pode ser qualquer uma).</CardDescription>
+              <CardDescription>Use os e-mails abaixo para simular o acesso com diferentes perfis (a senha pode ser qualquer uma).</CardDescription>
           </CardHeader>
           <CardContent className="text-sm space-y-2">
-              <p><strong>Admin:</strong> <button onClick={() => setEmail('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
-              <p><strong>Gestor:</strong> <button onClick={() => setEmail('manager@citymotion.com')} className="text-primary hover:underline">manager@citymotion.com</button></p>
+              <p><strong>Administrador:</strong> <button onClick={() => setEmail('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
+              <p><strong>Gestor (Secretário):</strong> <button onClick={() => setEmail('manager@citymotion.com')} className="text-primary hover:underline">manager@citymotion.com</button></p>
               <p><strong>Motorista:</strong> <button onClick={() => setEmail('driver@citymotion.com')} className="text-primary hover:underline">driver@citymotion.com</button></p>
               <p><strong>Funcionário:</strong> <button onClick={() => setEmail('employee@citymotion.com')} className="text-primary hover:underline">employee@citymotion.com</button></p>
           </CardContent>

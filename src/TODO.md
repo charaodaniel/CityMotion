@@ -2,52 +2,51 @@
 
 Este arquivo organiza as funcionalidades pendentes e melhorias a serem implementadas no projeto CityMotion.
 
-## 🚀 Prioridade Alta
+## ✅ Funcionalidades Concluídas (Milestones)
 
--   [x] **Corrigir Navegação e Páginas Duplicadas**
-    -   [x] Renomear o link "Deslocamentos" para "Viagens" no menu lateral.
-    -   [x] Ajustar a página `/escalas` para gerenciar escalas de trabalho (plantões, folgas) em vez de duplicar a página de viagens.
+-   [x] **Interface e Navegação Básica:** Estrutura inicial do layout, menu lateral e navegação entre páginas.
+-   [x] **Gestão de Recursos (CRUD Visual):**
+    -   [x] Cadastro, visualização, edição e detalhamento de **Veículos**.
+    -   [x] Cadastro, visualização, edição e detalhamento de **Funcionários** (substituindo o antigo "Motoristas").
+    -   [x] Cadastro, visualização, edição e detalhamento de **Setores**.
+-   [x] **Painel de Viagens (Kanban):** Visualização de viagens nas colunas "Agendadas", "Em Andamento" e "Concluídas".
+-   [x] **Checklists de Viagem (Pré e Pós):** Implementação de modais para checklists de segurança antes e depois das viagens, com registro de quilometragem e observações.
+-   [x] **Fluxo Completo de Solicitação e Aprovação:**
+    -   [x] Funcionário solicita um transporte.
+    -   [x] Gestor do setor recebe a notificação no painel.
+    -   [x] Gestor aprova ou rejeita.
+    -   [x] Ao ser aprovada, a solicitação **automaticamente se torna uma viagem agendada**.
+-   [x] **Página de Relatórios Melhorada:**
+    -   [x] Inclusão de KPIs (Total de Viagens, KM Total, Veículo Mais Usado).
+    -   [x] Adição de filtros por período, setor, veículo e motorista.
+    -   [x] Lógica de permissão para que motoristas vejam apenas seu próprio histórico.
+-   [x] **Crachá Virtual com QR Code:** Geração de um crachá virtual para cada funcionário com função de impressão.
+-   [x] **Central de Ajuda (Documentação):** Criação de uma seção de documentação no estilo SaaS com layout próprio e múltiplos tópicos.
+-   [x] **Hierarquia de Perfis e Permissões (Simulação):** Implementação de regras de visibilidade na interface para diferentes perfis (Admin, Gestor, Motorista, Funcionário), garantindo que cada um veja apenas os dados pertinentes.
+-   [x] **Página de Login (Visual e Funcional para Simulação):** Interface de login que permite alternar entre os perfis de teste.
 
--   [x] **Melhorar Página de Relatórios (`/relatorios`)**
-    -   [x] Adicionar cartões de resumo (KPIs) para "Total de Viagens", "Quilometragem Total" e "Veículo Mais Utilizado".
-    -   [x] Garantir que os KPIs sejam atualizados com base nos filtros aplicados.
-    -   [x] Adicionar filtros por "Motorista" e "Funcionário".
+## 🚀 Próximas Funcionalidades (Roadmap)
 
--   [x] **Implementar Checklists de Viagem**
-    -   [x] Criar modal de checklist de pré-viagem ao clicar em "Iniciar".
-    -   [x] Incluir campo para KM inicial no checklist.
-    -   [x] Incluir campo para observações no checklist.
-    -   [x] Criar modal de checklist de pós-viagem ao clicar em "Finalizar".
-    -   [x] Incluir campos para KM final e observações.
-    -   [x] Exibir os checklists preenchidos (itens e observações) nos detalhes da viagem.
+-   [ ] **Painel de Administração de Perfis:**
+    -   [ ] Criar uma nova página onde o **Administrador** possa atribuir o perfil de "Gestor" a qualquer funcionário de um setor.
+    -   [ ] Permitir que o Admin visualize e altere o perfil de qualquer usuário.
 
--   [x] **Implementar Fluxo de Aprovação de Viagens**
-    -   [x] Conectar o formulário "Pedir Transporte" para que ele crie uma "Solicitação de Veículo" com status "Pendente".
-    -   [x] Exibir solicitações pendentes no painel do "Gestor de Setor" (`ManagerDashboard`).
-    -   [x] Implementar a lógica nos botões "Aprovar" e "Rejeitar" para que mudem o status da solicitação.
-    -   [x] Uma vez aprovada, a solicitação deve se tornar uma viagem "Agendada" na página `/viagens`.
+-   [ ] **Página de Perfil 100% Dinâmica:**
+    -   [ ] Garantir que a página `/perfil` exiba as informações (nome, cargo, setor) e o histórico de atividades (solicitações ou viagens) do usuário que está "logado" (simulado pelo seletor de perfil), e não de um usuário fixo.
 
--   [x] **Dinamizar Página de Perfil (`/perfil`)**
-    -   [x] Fazer com que a página exiba as informações do usuário "logado" (simulado pelo seletor de perfil).
-    -   [x] O histórico de viagens na página de perfil deve ser do usuário selecionado.
+-   [ ] **Gerenciamento de Documentos (Upload Real):**
+    -   [ ] Implementar a lógica de back-end (ou simulação com armazenamento local) para o upload real de arquivos (fotos de CNH, CRLV, recibos de abastecimento) e a visualização deles.
 
--   [x] **Aprimorar Painel Principal (`/`)**
-    -   [x] Adicionar mais cartões de resumo (KPIs) ao `AdminDashboard`, como "Total de Veículos na Frota" e "Viagens em Andamento".
+-   [ ] **Internacionalização (Tradução Completa):**
+    -   [ ] Traduzir todos os componentes de UI que ainda exibem textos em inglês (ex: `Calendar`, textos de bibliotecas).
 
-## ✨ Melhorias e UI/UX
+## 🔮 Futuro (Pós-MVP)
 
--   [x] **Criar Página de Login (Visual)**
-    -   [x] Desenvolver a interface da página de login, sem a lógica de autenticação por enquanto.
-
--   [x] **Gerenciamento de Documentos**
-    -   [x] Implementar a lógica para upload e visualização de documentos para veículos e motoristas.
-
--   [ ] **Internacionalização (Tradução)**
-    -   [ ] Traduzir componentes de UI que ainda exibem textos em inglês (ex: `Calendar`).
-
-## 🔮 Futuro (Pós-Apresentação)
-
--   [ ] **Integração com Backend**
-    -   [ ] Substituir os arquivos JSON por chamadas de API para um backend real (ex: PocketBase).
--   [ ] **Build para Desktop**
-    -   [ ] Configurar o Electron para empacotar a aplicação para desktop.
+-   [ ] **Integração com Backend Real:**
+    -   [ ] Substituir a API de dados simulada (`/api/data`) e o `AppProvider` por chamadas a um backend real (ex: Firebase, PocketBase, etc.).
+-   [ ] **Autenticação Real:**
+    -   [ ] Implementar um sistema de autenticação completo (ex: Firebase Auth, NextAuth.js) para substituir a simulação de perfis.
+-   [ ] **Notificações:**
+    -   [ ] Implementar um sistema de notificações (ex: via toast ou um ícone de sino) para alertar gestores sobre novas solicitações ou motoristas sobre novas viagens agendadas.
+-   [ ] **Build para Desktop:**
+    -   [ ] Configurar o Electron ou Tauri para empacotar a aplicação para uso como um programa de desktop.
