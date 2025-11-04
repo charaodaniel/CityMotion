@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useForm } from 'react-hook-form';
@@ -13,6 +14,8 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Server, Database, Network, Activity } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const settingsSchema = z.object({
   // Visual Identity
@@ -27,6 +30,22 @@ const settingsSchema = z.object({
   requireDestination: z.boolean().default(false),
   maintenanceMileageThreshold: z.coerce.number().min(0, "A quilometragem deve ser um valor positivo.").optional(),
 });
+
+
+const systemStatus = [
+    { name: 'API Principal (Node.js)', status: 'Operacional', icon: Server },
+    { name: 'Banco de Dados (SQLite)', status: 'Operacional', icon: Database },
+    { name: 'Serviço de Autenticação', status: 'Operacional', icon: Network },
+];
+
+const recentLogs = [
+    { id: 1, type: 'Security', user: 'system', action: 'Failed login attempt for user: "guest"', timestamp: 'Há 2 minutos' },
+    { id: 2, type: 'Trips', user: 'Maria Oliveira', action: 'Iniciou a viagem SCH002', timestamp: 'Há 5 minutos' },
+    { id: 3, type: 'Admin', user: 'Júlio César', action: 'Atualizou o perfil de "Ricardo Nunes" para "Gestor de Setor"', timestamp: 'Há 15 minutos' },
+    { id: 4, type: 'System', user: 'system', action: 'Backup do banco de dados concluído com sucesso', timestamp: 'Há 1 hora' },
+    { id: 5, type: 'Users', user: 'Ana Souza', action: 'Realizou login no sistema', timestamp: 'Há 2 horas' },
+];
+
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -58,7 +77,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 sm:p-8 max-w-4xl">
+    <div className="container mx-auto p-4 sm:p-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight font-headline">
           Configurações
@@ -71,10 +90,11 @@ export default function SettingsPage() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <Tabs defaultValue="visual">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="general">Geral</TabsTrigger>
               <TabsTrigger value="visual">Identidade Visual</TabsTrigger>
               <TabsTrigger value="operations">Operações</TabsTrigger>
+              <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
             </TabsList>
 
             <TabsContent value="general">
@@ -254,11 +274,78 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="monitoring">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column */}
+                <div className="lg:col-span-1 space-y-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Status da Conexão da API</CardTitle>
+                            <CardDescription>Saúde da conexão com o back-end.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {systemStatus.map((service) => {
+                                const Icon = service.icon;
+                                return (
+                                    <div key={service.name} className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <Icon className="h-5 w-5 text-muted-foreground" />
+                                            <span className="text-sm font-medium">{service.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-green-500" />
+                                            <span className="text-sm text-green-500">{service.status}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </CardContent>
+                    </Card>
+                </div>
+                 {/* Right Column */}
+                <div className="lg:col-span-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center">
+                              <Activity className="mr-2 h-5 w-5"/>
+                              Log de Atividades da API
+                            </CardTitle>
+                            <CardDescription>Últimas ações registradas pelo servidor.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Usuário</TableHead>
+                                        <TableHead>Ação</TableHead>
+                                        <TableHead className="text-right">Horário</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {recentLogs.map((log) => (
+                                        <TableRow key={log.id}>
+                                            <TableCell>
+                                                <div className="font-medium">{log.user}</div>
+                                                <div className="text-xs text-muted-foreground">{log.type}</div>
+                                            </TableCell>
+                                            <TableCell>{log.action}</TableCell>
+                                            <TableCell className="text-right text-muted-foreground">{log.timestamp}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </div>
+              </div>
+            </TabsContent>
+
           </Tabs>
 
           <div className="flex justify-end pt-4">
              <Button type="submit" className="w-full md:w-auto">
-                Salvar Todas as Configurações
+                Salvar Configurações
               </Button>
           </div>
         </form>
