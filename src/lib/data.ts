@@ -1,16 +1,14 @@
 import type { Employee, Vehicle, Schedule, VehicleRequest, Sector, WorkSchedule } from './types';
 
-// These imports are no longer needed as data will be fetched from the API
-// import sectorsData from '@/data/sectors.json';
-// import employeesData from '@/data/employees.json';
-// import vehiclesData from '@/data/vehicles.json';
-// import workSchedulesData from '@/data/work-schedules.json';
+// As importações de dados JSON estáticos foram removidas, pois a lógica
+// de dados agora é centralizada e fornecida pelo AppProvider, que busca de uma API simulada.
+// Esta limpeza prepara o código para a futura substituição da API simulada por um backend real (ex: Firebase).
 
 import { chartData as chartDataJson, driverActivity as driverActivityJson } from '@/data/charts.json';
 
 
-// Data will be provided via AppContext, fetched from an API.
-// These arrays can be kept for type inference or completely removed if pages are fully dynamic.
+// Os arrays de dados são inicializados vazios, pois os dados dinâmicos são gerenciados pelo AppContext.
+// Manter as declarações pode ser útil para inferência de tipo em algumas partes do código.
 export const sectors: Sector[] = [];
 export const employees: Employee[] = [];
 export const vehicles: Vehicle[] = [];
@@ -18,6 +16,7 @@ export const workSchedules: WorkSchedule[] = [];
 export const schedules: Schedule[] = [];
 export const vehicleRequests: VehicleRequest[] = [];
 
+// Os dados para gráficos podem continuar sendo estáticos por enquanto.
 export const chartData = chartDataJson;
 export const driverActivity = driverActivityJson;
 
