@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { PlusCircle, User, ShieldCheck, Edit, FileText, Link as LinkIcon } from 'lucide-react';
+import { PlusCircle, User, ShieldCheck, Edit, FileText, Link as LinkIcon, Briefcase } from 'lucide-react';
 import { RegisterDriverForm } from '@/components/register-driver-form';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -199,27 +199,36 @@ export default function DriversPage() {
         {drivers.map((driver) => (
           <Card 
             key={driver.id} 
-            onClick={() => handleCardClick(driver)} 
             className="cursor-pointer hover:shadow-md transition-shadow"
           >
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={`https://i.pravatar.cc/150?u=${driver.id}`} alt={driver.name} />
-                  <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <span className="truncate">{driver.name}</span>
-              </CardTitle>
-              <CardDescription>{driver.sector}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex items-center justify-between">
-              <Badge variant={getStatusVariant(driver.status)}>{driver.status}</Badge>
-              {driver.cnh && (
-                <div className="flex items-center text-xs text-muted-foreground">
-                    <ShieldCheck className="mr-1.5 h-3 w-3" />
-                    <span>CNH: {driver.cnh.slice(-4)}</span>
-                </div>
-              )}
+            <div onClick={() => handleCardClick(driver)}>
+                <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                    <Avatar className="h-8 w-8">
+                    <AvatarImage src={`https://i.pravatar.cc/150?u=${driver.id}`} alt={driver.name} />
+                    <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span className="truncate">{driver.name}</span>
+                </CardTitle>
+                <CardDescription>{driver.sector}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center justify-between">
+                <Badge variant={getStatusVariant(driver.status)}>{driver.status}</Badge>
+                {driver.cnh && (
+                    <div className="flex items-center text-xs text-muted-foreground">
+                        <ShieldCheck className="mr-1.5 h-3 w-3" />
+                        <span>CNH: {driver.cnh.slice(-4)}</span>
+                    </div>
+                )}
+                </CardContent>
+            </div>
+             <CardContent className="p-2 pt-0">
+                <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" asChild>
+                    <Link href={`/cracha/${driver.id}`}>
+                        <Briefcase className="mr-2 h-4 w-4" />
+                        Ver Crachá Virtual
+                    </Link>
+                </Button>
             </CardContent>
           </Card>
         ))}
@@ -240,7 +249,7 @@ export default function DriversPage() {
                 <>
                   <DialogHeader>
                       <DialogTitle className="text-2xl">{title}</DialogTitle>
-                      <DialogDescription>{description}</DialogDescription>
+                      <Description>{description}</Description>
                   </DialogHeader>
                   {content}
                 </>
