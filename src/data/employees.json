@@ -3,7 +3,7 @@
   { "id": "1", "name": "João da Silva", "role": "Motorista", "cnh": "123456789", "sector": "Secretaria de Obras, Viação e Urbanismo", "status": "Em Serviço", "matricula": "M-001" },
   { "id": "2", "name": "Maria Oliveira", "role": "Motorista de Ambulância", "cnh": "987654321", "sector": "Secretaria de Saúde", "status": "Disponível", "matricula": "M-002" },
   { "id": "3", "name": "Pedro Santos", "role": "Assessor de Comunicação", "cnh": null, "sector": "Gabinete do Prefeito", "status": "Disponível", "matricula": "ADM-003" },
-  { "id": "4", "name": "Ana Souza", "role": "Professora", "cnh": null, "sector": "Secretaria de Educação, Cultura, Desporto e Lazer", "status": "Afastado", "matricula": "EDU-004" },
+  { "id": "4", "name": "Ana Souza", "role": "Professor(a)", "cnh": null, "sector": "Secretaria de Educação, Cultura, Desporto e Lazer", "status": "Afastado", "matricula": "EDU-004" },
   { "id": "5", "name": "Carlos Pereira", "role": "Agente de Arrecadação", "cnh": null, "sector": "Secretaria da Fazenda", "status": "Disponível", "matricula": "FAZ-005" },
   { "id": "6", "name": "Lúcia Ferreira", "role": "Enfermeira", "cnh": null, "sector": "Secretaria de Saúde", "status": "Disponível", "matricula": "SAU-006" },
   { "id": "7", "name": "Roberto Alves", "role": "Operador de Máquinas", "cnh": "456456456", "sector": "Secretaria de Obras, Viação e Urbanismo", "status": "Disponível", "matricula": "OBR-007" },
