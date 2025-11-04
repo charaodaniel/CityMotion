@@ -1,6 +1,9 @@
+
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const isDev = require('electron-is-dev');
+// A biblioteca 'electron-is-dev' foi substituída pela verificação nativa '!app.isPackaged'
+// para evitar erros de compatibilidade de módulo (CJS/ESM).
+const isDev = !app.isPackaged; 
 const { fork } = require('child_process');
 const fs = require('fs');
 
@@ -47,8 +50,9 @@ function startBackend() {
 
 // Evento disparado quando o Electron está pronto
 app.whenReady().then(() => {
-    // Inicia o servidor Node.js antes de criar a janela
-    if (!isDev) { // Em produção, o Electron gerencia o servidor
+    // Em modo de desenvolvimento, o servidor é iniciado pelo concurrently.
+    // Em produção, o Electron gerencia o servidor.
+    if (!isDev) { 
       startBackend();
     }
 
