@@ -71,6 +71,18 @@ export default function ReportsPage() {
     }
   }, [userRole, currentUser]);
 
+  const vehiclesForFilter = useMemo(() => {
+    if (!selectedSector) {
+      return vehicles;
+    }
+    return vehicles.filter(v => v.sector === selectedSector);
+  }, [selectedSector, vehicles]);
+
+  const handleSectorChange = (sector: string | null) => {
+    setSelectedSector(sector);
+    setSelectedVehicle(null); // Reset vehicle filter when sector changes
+  };
+
 
   const handleCardClick = (schedule: Schedule) => {
     setSelectedSchedule(schedule);
@@ -243,7 +255,7 @@ export default function ReportsPage() {
           </div>
           <div className="flex flex-col space-y-1.5">
             <Label htmlFor="sector">Setor</Label>
-            <Select onValueChange={setSelectedSector} value={selectedSector || ''}>
+            <Select onValueChange={(value) => handleSectorChange(value || null)} value={selectedSector || ''}>
               <SelectTrigger id="sector">
                 <SelectValue placeholder="Todos os setores" />
               </SelectTrigger>
@@ -259,7 +271,7 @@ export default function ReportsPage() {
                 <SelectValue placeholder="Todos os veículos" />
               </SelectTrigger>
               <SelectContent>
-                {vehicles.map(v => <SelectItem key={v.id} value={v.licensePlate}>{v.vehicleModel} ({v.licensePlate})</SelectItem>)}
+                {vehiclesForFilter.map(v => <SelectItem key={v.id} value={v.licensePlate}>{v.vehicleModel} ({v.licensePlate})</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -446,3 +458,4 @@ export default function ReportsPage() {
     
 
     
+
