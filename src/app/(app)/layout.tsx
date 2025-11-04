@@ -168,7 +168,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen">
         <Sidebar>
           <SidebarHeader>
-            <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground hover:text-sidebar-foreground">
+            <Link href="/home" className="flex items-center gap-2 text-sidebar-foreground hover:text-sidebar-foreground">
               <Logo />
               <span className="text-lg font-semibold tracking-tighter">
                 CityMotion
