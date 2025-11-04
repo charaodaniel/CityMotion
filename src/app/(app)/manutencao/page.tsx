@@ -92,10 +92,12 @@ export default function MaintenancePage() {
                             >
                                 <CardHeader className="pb-4">
                                     <CardTitle className="text-base">{request.vehicleModel} ({request.licensePlate})</CardTitle>
-                                    <CardDescription className="flex items-center text-xs pt-1">
+                                    <CardDescription asChild>
+                                      <div className="flex items-center text-xs pt-1">
                                         <Badge variant="outline" className="mr-2">{request.type}</Badge>
                                         <Clock className="mr-1.5 h-3 w-3" /> 
                                         {format(new Date(request.requestDate), "dd/MM/yyyy", { locale: ptBR })}
+                                      </div>
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="text-sm space-y-2">

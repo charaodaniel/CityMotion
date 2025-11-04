@@ -85,8 +85,8 @@ export default function SchedulesPage() {
                           <CalendarDays className="h-4 w-4 text-muted-foreground"/> 
                           {schedule.title}
                         </CardTitle>
-                        <CardDescription asChild className="flex items-center text-xs pt-1">
-                           <div>
+                        <CardDescription asChild>
+                           <div className="flex items-center text-xs pt-1">
                             <Badge variant="outline">{schedule.type}</Badge>
                            </div>
                         </CardDescription>
