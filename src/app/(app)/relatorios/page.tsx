@@ -49,15 +49,19 @@ export default function ReportsPage() {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
-  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
+  
 
   const currentUser = useMemo(() => {
     // This logic should match the one in `perfil/page.tsx` for consistency
     if (userRole === 'driver') {
       return drivers.find(d => d.id === '2'); // Simulating 'Maria Oliveira'
     }
+     if (userRole === 'manager') {
+      return drivers.find(d => d.id === '1'); // Simulating 'João da Silva'
+    }
     return null;
   }, [userRole, drivers]);
+
 
   useEffect(() => {
     if (userRole === 'driver' && currentUser) {
@@ -86,11 +90,17 @@ export default function ReportsPage() {
     const scheduleSector = scheduleVehicle?.sector;
     const isInSector = selectedSector ? scheduleSector === selectedSector : true;
     const isVehicle = selectedVehicle ? s.vehicle.includes(selectedVehicle) : true;
-    const isDriver = selectedDriver ? s.driver === selectedDriver : true;
-    const isEmployee = selectedEmployee ? s.driver === selectedEmployee : true;
     
-    return s.status === 'Concluída' && isAfterFrom && isBeforeTo && isInSector && isVehicle && isDriver && isEmployee;
-  }), [schedules, dateRange, selectedSector, selectedVehicle, selectedDriver, selectedEmployee, vehicles]);
+    let isParticipant = true;
+    if (userRole === 'driver' && currentUser) {
+      isParticipant = s.driver === currentUser.name || (s.passengers?.some(p => p.name === currentUser.name) ?? false);
+    } else if (selectedDriver) {
+        isParticipant = s.driver === selectedDriver || (s.passengers?.some(p => p.name === selectedDriver) ?? false);
+    }
+
+    return s.status === 'Concluída' && isAfterFrom && isBeforeTo && isInSector && isVehicle && isParticipant;
+  }), [schedules, dateRange, selectedSector, selectedVehicle, selectedDriver, vehicles, userRole, currentUser]);
+
 
   const totalTrips = filteredSchedules.length;
 
@@ -158,7 +168,6 @@ export default function ReportsPage() {
       if (userRole !== 'driver') {
         setSelectedDriver(null);
       }
-      setSelectedEmployee(null);
   }
 
   return (
@@ -263,17 +272,6 @@ export default function ReportsPage() {
             >
               <SelectTrigger id="driver">
                 <SelectValue placeholder="Todos os motoristas" />
-              </SelectTrigger>
-              <SelectContent>
-                {drivers.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col space-y-1.5">
-            <Label htmlFor="employee">Funcionário</Label>
-            <Select onValueChange={setSelectedEmployee} value={selectedEmployee || ''}>
-              <SelectTrigger id="employee">
-                <SelectValue placeholder="Todos os funcionários" />
               </SelectTrigger>
               <SelectContent>
                 {drivers.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
@@ -444,5 +442,7 @@ export default function ReportsPage() {
     </div>
   );
 }
+
+    
 
     
