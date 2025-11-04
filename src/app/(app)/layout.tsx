@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useMemo } from 'react';
@@ -15,6 +16,7 @@ import {
   SidebarInset,
   SidebarTrigger,
   SidebarFooter,
+  SidebarMenuSkeleton,
 } from '@/components/ui/sidebar';
 import {
   DropdownMenu,
@@ -32,6 +34,7 @@ import { useApp } from '@/contexts/app-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const navItems = [
@@ -74,7 +77,7 @@ const docsSidebarNavItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { userRole, setUserRole, currentUser } = useApp();
+  const { userRole, setUserRole, currentUser, isLoading } = useApp();
 
   const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
   const isDocsPage = pathname.startsWith('/docs');
@@ -173,26 +176,41 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
-              {filteredNavItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname.startsWith(item.href)}
-                    tooltip={item.label}
-                  >
-                    <Link href={item.href}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {isLoading ? (
+                <>
+                  <SidebarMenuSkeleton showIcon />
+                  <SidebarMenuSkeleton showIcon />
+                  <SidebarMenuSkeleton showIcon />
+                  <SidebarMenuSkeleton showIcon />
+                </>
+              ) : (
+                filteredNavItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname.startsWith(item.href)}
+                      tooltip={item.label}
+                    >
+                      <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))
+              )}
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter className='mt-auto'>
             <Separator className='mb-2' />
              <SidebarMenu>
-                {filteredBottomNavItems.map((item) => (
+                {isLoading ? (
+                  <>
+                    <SidebarMenuSkeleton showIcon />
+                    <SidebarMenuSkeleton showIcon />
+                  </>
+                ) : (
+                  filteredBottomNavItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                         asChild
@@ -205,7 +223,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         </Link>
                     </SidebarMenuButton>
                     </SidebarMenuItem>
-                ))}
+                ))
+              )}
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
@@ -218,52 +237,56 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </Button>
                 </SidebarTrigger>
                 <div className="ml-auto flex items-center gap-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                        <Avatar className='h-9 w-9'>
-                          <AvatarImage src={`https://avatar.vercel.sh/${currentUser?.id}`} alt="Avatar" />
-                          <AvatarFallback>{getInitials(currentUser?.name)}</AvatarFallback>
-                        </Avatar>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel className='font-normal'>
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">{currentUser?.name || getRoleName(userRole)}</p>
-                          <p className="text-xs leading-none text-muted-foreground">
-                            {getRoleName(userRole)}
-                          </p>
-                        </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href="/perfil">
-                          <UserCog className="mr-2 h-4 w-4" />
-                          <span>Meu Perfil</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      {userRole === 'admin' && (
-                       <DropdownMenuItem asChild>
-                         <Link href="/settings">
-                          <Settings className="mr-2 h-4 w-4" />
-                          <span>Configurações</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      )}
-                       <DropdownMenuItem asChild>
-                        <Link href="/docs">
-                          <BookOpen className="mr-2 h-4 w-4" />
-                          <span>Ajuda</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Sair</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {isLoading ? (
+                    <Skeleton className="h-9 w-9 rounded-full" />
+                  ) : (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                          <Avatar className='h-9 w-9'>
+                            <AvatarImage src={`https://avatar.vercel.sh/${currentUser?.id}`} alt="Avatar" />
+                            <AvatarFallback>{getInitials(currentUser?.name)}</AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel className='font-normal'>
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">{currentUser?.name || getRoleName(userRole)}</p>
+                            <p className="text-xs leading-none text-muted-foreground">
+                              {getRoleName(userRole)}
+                            </p>
+                          </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href="/perfil">
+                            <UserCog className="mr-2 h-4 w-4" />
+                            <span>Meu Perfil</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        {userRole === 'admin' && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/settings">
+                            <Settings className="mr-2 h-4 w-4" />
+                            <span>Configurações</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem asChild>
+                          <Link href="/docs">
+                            <BookOpen className="mr-2 h-4 w-4" />
+                            <span>Ajuda</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout}>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>Sair</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
             </header>
             <main className="flex-1 overflow-auto">

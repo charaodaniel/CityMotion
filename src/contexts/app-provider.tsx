@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 type UserRole = 'admin' | 'manager' | 'employee';
 
 interface AppContextType {
+  isLoading: boolean;
   userRole: UserRole;
   setUserRole: (role: UserRole, email?: string) => void;
   currentUser: Employee | null;
@@ -43,6 +44,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<UserRole>('employee');
   const [userEmailForSimulation, setUserEmailForSimulation] = useState('employee@citymotion.com');
   
@@ -72,6 +74,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setMaintenanceRequests(data.maintenanceRequests);
       } catch (error) {
         console.error("Could not fetch data:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchData();
@@ -187,6 +191,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{ 
+        isLoading,
         userRole, 
         setUserRole: setRoleAndSimulatedEmail, 
         currentUser,
