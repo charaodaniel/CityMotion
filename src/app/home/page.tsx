@@ -5,11 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import type { WorkSchedule, WorkScheduleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
 import { CalendarDays, Clock, User } from 'lucide-react';
+import Loading from '@/app/loading';
 
 function getStatusVariant(status: WorkScheduleStatus) {
     switch (status) {
@@ -25,8 +27,23 @@ function getStatusVariant(status: WorkScheduleStatus) {
 }
 
 export default function HomePage() {
-  const { workSchedules } = useApp();
+  const { workSchedules, currentUser } = useApp();
+  const router = useRouter();
   const [selectedSchedule, setSelectedSchedule] = useState<WorkSchedule | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // If a user is logged in (currentUser exists), redirect to the dashboard.
+    // The check for 'admin@citymotion.com' is a proxy for being "logged in" in this simulation.
+    // A more robust check would be just `if (currentUser)`.
+    if (currentUser && currentUser.name !== 'Ana Souza') { // Assuming 'Ana Souza' is the default "logged out" state
+      router.replace('/dashboard');
+    } else {
+      // If not logged in, show the public page.
+      setIsLoading(false);
+    }
+  }, [currentUser, router]);
+
 
   const handleCardClick = (schedule: WorkSchedule) => {
     setSelectedSchedule(schedule);
@@ -35,6 +52,10 @@ export default function HomePage() {
   const closeDetailsModal = () => {
     setSelectedSchedule(null);
   };
+  
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <div className="container mx-auto p-4 sm:p-8">
