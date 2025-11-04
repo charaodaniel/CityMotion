@@ -27,22 +27,22 @@ function getStatusVariant(status: WorkScheduleStatus) {
 }
 
 export default function HomePage() {
-  const { workSchedules, currentUser } = useApp();
+  const { workSchedules, currentUser, isLoading: isAppLoading } = useApp();
   const router = useRouter();
   const [selectedSchedule, setSelectedSchedule] = useState<WorkSchedule | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // If a user is logged in (currentUser exists), redirect to the dashboard.
-    // The check for 'admin@citymotion.com' is a proxy for being "logged in" in this simulation.
-    // A more robust check would be just `if (currentUser)`.
-    if (currentUser && currentUser.name !== 'Ana Souza') { // Assuming 'Ana Souza' is the default "logged out" state
-      router.replace('/dashboard');
-    } else {
-      // If not logged in, show the public page.
-      setIsLoading(false);
+    // We only check for redirection after the app has finished loading its initial data.
+    if (!isAppLoading) {
+      if (currentUser) {
+        router.replace('/dashboard');
+      } else {
+        // If not logged in, show the public page.
+        setIsCheckingAuth(false);
+      }
     }
-  }, [currentUser, router]);
+  }, [currentUser, isAppLoading, router]);
 
 
   const handleCardClick = (schedule: WorkSchedule) => {
@@ -53,7 +53,7 @@ export default function HomePage() {
     setSelectedSchedule(null);
   };
   
-  if (isLoading) {
+  if (isAppLoading || isCheckingAuth) {
     return <Loading />;
   }
 

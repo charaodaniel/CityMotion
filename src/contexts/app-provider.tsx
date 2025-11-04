@@ -46,7 +46,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<UserRole>('employee');
-  const [userEmailForSimulation, setUserEmailForSimulation] = useState('employee@citymotion.com');
+  const [userEmailForSimulation, setUserEmailForSimulation] = useState('');
   
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [vehicleRequests, setVehicleRequests] = useState<VehicleRequest[]>([]);
@@ -88,23 +88,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
   
   // This is the core of the user simulation
   const currentUser = useMemo(() => {
-    if (!employees.length) return null;
+    if (!employees.length || !userEmailForSimulation) return null;
 
     if (userEmailForSimulation.startsWith('admin')) {
-      return employees.find(e => e.name === 'Júlio César'); // The Mayor (simulated Admin)
+      return employees.find(e => e.name === 'Júlio César') || null; // The Mayor (simulated Admin)
     }
     if (userEmailForSimulation.startsWith('manager')) {
-      return employees.find(e => e.name === 'Ricardo Nunes'); // Head of Obras (simulated Manager)
+      return employees.find(e => e.name === 'Ricardo Nunes') || null; // Head of Obras (simulated Manager)
     }
     if (userEmailForSimulation.startsWith('driver')) {
-      return employees.find(e => e.name === 'Maria Oliveira'); // A driver
+      return employees.find(e => e.name === 'Maria Oliveira') || null; // A driver
     }
     if (userEmailForSimulation.startsWith('employee')) {
-      return employees.find(e => e.name === 'Ana Souza'); // A teacher
+      return employees.find(e => e.name === 'Ana Souza') || null; // A teacher
     }
     
     // Fallback or default user
-    return employees.find(e => e.name === 'Ana Souza') || employees[0] || null;
+    return null;
   }, [userEmailForSimulation, employees]);
 
 

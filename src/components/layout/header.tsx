@@ -10,8 +10,8 @@ import { useApp } from "@/contexts/app-provider";
 export function Header() {
     const { currentUser } = useApp();
     
-    // Consider the user logged in if it's not the default simulated "logged out" user.
-    const isLoggedIn = currentUser && currentUser.name !== 'Ana Souza';
+    // The user is considered logged in if currentUser is not null.
+    const isLoggedIn = !!currentUser;
 
     return (
         <header className="sticky top-0 z-40 w-full border-b bg-background">
