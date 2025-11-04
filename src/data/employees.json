@@ -14,5 +14,6 @@
   { "id": "12", "name": "Ricardo Nunes", "role": "Engenheiro Civil", "cnh": "444555666", "sector": "Secretaria de Obras, Viação e Urbanismo", "status": "Disponível", "matricula": "OBR-012" },
   { "id": "13", "name": "Laura Martins", "role": "Psicóloga", "cnh": null, "sector": "Secretaria de Assistência Social", "status": "Disponível", "matricula": "SOC-013" },
   { "id": "14", "name": "Felipe Arruda", "role": "Veterinário", "cnh": null, "sector": "Secretaria de Agricultura e Meio Ambiente", "status": "Em Viagem", "matricula": "AGR-014" },
-  { "id": "15", "name": "Patrícia Borges", "role": "Secretária de Administração", "cnh": null, "sector": "Secretaria de Administração e Planejamento", "status": "Disponível", "matricula": "ADM-001" }
+  { "id": "15", "name": "Patrícia Borges", "role": "Secretária de Administração", "cnh": null, "sector": "Secretaria de Administração e Planejamento", "status": "Disponível", "matricula": "ADM-001" },
+  { "id": "16", "name": "Lucas Gabriel", "role": "Estagiário de TI", "cnh": null, "sector": "Secretaria de Administração e Planejamento", "status": "Disponível", "matricula": "EST-001" }
 ]
