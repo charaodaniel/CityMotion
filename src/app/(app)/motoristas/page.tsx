@@ -224,7 +224,7 @@ export default function DriversPage() {
             </div>
              <CardContent className="p-2 pt-0">
                 <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" asChild>
-                    <Link href={`/cracha/${driver.id}`}>
+                    <Link href={`/cracha/${driver.id}`} target="_blank">
                         <Briefcase className="mr-2 h-4 w-4" />
                         Ver Crachá Virtual
                     </Link>
@@ -249,7 +249,7 @@ export default function DriversPage() {
                 <>
                   <DialogHeader>
                       <DialogTitle className="text-2xl">{title}</DialogTitle>
-                      <Description>{description}</Description>
+                      <DialogDescription>{description}</DialogDescription>
                   </DialogHeader>
                   {content}
                 </>
