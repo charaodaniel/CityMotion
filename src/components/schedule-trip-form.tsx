@@ -86,7 +86,7 @@ export function ScheduleTripForm({ onFormSubmit }: ScheduleTripFormProps) {
     form.setValue('category', '');
   }, [selectedSector, form]);
 
-  const onSubmit = (values: z.infer<typeof formSchema>>) => {
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
     toast({
       title: "Agendamento Enviado",
