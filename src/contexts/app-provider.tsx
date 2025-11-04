@@ -5,6 +5,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from 'react';
 import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus } from '@/lib/types';
 import { format } from 'date-fns';
+import Loading from '@/app/loading';
 
 // Define a interface para o objeto exposto pelo preload.js
 declare global {
@@ -91,9 +92,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async function fetchData() {
       setIsLoading(true);
       try {
-        // Por enquanto, esta API simulada /api/data continua a funcionar.
-        // A lógica de `getApiUrl` está aqui para quando você refatorar para
-        // consumir do backend Node.js diretamente.
         const response = await fetch('/api/data?type=all');
         if (!response.ok) {
             throw new Error('Failed to fetch initial data');
@@ -122,7 +120,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   
   // This is the core of the user simulation
   const currentUser = useMemo(() => {
-    if (isLoading || !employees.length || !userEmailForSimulation) return null;
+    if (!employees.length || !userEmailForSimulation) return null;
     
     // Fallback for empty email, ensuring no user is selected
     if (userEmailForSimulation === '') return null;
@@ -142,7 +140,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     
     // Fallback or default user
     return null;
-  }, [userEmailForSimulation, employees, isLoading]);
+  }, [userEmailForSimulation, employees]);
 
 
   const addVehicleRequest = (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => {

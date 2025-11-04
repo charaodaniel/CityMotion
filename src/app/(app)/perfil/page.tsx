@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +12,7 @@ import { User, Mail, Building, ShieldCheck, Briefcase } from "lucide-react";
 import { useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function getStatusVariant(status: VehicleRequestStatus) {
   switch (status) {
@@ -26,7 +28,7 @@ function getStatusVariant(status: VehicleRequestStatus) {
 }
 
 export default function ProfilePage() {
-  const { currentUser, userEmailForSimulation, vehicleRequests } = useApp();
+  const { currentUser, userEmailForSimulation, vehicleRequests, isLoading } = useApp();
 
   const userRequests = useMemo(() => {
     if (!currentUser) return [];
@@ -37,6 +39,18 @@ export default function ProfilePage() {
   }, [currentUser, vehicleRequests]);
 
 
+  if (isLoading) {
+      return (
+          <div className="container mx-auto p-4 sm:p-8 max-w-4xl space-y-8">
+              <Skeleton className="h-10 w-48" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <Skeleton className="md:col-span-1 h-96" />
+                <Skeleton className="md:col-span-2 h-96" />
+              </div>
+          </div>
+      )
+  }
+  
   if (!currentUser) {
     return (
       <div className="container mx-auto p-4 sm:p-8">
