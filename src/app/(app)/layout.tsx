@@ -26,10 +26,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Logo } from '@/components/icons';
 import { LayoutDashboard, Car, Menu, Settings, LifeBuoy, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Separator } from '../ui/separator';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 const navItems = [

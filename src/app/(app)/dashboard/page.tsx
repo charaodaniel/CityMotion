@@ -1,24 +1,25 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useApp } from '@/contexts/app-provider';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { QuickRequestForm } from '@/components/quick-request-form';
-import TripKanbanView from '@/components/trip-kanban-view';
 import AdminDashboard from '@/components/dashboards/admin-dashboard';
 import ManagerDashboard from '@/components/dashboards/manager-dashboard';
 import DriverDashboard from '@/components/dashboards/driver-dashboard';
-import { useMemo } from 'react';
 
 export default function DashboardPage() {
     const { userRole, currentUser } = useApp();
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
     
-    const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
+    const isCurrentUserDriver = useMemo(() => {
+        if (!currentUser || !currentUser.role) return false;
+        return currentUser.role.toLowerCase().includes('motorista');
+    }, [currentUser]);
 
     const renderDashboard = () => {
         switch (userRole) {
@@ -30,7 +31,7 @@ export default function DashboardPage() {
                 if (isCurrentUserDriver) {
                     return <DriverDashboard />;
                 }
-                // Fallback for a standard employee - maybe just the request form button and a message
+                // Fallback for a standard employee
                 return (
                     <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
                         <p className="text-lg">Bem-vindo(a) ao CityMotion.</p>
@@ -38,7 +39,11 @@ export default function DashboardPage() {
                     </div>
                 );
             default:
-                return null;
+                 return (
+                    <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
+                        <p className="text-lg">Painel não disponível para este perfil.</p>
+                    </div>
+                );
         }
     }
 
@@ -53,7 +58,7 @@ export default function DashboardPage() {
                         {userRole === 'admin' ? 'Visão geral do sistema e da frota.' : 'Acompanhe suas tarefas e solicitações.'}
                     </p>
                 </div>
-                {(userRole !== 'admin') && (
+                {(userRole === 'employee' || userRole === 'manager') && !isCurrentUserDriver && (
                     <Dialog open={isRequestModalOpen} onOpenChange={setIsRequestModalOpen}>
                         <DialogTrigger asChild>
                             <Button>
