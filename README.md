@@ -70,8 +70,8 @@ Acompanhe o ciclo de vida de cada viagem de forma visual e intuitiva nas colunas
 
 Após a validação desta versão Alpha, nossas prioridades para transformar o protótipo em uma solução de produção para rodar na intranet da prefeitura incluem:
 
--   [ ] **Integração com Backend e Banco de Dados Local:**
-    -   Substituir o sistema de dados simulados (JSON) por uma integração com um backend Node.js e um banco de dados real. A recomendação inicial é utilizar **SQLite** pela sua simplicidade de implantação (um único arquivo, sem servidor) e alta performance, ideal para o ambiente de intranet e desktop. Para cenários futuros de maior escala, a migração para um sistema como **PostgreSQL** é uma evolução natural e planejada.
+-   [ ] **Integração com Backend e Banco de Dados Local (SQLite):**
+    -   Substituir o sistema de dados simulados (JSON) por uma integração com um backend **Node.js** e um banco de dados **SQLite**. A escolha pelo SQLite se dá pela sua simplicidade de implantação (um único arquivo, sem servidor) e alta performance, sendo ideal para o ambiente de intranet e para o build de desktop com Electron.
 
 -   [ ] **Sistema de Autenticação Próprio e Seguro:**
     -   Implementar um sistema de login e senha seguro, utilizando tecnologias como JWT (JSON Web Tokens), para substituir a simulação de perfis e garantir que cada usuário acesse apenas as informações e funcionalidades permitidas para seu cargo.
