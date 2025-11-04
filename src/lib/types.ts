@@ -1,11 +1,13 @@
 
-export type DriverStatus = 'Disponível' | 'Em Viagem' | 'Afastado' | 'Em Serviço';
 
-export type Driver = {
+export type EmployeeStatus = 'Disponível' | 'Em Viagem' | 'Afastado' | 'Em Serviço';
+
+export type Employee = {
   id: string;
   name: string;
-  status: DriverStatus;
+  status: EmployeeStatus;
   sector: string;
+  role: string; // Ex: 'Motorista', 'Médico', 'Secretário(a)', 'Enfermeiro(a)'
   cnh?: string;
   matricula?: string;
   idPhoto?: string;

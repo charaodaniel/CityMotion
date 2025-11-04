@@ -43,7 +43,7 @@ function getStatusVariant(status: ScheduleStatus) {
 }
 
 export default function ReportsPage() {
-  const { userRole, schedules, drivers, vehicles, sectors } = useApp();
+  const { userRole, schedules, employees, vehicles, sectors } = useApp();
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [dateRange, setDateRange] = useState<{from: Date | undefined, to: Date | undefined}>({ from: undefined, to: undefined });
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
@@ -54,13 +54,13 @@ export default function ReportsPage() {
   const currentUser = useMemo(() => {
     // This logic should match the one in `perfil/page.tsx` for consistency
     if (userRole === 'driver') {
-      return drivers.find(d => d.id === '2'); // Simulating 'Maria Oliveira'
+      return employees.find(d => d.id === '2'); // Simulating 'Maria Oliveira'
     }
      if (userRole === 'manager') {
-      return drivers.find(d => d.id === '1'); // Simulating 'João da Silva'
+      return employees.find(d => d.id === '1'); // Simulating 'João da Silva'
     }
     return null;
-  }, [userRole, drivers]);
+  }, [userRole, employees]);
 
 
   useEffect(() => {
@@ -274,7 +274,7 @@ export default function ReportsPage() {
                 <SelectValue placeholder="Todos os motoristas" />
               </SelectTrigger>
               <SelectContent>
-                {drivers.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
+                {employees.filter(e => e.role === 'Motorista').map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { drivers } from '@/lib/data';
-import type { Driver } from '@/lib/types';
-import { Building, CarFront, ScanLine, User, Printer } from 'lucide-react';
+import { employees } from '@/lib/data';
+import type { Employee } from '@/lib/types';
+import { Building, CarFront, ScanLine, User, Printer, Briefcase } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 export default function BadgePage() {
   const params = useParams();
   const { id } = params;
-  const [employee, setEmployee] = useState<Driver | null>(null);
+  const [employee, setEmployee] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(true);
   const [badgeUrl, setBadgeUrl] = useState('');
 
@@ -24,9 +24,9 @@ export default function BadgePage() {
     setBadgeUrl(window.location.href);
 
     // Simulate fetching data
-    const foundDriver = drivers.find(d => d.id === id);
-    if (foundDriver) {
-      setEmployee(foundDriver);
+    const foundEmployee = employees.find(d => d.id === id);
+    if (foundEmployee) {
+      setEmployee(foundEmployee);
     }
     setLoading(false);
   }, [id]);
@@ -54,12 +54,6 @@ export default function BadgePage() {
     );
   }
 
-  const getRoleName = (sector: string) => {
-    if (sector === 'Administração') return 'Administrador';
-    if (sector === 'Secretaria de Obras') return 'Gestor de Setor';
-    return 'Funcionário';
-  }
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-muted/40 p-4 font-sans">
       <Card className="w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden bg-gradient-to-br from-background to-muted/30 border-primary/20 print:shadow-none print:border-none">
@@ -80,7 +74,7 @@ export default function BadgePage() {
             <AvatarFallback>{employee.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
           </Avatar>
           <h2 className="text-2xl font-bold">{employee.name}</h2>
-          <p className="text-base text-muted-foreground">{getRoleName(employee.sector)}</p>
+          <p className="text-base text-muted-foreground">{employee.role}</p>
           
           <div className="mt-6 text-left space-y-3 text-sm">
             <div className="flex items-center">
@@ -91,6 +85,12 @@ export default function BadgePage() {
                  <div className="flex items-center">
                     <User className="mr-3 h-4 w-4 text-muted-foreground" />
                     <span>Matrícula: <strong>{employee.matricula}</strong></span>
+                </div>
+            )}
+             {employee.role && (
+                 <div className="flex items-center">
+                    <Briefcase className="mr-3 h-4 w-4 text-muted-foreground" />
+                    <span>Cargo: <strong>{employee.role}</strong></span>
                 </div>
             )}
           </div>

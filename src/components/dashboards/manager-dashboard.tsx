@@ -25,7 +25,7 @@ function getPriorityVariant(priority: RequestPriority) {
 
 export default function ManagerDashboard() {
   const { toast } = useToast();
-  const { vehicleRequests, updateVehicleRequestStatus, drivers } = useApp();
+  const { vehicleRequests, updateVehicleRequestStatus, employees } = useApp();
 
   const managerSector = "Secretaria de Obras"; // Simulating manager's sector
 
@@ -46,8 +46,8 @@ export default function ManagerDashboard() {
   }, [vehicleRequests, managerSector]);
 
   const availableDrivers = useMemo(() => {
-    return drivers.filter(d => d.status === 'Disponível' && d.sector === managerSector).length;
-  }, [drivers, managerSector]);
+    return employees.filter(d => d.status === 'Disponível' && d.sector === managerSector && d.role === 'Motorista').length;
+  }, [employees, managerSector]);
 
 
   return (

@@ -1,8 +1,8 @@
-import type { Driver, Vehicle, Schedule, VehicleRequest, Sector, WorkSchedule } from './types';
+import type { Employee, Vehicle, Schedule, VehicleRequest, Sector, WorkSchedule } from './types';
 
 // These imports are no longer needed as data will be fetched from the API
 // import sectorsData from '@/data/sectors.json';
-// import driversData from '@/data/drivers.json';
+// import employeesData from '@/data/employees.json';
 // import vehiclesData from '@/data/vehicles.json';
 // import workSchedulesData from '@/data/work-schedules.json';
 
@@ -12,7 +12,7 @@ import { chartData as chartDataJson, driverActivity as driverActivityJson } from
 // Data will be provided via AppContext, fetched from an API.
 // These arrays can be kept for type inference or completely removed if pages are fully dynamic.
 export const sectors: Sector[] = [];
-export const drivers: Driver[] = [];
+export const employees: Employee[] = [];
 export const vehicles: Vehicle[] = [];
 export const workSchedules: WorkSchedule[] = [];
 export const schedules: Schedule[] = [];

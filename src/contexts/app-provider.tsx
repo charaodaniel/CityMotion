@@ -3,7 +3,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Driver, Vehicle, Sector, WorkSchedule } from '@/lib/types';
+import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule } from '@/lib/types';
 import { format } from 'date-fns';
 
 
@@ -20,8 +20,8 @@ interface AppContextType {
   addVehicleRequest: (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => void;
   updateVehicleRequestStatus: (id: string, status: VehicleRequestStatus) => void;
   
-  drivers: Driver[];
-  setDrivers: React.Dispatch<React.SetStateAction<Driver[]>>;
+  employees: Employee[];
+  setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
   
   vehicles: Vehicle[];
   setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
@@ -41,7 +41,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [vehicleRequests, setVehicleRequests] = useState<VehicleRequest[]>([]);
-  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([]);
@@ -57,7 +57,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setSchedules(data.schedules);
         setVehicleRequests(data.requests);
         setVehicles(data.vehicles);
-        setDrivers(data.drivers);
+        setEmployees(data.employees);
         setSectors(data.sectors);
         setWorkSchedules(data.workSchedules);
       } catch (error) {
@@ -97,7 +97,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (status === 'Aprovada' && requestToProcess) {
       const request = requestToProcess;
         // Simulação da lógica de alocação de recursos
-        const availableDriver = drivers.find(d => d.status === 'Disponível' && d.sector === request.sector);
+        const availableDriver = employees.find(d => d.status === 'Disponível' && d.sector === request.sector && d.role === 'Motorista');
         const availableVehicle = vehicles.find(v => v.status === 'Disponível' && v.sector === request.sector);
 
         if (availableDriver && availableVehicle) {
@@ -114,7 +114,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             };
             setSchedules(prevSchedules => [newSchedule, ...prevSchedules]);
              // Update driver and vehicle status
-            setDrivers(drivers.map(d => d.id === availableDriver.id ? { ...d, status: 'Em Serviço' } : d));
+            setEmployees(employees.map(d => d.id === availableDriver.id ? { ...d, status: 'Em Serviço' } : d));
             setVehicles(vehicles.map(v => v.id === availableVehicle.id ? { ...v, status: 'Em Serviço' } : v));
         } else {
             // Handle case where no driver or vehicle is available
@@ -130,7 +130,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         userRole, setUserRole, 
         schedules, setSchedules, 
         vehicleRequests, addVehicleRequest, updateVehicleRequestStatus,
-        drivers, setDrivers,
+        employees, setEmployees,
         vehicles, setVehicles,
         sectors, setSectors,
         workSchedules, setWorkSchedules

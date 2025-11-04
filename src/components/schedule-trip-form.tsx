@@ -43,7 +43,8 @@ interface ScheduleTripFormProps {
 
 export function ScheduleTripForm({ onFormSubmit }: ScheduleTripFormProps) {
   const { toast } = useToast();
-  const { drivers, vehicles, sectors } = useApp();
+  const { employees, vehicles, sectors } = useApp();
+  const drivers = employees.filter(e => e.role === 'Motorista');
 
   const tripCategoriesBySector: Record<string, string[]> = {
     "Secretaria de Saúde": ["Transporte de Paciente", "Consulta Agendada", "Entrega de Medicamentos"],
@@ -80,7 +81,7 @@ export function ScheduleTripForm({ onFormSubmit }: ScheduleTripFormProps) {
     form.setValue('category', '');
   }, [selectedSector, form]);
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = (values: z.infer<typeof formSchema>>) => {
     console.log(values);
     toast({
       title: "Agendamento Enviado",

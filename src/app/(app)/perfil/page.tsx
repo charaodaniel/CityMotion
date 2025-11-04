@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useApp } from "@/contexts/app-provider";
-import type { Driver, VehicleRequest, VehicleRequestStatus } from "@/lib/types";
-import { User, Mail, Building, ShieldCheck } from "lucide-react";
+import type { Employee, VehicleRequest, VehicleRequestStatus } from "@/lib/types";
+import { User, Mail, Building, ShieldCheck, Briefcase } from "lucide-react";
 import { useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -26,38 +26,38 @@ function getStatusVariant(status: VehicleRequestStatus) {
 }
 
 export default function ProfilePage() {
-  const { userRole, drivers, vehicleRequests } = useApp();
+  const { userRole, employees, vehicleRequests } = useApp();
   
   const { currentUser, userEmail } = useMemo(() => {
-    let user: Driver | undefined;
+    let user: Employee | undefined;
     let email: string = 'user@citymotion.com';
 
     // This simulation should be replaced by real auth data
     switch (userRole) {
       case 'admin':
-        user = drivers.find(d => d.name === 'Pedro Santos');
+        user = employees.find(d => d.name === 'Pedro Santos');
         email = 'admin@citymotion.com';
         break;
       case 'manager':
-        user = drivers.find(d => d.name === 'João da Silva');
+        user = employees.find(d => d.name === 'João da Silva');
         email = 'manager@citymotion.com';
         break;
       case 'driver':
-        user = drivers.find(d => d.name === 'Maria Oliveira');
+        user = employees.find(d => d.name === 'Maria Oliveira');
         email = 'driver@citymotion.com';
         break;
       case 'employee':
-        user = drivers.find(d => d.name === 'Ana Souza');
+        user = employees.find(d => d.name === 'Ana Souza');
         email = 'employee@citymotion.com';
         break;
       default:
-        user = drivers[0];
+        user = employees[0];
         if (user) {
           email = `${user.name.toLowerCase().replace(/\s+/g, '.')}@citymotion.com`;
         }
     }
     return { currentUser: user, userEmail: email };
-  }, [userRole, drivers]);
+  }, [userRole, employees]);
 
   const userRequests = useMemo(() => {
     // This is a simulation. In a real app, you'd filter by the logged-in user's ID.
@@ -84,16 +84,6 @@ export default function ProfilePage() {
     );
   }
 
-  const getRoleName = (role: string) => {
-    switch (role) {
-      case 'admin': return 'Administrador';
-      case 'manager': return 'Gestor de Setor';
-      case 'driver': return 'Motorista';
-      case 'employee': return 'Funcionário';
-      default: return 'Desconhecido';
-    }
-  }
-
   return (
     <div className="container mx-auto p-4 sm:p-8 max-w-4xl">
       <div className="mb-6">
@@ -115,7 +105,7 @@ export default function ProfilePage() {
                         <AvatarFallback>{currentUser.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                     </Avatar>
                     <CardTitle className="text-2xl">{currentUser.name}</CardTitle>
-                    <CardDescription>{getRoleName(userRole)}</CardDescription>
+                    <CardDescription>{currentUser.role}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 text-sm">
                     <div className="flex items-center">
@@ -125,6 +115,10 @@ export default function ProfilePage() {
                      <div className="flex items-center">
                         <Building className="mr-3 h-4 w-4 text-muted-foreground" />
                         <span>Setor: <strong>{currentUser.sector}</strong></span>
+                    </div>
+                     <div className="flex items-center">
+                        <Briefcase className="mr-3 h-4 w-4 text-muted-foreground" />
+                        <span>Cargo: <strong>{currentUser.role}</strong></span>
                     </div>
                     {currentUser.cnh && (
                         <div className="flex items-center">

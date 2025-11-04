@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
       case 'vehicles':
         data = await readJsonFile('vehicles.json');
         break;
-      case 'drivers':
-        data = await readJsonFile('drivers.json');
+      case 'employees':
+        data = await readJsonFile('employees.json');
         break;
       case 'sectors':
         data = await readJsonFile('sectors.json');
@@ -37,15 +37,15 @@ export async function GET(request: NextRequest) {
         data = await readJsonFile('work-schedules.json');
         break;
       case 'all':
-        const [schedules, requests, vehicles, drivers, sectors, workSchedules] = await Promise.all([
+        const [schedules, requests, vehicles, employees, sectors, workSchedules] = await Promise.all([
           readJsonFile('schedules.json'),
           readJsonFile('vehicle-requests.json'),
           readJsonFile('vehicles.json'),
-          readJsonFile('drivers.json'),
+          readJsonFile('employees.json'),
           readJsonFile('sectors.json'),
           readJsonFile('work-schedules.json'),
         ]);
-        data = { schedules, requests, vehicles, drivers, sectors, workSchedules };
+        data = { schedules, requests, vehicles, employees, sectors, workSchedules };
         break;
       default:
          return new NextResponse('Please specify a data type to fetch.', { status: 400 });

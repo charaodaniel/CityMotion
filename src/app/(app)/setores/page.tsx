@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useApp } from '@/contexts/app-provider';
 
 export default function SectorsPage() {
-  const { sectors, setSectors, drivers, vehicles } = useApp();
+  const { sectors, setSectors, employees, vehicles } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
   const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
@@ -58,7 +58,7 @@ export default function SectorsPage() {
     closeModal();
   };
 
-  const sectorDrivers = selectedSector ? drivers.filter(d => d.sector === selectedSector.name) : [];
+  const sectorEmployees = selectedSector ? employees.filter(d => d.sector === selectedSector.name) : [];
   const sectorVehicles = selectedSector ? vehicles.filter(v => v.sector === selectedSector.name) : [];
 
   const getModalContent = () => {
@@ -89,28 +89,30 @@ export default function SectorsPage() {
                               </Button>
                           </div>
                           <div>
-                              <h3 className="text-lg font-semibold mb-2 flex items-center"><User className="mr-2 h-5 w-5" />Motoristas Vinculados</h3>
-                              {sectorDrivers.length > 0 ? (
+                              <h3 className="text-lg font-semibold mb-2 flex items-center"><User className="mr-2 h-5 w-5" />Funcionários Vinculados</h3>
+                              {sectorEmployees.length > 0 ? (
                               <Card>
                                   <Table>
                                   <TableHeader>
                                       <TableRow>
                                       <TableHead>Nome</TableHead>
+                                      <TableHead>Cargo</TableHead>
                                       <TableHead>Status</TableHead>
                                       </TableRow>
                                   </TableHeader>
                                   <TableBody>
-                                      {sectorDrivers.map(driver => (
-                                      <TableRow key={driver.id}>
-                                          <TableCell className="font-medium">{driver.name}</TableCell>
-                                          <TableCell>{driver.status}</TableCell>
+                                      {sectorEmployees.map(employee => (
+                                      <TableRow key={employee.id}>
+                                          <TableCell className="font-medium">{employee.name}</TableCell>
+                                          <TableCell>{employee.role}</TableCell>
+                                          <TableCell>{employee.status}</TableCell>
                                       </TableRow>
                                       ))}
                                   </TableBody>
                                   </Table>
                               </Card>
                               ) : (
-                              <p className="text-sm text-muted-foreground">Nenhum motorista vinculado a este setor.</p>
+                              <p className="text-sm text-muted-foreground">Nenhum funcionário vinculado a este setor.</p>
                               )}
                           </div>
                           <Separator />
@@ -188,7 +190,7 @@ export default function SectorsPage() {
                 </div>
                 <div className="flex items-center text-muted-foreground">
                   <User className="mr-2 h-4 w-4" />
-                  <span>{drivers.filter(d => d.sector === sector.name).length} {drivers.filter(d => d.sector === sector.name).length === 1 ? 'motorista' : 'motoristas'}</span>
+                  <span>{employees.filter(d => d.sector === sector.name).length} {employees.filter(d => d.sector === sector.name).length === 1 ? 'funcionário' : 'funcionários'}</span>
                 </div>
               </CardContent>
             </Card>

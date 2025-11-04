@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Car, Clock, User, Pin, ArrowRight, Package, UserCheck, Route } from 'lucide-react';
+import { AlertTriangle, Car, Clock, User, Pin, ArrowRight, Package, UserCheck, Route, Users } from 'lucide-react';
 import type { ScheduleStatus, RequestPriority } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import { OverviewChart } from '../overview-chart';
@@ -38,11 +38,12 @@ function getPriorityVariant(priority: RequestPriority) {
 }
 
 export default function AdminDashboard() {
-  const { vehicleRequests, schedules, drivers, vehicles } = useApp();
-  const availableDrivers = drivers.filter(d => d.status === 'Disponível').length;
+  const { vehicleRequests, schedules, employees, vehicles } = useApp();
+  const availableDrivers = employees.filter(d => d.status === 'Disponível' && d.role === 'Motorista').length;
   const pendingRequests = vehicleRequests.filter(r => r.status === 'Pendente');
   const totalVehicles = vehicles.length;
   const tripsInProgress = schedules.filter(s => s.status === 'Em Andamento').length;
+  const totalEmployees = employees.length;
 
   return (
     <div className='space-y-8'>
@@ -75,6 +76,16 @@ export default function AdminDashboard() {
             <CardContent>
                 <div className="text-2xl font-bold">{tripsInProgress}</div>
                 <p className="text-xs text-muted-foreground">Veículos atualmente em percurso</p>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total de Funcionários</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{totalEmployees}</div>
+                <p className="text-xs text-muted-foreground">Funcionários cadastrados no sistema</p>
             </CardContent>
         </Card>
       </div>

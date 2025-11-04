@@ -10,32 +10,36 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import type { Driver } from '@/lib/types';
+import type { Employee } from '@/lib/types';
 import { useEffect } from 'react';
+import { useApp } from '@/contexts/app-provider';
 
 const formSchema = z.object({
   name: z.string().min(2, "O nome completo deve ter pelo menos 2 caracteres."),
   matricula: z.string().min(1, "A matrícula é obrigatória."),
+  role: z.string().min(1, "O cargo é obrigatório."),
   cnh: z.string().optional(),
   sector: z.string().min(3, "O setor é obrigatório."),
   idPhoto: z.any().optional(),
   cnhPhoto: z.any().optional(),
 });
 
-interface RegisterDriverFormProps {
-  onFormSubmit: (data: Partial<Driver>) => void;
-  existingDriver?: Driver | null;
+interface RegisterEmployeeFormProps {
+  onFormSubmit: (data: Partial<Employee>) => void;
+  existingEmployee?: Employee | null;
 }
 
-export function RegisterDriverForm({ onFormSubmit, existingDriver }: RegisterDriverFormProps) {
+export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: RegisterEmployeeFormProps) {
   const { toast } = useToast();
-  const isEditMode = !!existingDriver;
+  const { sectors } = useApp();
+  const isEditMode = !!existingEmployee;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
       matricula: '',
+      role: '',
       cnh: '',
       sector: '',
     },
@@ -44,16 +48,17 @@ export function RegisterDriverForm({ onFormSubmit, existingDriver }: RegisterDri
   useEffect(() => {
     if (isEditMode) {
       form.reset({
-        name: existingDriver.name,
-        matricula: existingDriver.matricula,
-        cnh: existingDriver.cnh,
-        sector: existingDriver.sector,
+        name: existingEmployee.name,
+        matricula: existingEmployee.matricula,
+        role: existingEmployee.role,
+        cnh: existingEmployee.cnh,
+        sector: existingEmployee.sector,
       });
     }
-  }, [isEditMode, existingDriver, form]);
+  }, [isEditMode, existingEmployee, form]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const dataToSubmit: Partial<Driver> = {
+    const dataToSubmit: Partial<Employee> = {
       ...values,
       idPhoto: values.idPhoto?.[0]?.name,
       cnhPhoto: values.cnhPhoto?.[0]?.name,
@@ -61,16 +66,19 @@ export function RegisterDriverForm({ onFormSubmit, existingDriver }: RegisterDri
     onFormSubmit(dataToSubmit);
     toast({
       title: isEditMode ? "Cadastro Atualizado" : "Cadastro Enviado",
-      description: `O cadastro do motorista foi ${isEditMode ? 'atualizado' : 'realizado'} com sucesso.`,
+      description: `O cadastro do funcionário foi ${isEditMode ? 'atualizado' : 'realizado'} com sucesso.`,
     });
     form.reset();
   };
+
+  const employeeRoles = ["Motorista", "Secretário(a)", "Médico(a)", "Enfermeiro(a)", "Técnico Administrativo", "Professor(a)", "Engenheiro(a)"];
+
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-4">
         <div>
-          <h3 className="text-lg font-semibold mb-4">Informações Pessoais</h3>
+          <h3 className="text-lg font-semibold mb-4">Informações Pessoais e Funcionais</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
@@ -79,7 +87,7 @@ export function RegisterDriverForm({ onFormSubmit, existingDriver }: RegisterDri
                 <FormItem>
                   <FormLabel>Nome Completo</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome do motorista" {...field} />
+                    <Input placeholder="Nome do funcionário" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -100,13 +108,20 @@ export function RegisterDriverForm({ onFormSubmit, existingDriver }: RegisterDri
             />
             <FormField
               control={form.control}
-              name="cnh"
+              name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nº da CNH (Opcional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="0123456789" {...field} />
-                  </FormControl>
+                  <FormLabel>Cargo</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o cargo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {employeeRoles.map(role => <SelectItem key={role} value={role}>{role}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -124,13 +139,22 @@ export function RegisterDriverForm({ onFormSubmit, existingDriver }: RegisterDri
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Secretaria de Saúde">Secretaria de Saúde</SelectItem>
-                      <SelectItem value="Secretaria de Educação">Secretaria de Educação</SelectItem>
-                      <SelectItem value="Secretaria de Obras">Secretaria de Obras</SelectItem>
-                      <SelectItem value="Administração">Administração</SelectItem>
-                      <SelectItem value="Vigilância Sanitária">Vigilância Sanitária</SelectItem>
+                      {sectors.map(sector => <SelectItem key={sector.id} value={sector.name}>{sector.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="cnh"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nº da CNH (se aplicável)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="0123456789" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -161,7 +185,7 @@ export function RegisterDriverForm({ onFormSubmit, existingDriver }: RegisterDri
               name="cnhPhoto"
               render={({ field: { value, onChange, ...fieldProps } }) => (
                 <FormItem>
-                  <FormLabel>Foto da CNH</FormLabel>
+                  <FormLabel>Foto da CNH (se aplicável)</FormLabel>
                   <FormControl>
                     <Input type="file" accept="image/*,application/pdf" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
                   </FormControl>

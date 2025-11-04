@@ -2,13 +2,13 @@
 
 "use client";
 
-import type { Driver, DriverStatus } from '@/lib/types';
+import type { Employee, EmployeeStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { PlusCircle, User, ShieldCheck, Edit, FileText, Link as LinkIcon, Briefcase } from 'lucide-react';
-import { RegisterDriverForm } from '@/components/register-driver-form';
+import { PlusCircle, User, ShieldCheck, Edit, FileText, Link as LinkIcon, Briefcase, Users } from 'lucide-react';
+import { RegisterEmployeeForm } from '@/components/register-employee-form';
 import { useState, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useApp } from '@/contexts/app-provider';
 
-function getStatusVariant(status: DriverStatus) {
+function getStatusVariant(status: EmployeeStatus) {
   switch (status) {
     case 'Disponível':
       return 'secondary';
@@ -30,55 +30,55 @@ function getStatusVariant(status: DriverStatus) {
   }
 }
 
-export default function DriversPage() {
-  const { drivers, setDrivers, userRole } = useApp();
+export default function EmployeesPage() {
+  const { employees, setEmployees, userRole } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
-  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   
   const managerSector = "Secretaria de Obras"; // Simulating manager's sector for filtering
 
-  const visibleDrivers = useMemo(() => {
+  const visibleEmployees = useMemo(() => {
     if (userRole === 'manager') {
-      return drivers.filter(d => d.sector === managerSector);
+      return employees.filter(d => d.sector === managerSector);
     }
-    return drivers;
-  }, [drivers, userRole, managerSector]);
+    return employees;
+  }, [employees, userRole, managerSector]);
 
 
-  const handleCardClick = (driver: Driver) => {
-    setSelectedDriver(driver);
+  const handleCardClick = (employee: Employee) => {
+    setSelectedEmployee(employee);
     setModalMode('details');
     setIsModalOpen(true);
   };
   
   const handleOpenRegisterModal = () => {
-    setSelectedDriver(null);
+    setSelectedEmployee(null);
     setModalMode('register');
     setIsModalOpen(true);
   };
   
-  const handleOpenEditModal = (driver: Driver) => {
-    setSelectedDriver(driver);
+  const handleOpenEditModal = (employee: Employee) => {
+    setSelectedEmployee(employee);
     setModalMode('edit');
     setIsModalOpen(true);
   }
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setSelectedDriver(null);
+    setSelectedEmployee(null);
   };
 
-  const handleFormSubmit = (newDriverData: Partial<Driver>) => {
-    if (modalMode === 'edit' && selectedDriver) {
-      setDrivers(drivers.map(d => d.id === selectedDriver.id ? { ...d, ...newDriverData } : d));
+  const handleFormSubmit = (newEmployeeData: Partial<Employee>) => {
+    if (modalMode === 'edit' && selectedEmployee) {
+      setEmployees(employees.map(d => d.id === selectedEmployee.id ? { ...d, ...newEmployeeData } : d));
     } else {
-      const newDriver: Driver = {
-        id: `${drivers.length + 1}`,
+      const newEmployee: Employee = {
+        id: `${employees.length + 1}`,
         status: 'Disponível',
-        ...newDriverData
-      } as Driver;
-      setDrivers([...drivers, newDriver]);
+        ...newEmployeeData
+      } as Employee;
+      setEmployees([...employees, newEmployee]);
     }
     closeModal();
   };
@@ -87,69 +87,73 @@ export default function DriversPage() {
     switch (modalMode) {
       case 'register':
         return {
-          title: 'Cadastro de Motorista',
-          description: 'Preencha o formulário para cadastrar um novo motorista da prefeitura.',
-          content: <RegisterDriverForm onFormSubmit={handleFormSubmit} />
+          title: 'Cadastro de Funcionário',
+          description: 'Preencha o formulário para cadastrar um novo funcionário da prefeitura.',
+          content: <RegisterEmployeeForm onFormSubmit={handleFormSubmit} />
         };
       case 'edit':
          return {
-          title: 'Editar Motorista',
-          description: 'Altere as informações do motorista.',
-          content: <RegisterDriverForm onFormSubmit={handleFormSubmit} existingDriver={selectedDriver} />
+          title: 'Editar Funcionário',
+          description: 'Altere as informações do funcionário.',
+          content: <RegisterEmployeeForm onFormSubmit={handleFormSubmit} existingEmployee={selectedEmployee} />
         };
       case 'details':
       default:
         return {
-          title: selectedDriver?.name || '',
-          description: 'Detalhes do motorista.',
+          title: selectedEmployee?.name || '',
+          description: 'Detalhes do funcionário.',
           content: (
             <>
               <DialogHeader className="items-center text-center">
                   <Avatar className="h-24 w-24 mb-4">
-                      <AvatarImage src={`https://i.pravatar.cc/150?u=${selectedDriver?.id}`} alt={selectedDriver?.name} />
-                      <AvatarFallback>{selectedDriver?.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={`https://i.pravatar.cc/150?u=${selectedEmployee?.id}`} alt={selectedEmployee?.name} />
+                      <AvatarFallback>{selectedEmployee?.name.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <DialogTitle className="text-2xl">{selectedDriver?.name}</DialogTitle>
+                  <DialogTitle className="text-2xl">{selectedEmployee?.name}</DialogTitle>
                   <DialogDescription>
-                      Detalhes do motorista.
+                      {selectedEmployee?.role} • {selectedEmployee?.sector}
                   </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4 pr-4">
                 <div>
                     <span className="text-sm font-semibold text-muted-foreground">Nome Completo</span>
-                    <p className="text-lg">{selectedDriver?.name}</p>
+                    <p className="text-lg">{selectedEmployee?.name}</p>
                 </div>
                 <Separator />
-                {selectedDriver?.cnh && (
-                  <>
-                      <div>
-                          <span className="text-sm font-semibold text-muted-foreground">CNH</span>
-                          <p className="text-lg">{selectedDriver.cnh}</p>
-                      </div>
-                      <Separator />
-                  </>
-                )}
-                 {selectedDriver?.matricula && (
+                {selectedEmployee?.matricula && (
                   <>
                       <div>
                           <span className="text-sm font-semibold text-muted-foreground">Matrícula</span>
-                          <p className="text-lg">{selectedDriver.matricula}</p>
+                          <p className="text-lg">{selectedEmployee.matricula}</p>
+                      </div>
+                      <Separator />
+                  </>
+                )}
+                 {selectedEmployee?.role && (
+                  <>
+                      <div>
+                          <span className="text-sm font-semibold text-muted-foreground">Cargo</span>
+                          <p className="text-lg">{selectedEmployee.role}</p>
+                      </div>
+                      <Separator />
+                  </>
+                )}
+                {selectedEmployee?.cnh && (
+                  <>
+                      <div>
+                          <span className="text-sm font-semibold text-muted-foreground">CNH</span>
+                          <p className="text-lg">{selectedEmployee.cnh}</p>
                       </div>
                       <Separator />
                   </>
                 )}
                 <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Setor</span>
-                    <p className="text-lg">{selectedDriver?.sector}</p>
-                </div>
-                <Separator />
-                <div>
                     <span className="text-sm font-semibold text-muted-foreground">Status</span>
                     <div>
-                        {selectedDriver && <Badge variant={getStatusVariant(selectedDriver.status)}>{selectedDriver.status}</Badge>}
+                        {selectedEmployee && <Badge variant={getStatusVariant(selectedEmployee.status)}>{selectedEmployee.status}</Badge>}
                     </div>
                 </div>
-                {(selectedDriver?.idPhoto || selectedDriver?.cnhPhoto) && (
+                {(selectedEmployee?.idPhoto || selectedEmployee?.cnhPhoto) && (
                   <>
                     <Separator />
                     <div>
@@ -158,16 +162,16 @@ export default function DriversPage() {
                         Documentos
                       </h3>
                       <div className="space-y-2 text-sm">
-                        {selectedDriver.idPhoto && (
+                        {selectedEmployee.idPhoto && (
                           <Link href="#" className="flex items-center text-primary hover:underline">
                             <LinkIcon className="mr-2 h-4 w-4" />
-                            <span>Foto 3x4: {selectedDriver.idPhoto}</span>
+                            <span>Foto 3x4: {selectedEmployee.idPhoto}</span>
                           </Link>
                         )}
-                        {selectedDriver.cnhPhoto && (
+                        {selectedEmployee.cnhPhoto && (
                           <Link href="#" className="flex items-center text-primary hover:underline">
                             <LinkIcon className="mr-2 h-4 w-4" />
-                            <span>CNH: {selectedDriver.cnhPhoto}</span>
+                            <span>CNH: {selectedEmployee.cnhPhoto}</span>
                           </Link>
                         )}
                       </div>
@@ -175,7 +179,7 @@ export default function DriversPage() {
                   </>
                 )}
                 <div className="flex justify-end pt-4">
-                    <Button variant="outline" onClick={() => handleOpenEditModal(selectedDriver!)}>
+                    <Button variant="outline" onClick={() => handleOpenEditModal(selectedEmployee!)}>
                         <Edit className="mr-2 h-4 w-4"/>
                         Editar
                     </Button>
@@ -194,52 +198,53 @@ export default function DriversPage() {
     <div className="container mx-auto p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight font-headline">
-                Gestão de Motoristas
+            <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2">
+                <Users />
+                Gestão de Funcionários
             </h1>
             <p className="text-muted-foreground">
               {userRole === 'manager'
-                ? `Veja e gerencie os motoristas do setor de ${managerSector}.`
-                : 'Veja, gerencie e cadastre os motoristas da prefeitura.'
+                ? `Veja e gerencie os funcionários do setor de ${managerSector}.`
+                : 'Veja, gerencie e cadastre os funcionários da prefeitura.'
               }
             </p>
         </div>
         <Button onClick={handleOpenRegisterModal} className="bg-primary hover:bg-primary/90">
             <PlusCircle className="mr-2 h-4 w-4" />
-            Cadastrar Novo Motorista
+            Cadastrar Novo Funcionário
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {visibleDrivers.map((driver) => (
+        {visibleEmployees.map((employee) => (
           <Card 
-            key={driver.id} 
+            key={employee.id} 
             className="cursor-pointer hover:shadow-md transition-shadow"
           >
-            <div onClick={() => handleCardClick(driver)}>
+            <div onClick={() => handleCardClick(employee)}>
                 <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
-                    <AvatarImage src={`https://i.pravatar.cc/150?u=${driver.id}`} alt={driver.name} />
-                    <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={`https://i.pravatar.cc/150?u=${employee.id}`} alt={employee.name} />
+                    <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{driver.name}</span>
+                    <span className="truncate">{employee.name}</span>
                 </CardTitle>
-                <CardDescription>{driver.sector}</CardDescription>
+                <CardDescription>{employee.role} • {employee.sector}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex items-center justify-between">
-                <Badge variant={getStatusVariant(driver.status)}>{driver.status}</Badge>
-                {driver.cnh && (
+                <Badge variant={getStatusVariant(employee.status)}>{employee.status}</Badge>
+                {employee.cnh && (
                     <div className="flex items-center text-xs text-muted-foreground">
                         <ShieldCheck className="mr-1.5 h-3 w-3" />
-                        <span>CNH: {driver.cnh.slice(-4)}</span>
+                        <span>CNH Válida</span>
                     </div>
                 )}
                 </CardContent>
             </div>
              <CardContent className="p-2 pt-0">
                 <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" asChild>
-                    <Link href={`/cracha/${driver.id}`} target="_blank">
+                    <Link href={`/cracha/${employee.id}`} target="_blank">
                         <Briefcase className="mr-2 h-4 w-4" />
                         Ver Crachá Virtual
                     </Link>
@@ -249,14 +254,14 @@ export default function DriversPage() {
         ))}
       </div>
       
-      {visibleDrivers.length === 0 && (
+      {visibleEmployees.length === 0 && (
         <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg col-span-full">
-            <p>Nenhum motorista cadastrado no momento.</p>
-            <p className="text-sm mt-2">Clique em "Cadastrar Novo Motorista" para começar.</p>
+            <p>Nenhum funcionário cadastrado no momento.</p>
+            <p className="text-sm mt-2">Clique em "Cadastrar Novo Funcionário" para começar.</p>
         </div>
       )}
 
-      {/* Driver Modal */}
+      {/* Employee Modal */}
       <Dialog open={isModalOpen} onOpenChange={closeModal}>
         <DialogContent className={modalMode !== 'details' ? 'sm:max-w-3xl' : ''}>
           <ScrollArea className="max-h-[80vh] p-4">

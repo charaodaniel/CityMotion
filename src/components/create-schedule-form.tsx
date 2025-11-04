@@ -39,7 +39,7 @@ interface CreateScheduleFormProps {
 
 export function CreateScheduleForm({ onFormSubmit }: CreateScheduleFormProps) {
   const { toast } = useToast();
-  const { drivers } = useApp();
+  const { employees } = useApp();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,8 +98,8 @@ export function CreateScheduleForm({ onFormSubmit }: CreateScheduleFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {drivers.map(driver => (
-                      <SelectItem key={driver.id} value={driver.name}>{driver.name}</SelectItem>
+                    {employees.map(employee => (
+                      <SelectItem key={employee.id} value={employee.name}>{employee.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

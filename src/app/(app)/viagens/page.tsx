@@ -6,8 +6,7 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText, Check, Fuel } from 'lucide-react';
-import { drivers as initialDrivers, vehicles as initialVehicles } from '@/lib/data';
-import type { Schedule, ScheduleStatus, Driver, Vehicle } from '@/lib/types';
+import type { Schedule, ScheduleStatus, Employee, Vehicle } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -132,7 +131,7 @@ function TripsView({
 }
 
 export default function ViagensPage() {
-  const { schedules, setSchedules, userRole, vehicles, setVehicles, drivers, setDrivers } = useApp();
+  const { schedules, setSchedules, userRole, vehicles, setVehicles, employees, setEmployees } = useApp();
 
   const [activeModal, setActiveModal] = useState<ModalState>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
@@ -173,20 +172,20 @@ export default function ViagensPage() {
 
   const updateScheduleStatus = (scheduleId: string, newStatus: ScheduleStatus, details?: { startNotes?: string, endNotes?: string, startMileage?: number, endMileage?: number, startChecklist?: string[], endChecklist?: string[] }) => {
     let updatedSchedules = [...schedules];
-    let updatedDrivers = [...drivers];
+    let updatedEmployees = [...employees];
     let updatedVehicles = [...vehicles];
     const schedule = schedules.find(s => s.id === scheduleId);
     if (!schedule) return;
 
-    const driver = drivers.find(d => d.name === schedule.driver);
+    const driver = employees.find(d => d.name === schedule.driver);
     const vehicle = vehicles.find(v => schedule.vehicle.includes(v.licensePlate));
 
     if (newStatus === 'Em Andamento' && driver && vehicle) {
-      updatedDrivers = drivers.map(d => d.id === driver.id ? { ...d, status: 'Em Viagem' } : d);
+      updatedEmployees = employees.map(d => d.id === driver.id ? { ...d, status: 'Em Viagem' } : d);
       updatedVehicles = vehicles.map(v => v.id === vehicle.id ? { ...v, status: 'Em Viagem' } : v);
       toast({ title: "Viagem iniciada!", description: `A viagem "${schedule.title}" foi marcada como "Em Andamento".` });
     } else if (newStatus === 'Concluída' && driver && vehicle && details?.endMileage) {
-      updatedDrivers = drivers.map(d => d.id === driver.id ? { ...d, status: 'Disponível' } : d);
+      updatedEmployees = employees.map(d => d.id === driver.id ? { ...d, status: 'Disponível' } : d);
       updatedVehicles = vehicles.map(v => v.id === vehicle.id ? { ...v, status: 'Disponível', mileage: details.endMileage! } : v);
       toast({ title: "Viagem finalizada!", description: `A viagem "${schedule.title}" foi concluída com sucesso.` });
     } else if (newStatus === 'Cancelada') {
@@ -210,7 +209,7 @@ export default function ViagensPage() {
     } : s);
 
     setSchedules(updatedSchedules);
-    setDrivers(updatedDrivers);
+    setEmployees(updatedEmployees);
     setVehicles(updatedVehicles);
   };
 
