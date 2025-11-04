@@ -18,6 +18,8 @@ import { useApp } from '@/contexts/app-provider';
 const formSchema = z.object({
   name: z.string().min(2, "O nome completo deve ter pelo menos 2 caracteres."),
   matricula: z.string().min(1, "A matrícula é obrigatória."),
+  email: z.string().email("Por favor, insira um email válido."),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres.").optional().or(z.literal('')),
   role: z.string().min(1, "O cargo é obrigatório."),
   cnh: z.string().optional(),
   sector: z.string().min(3, "O setor é obrigatório."),
@@ -40,6 +42,8 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
     defaultValues: {
       name: '',
       matricula: '',
+      email: '',
+      password: '',
       role: '',
       cnh: '',
       sector: '',
@@ -51,10 +55,11 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
       form.reset({
         name: existingEmployee.name,
         matricula: existingEmployee.matricula,
+        email: existingEmployee.email,
+        // A senha não é pré-preenchida por segurança
         role: existingEmployee.role,
         cnh: existingEmployee.cnh,
         sector: existingEmployee.sector,
-        // Em modo de edição, não pré-populamos os inputs de arquivo
       });
     }
   }, [isEditMode, existingEmployee, form]);
@@ -67,6 +72,12 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
       idPhoto: values.idPhoto?.[0]?.name || existingEmployee?.idPhoto,
       cnhPhoto: values.cnhPhoto?.[0]?.name || existingEmployee?.cnhPhoto,
     };
+
+    // Não envia a senha se o campo estiver vazio (útil em edições)
+    if (!dataToSubmit.password) {
+      delete dataToSubmit.password;
+    }
+
     onFormSubmit(dataToSubmit);
     toast({
       title: isEditMode ? "Cadastro Atualizado" : "Cadastro Enviado",
@@ -81,6 +92,38 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-4">
+        <div>
+          <h3 className="text-lg font-semibold mb-4">Credenciais de Acesso</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="email.de@acesso.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder={isEditMode ? "Deixe em branco para não alterar" : "Senha de 6+ dígitos"} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+          </div>
+        </div>
+        <Separator />
         <div>
           <h3 className="text-lg font-semibold mb-4">Informações Pessoais e Funcionais</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

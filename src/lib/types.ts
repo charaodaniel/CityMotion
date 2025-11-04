@@ -5,6 +5,8 @@ export type EmployeeStatus = 'Disponível' | 'Em Viagem' | 'Afastado' | 'Em Serv
 export type Employee = {
   id: string;
   name: string;
+  email: string;
+  password?: string;
   status: EmployeeStatus;
   sector: string;
   role: string; // Ex: 'Motorista', 'Médico', 'Secretário(a)', 'Enfermeiro(a)'

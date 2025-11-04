@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { PlusCircle, User, ShieldCheck, Edit, FileText, Link as LinkIcon, Briefcase, Users } from 'lucide-react';
+import { PlusCircle, User, ShieldCheck, Edit, FileText, Link as LinkIcon, Briefcase, Users, Mail } from 'lucide-react';
 import { RegisterEmployeeForm } from '@/components/register-employee-form';
 import { useState, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -119,6 +119,15 @@ export default function EmployeesPage() {
                     <p className="text-lg">{selectedEmployee?.name}</p>
                 </div>
                 <Separator />
+                {selectedEmployee?.email && (
+                  <>
+                    <div>
+                        <span className="text-sm font-semibold text-muted-foreground">Email de Acesso</span>
+                        <p className="text-lg">{selectedEmployee.email}</p>
+                    </div>
+                    <Separator />
+                  </>
+                )}
                 {selectedEmployee?.matricula && (
                   <>
                       <div>
