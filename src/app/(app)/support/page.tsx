@@ -2,6 +2,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, Book, LifeBuoy } from 'lucide-react';
+import Link from 'next/link';
 
 const faqItems = [
   {
@@ -78,9 +79,9 @@ export default function SupportPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-               <a href="#" className="flex items-center text-primary hover:underline">
-                  <LifeBuoy className="mr-2 h-4 w-4" /> Manual do Usuário
-                </a>
+               <Link href="/docs" className="flex items-center text-primary hover:underline">
+                  <LifeBuoy className="mr-2 h-4 w-4" /> Documentação
+                </Link>
                  <a href="#" className="flex items-center text-primary hover:underline">
                   <LifeBuoy className="mr-2 h-4 w-4" /> Guia do Gestor de Frota
                 </a>
