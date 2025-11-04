@@ -9,23 +9,51 @@ import { PlusCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { QuickRequestForm } from '@/components/quick-request-form';
 import TripKanbanView from '@/components/trip-kanban-view';
+import AdminDashboard from '@/components/dashboards/admin-dashboard';
+import ManagerDashboard from '@/components/dashboards/manager-dashboard';
+import DriverDashboard from '@/components/dashboards/driver-dashboard';
+import { useMemo } from 'react';
 
 export default function DashboardPage() {
-    const { userRole } = useApp();
+    const { userRole, currentUser } = useApp();
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+    
+    const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
+
+    const renderDashboard = () => {
+        switch (userRole) {
+            case 'admin':
+                return <AdminDashboard />;
+            case 'manager':
+                return <ManagerDashboard />;
+            case 'employee':
+                if (isCurrentUserDriver) {
+                    return <DriverDashboard />;
+                }
+                // Fallback for a standard employee - maybe just the request form button and a message
+                return (
+                    <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
+                        <p className="text-lg">Bem-vindo(a) ao CityMotion.</p>
+                        <p className="text-sm mt-2">Use o botão "Pedir Transporte" para iniciar uma solicitação.</p>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    }
 
     return (
         <div className="flex-1 space-y-8 p-4 sm:p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">
-                        Painel de Viagens
+                        Painel de Controle
                     </h1>
                     <p className="text-muted-foreground">
-                        Acompanhe o status da frota e gerencie suas solicitações.
+                        {userRole === 'admin' ? 'Visão geral do sistema e da frota.' : 'Acompanhe suas tarefas e solicitações.'}
                     </p>
                 </div>
-                {(userRole === 'admin' || userRole === 'manager' || userRole === 'employee') && (
+                {(userRole !== 'admin') && (
                     <Dialog open={isRequestModalOpen} onOpenChange={setIsRequestModalOpen}>
                         <DialogTrigger asChild>
                             <Button>
@@ -47,7 +75,8 @@ export default function DashboardPage() {
                     </Dialog>
                 )}
             </div>
-            <TripKanbanView />
+            
+            {renderDashboard()}
         </div>
     );
 }
