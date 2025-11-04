@@ -357,7 +357,7 @@ export default function ReportsPage() {
                             <CardHeader className="pb-4">
                                 <CardTitle className="text-base">{schedule.title}</CardTitle>
                                 <CardDescription className="flex items-center text-xs">
-                                    <Clock className="mr-1.5 h-3 w-3" /> Concluído em: {arrivalDate ? format(new Date(arrivalDate), 'dd/MM/yyyy') : 'N/A'}
+                                    <Clock className="mr-1.5 h-3 w-3" /> Concluído em: {arrivalDate ? format(new Date(arrivalDate), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="text-xs space-y-2">
@@ -459,5 +459,7 @@ export default function ReportsPage() {
     </div>
   );
 }
+
+    
 
     
