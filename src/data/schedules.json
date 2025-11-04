@@ -60,13 +60,13 @@
     { 
         "id": "SCH005", 
         "title": "Linha Escolar - Rota 3", 
-        "driver": "Ana Souza", 
+        "driver": "Marcos Lima", 
         "vehicle": "Chevrolet Onix (PM-004)", 
         "origin": "Garagem Central", 
         "destination": "Escola Municipal Monteiro Lobato", 
         "departureTime": "31/07/2024 06:30",
         "status": "Agendada",
-        "category": "Transporte Escolar Diário"
+        "category": "Transporte Escolar"
     },
     { 
         "id": "SCH006", 
