@@ -100,3 +100,18 @@ export type Sector = {
   vehicleCount: number;
   driverCount: number;
 };
+
+export type MaintenanceRequestStatus = 'Pendente' | 'Em Andamento' | 'Concluída';
+export type MaintenanceRequestType = 'Manutenção Corretiva' | 'Revisão Preventiva';
+
+export type MaintenanceRequest = {
+    id: string;
+    vehicleId: string;
+    vehicleModel: string;
+    licensePlate: string;
+    requesterName: string;
+    requestDate: string;
+    type: MaintenanceRequestType;
+    description: string;
+    status: MaintenanceRequestStatus;
+};

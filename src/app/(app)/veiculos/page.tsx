@@ -6,13 +6,16 @@ import type { Vehicle, VehicleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Car, Gauge, Building, Edit } from 'lucide-react';
+import { PlusCircle, Car, Gauge, Building, Edit, Wrench } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RegisterVehicleForm } from '@/components/register-vehicle-form';
 import { useState, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
+import { RequestMaintenanceForm } from '@/components/request-maintenance-form';
+
+type ModalState = 'register' | 'details' | 'edit' | 'maintenance' | null;
 
 function getStatusVariant(status: VehicleStatus) {
   switch (status) {
@@ -31,8 +34,7 @@ function getStatusVariant(status: VehicleStatus) {
 
 export default function VehiclesPage() {
   const { vehicles, setVehicles, userRole } = useApp();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
+  const [activeModal, setActiveModal] = useState<ModalState>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
   const managerSector = "Secretaria de Obras"; // Simulating manager's sector for filtering
@@ -44,27 +46,17 @@ export default function VehiclesPage() {
     return vehicles;
   }, [vehicles, userRole, managerSector]);
 
-
-  const handleCardClick = (vehicle: Vehicle) => {
+  const openModal = (modal: ModalState, vehicle: Vehicle | null = null) => {
     setSelectedVehicle(vehicle);
-    setModalMode('details');
-    setIsModalOpen(true);
+    setActiveModal(modal);
   };
 
-  const handleOpenRegisterModal = () => {
-    setSelectedVehicle(null);
-    setModalMode('register');
-    setIsModalOpen(true);
-  };
-
-  const handleOpenEditModal = (vehicle: Vehicle) => {
-    setSelectedVehicle(vehicle);
-    setModalMode('edit');
-    setIsModalOpen(true);
+  const closeModal = () => {
+    openModal(null);
   }
 
   const handleFormSubmit = (newVehicleData: Partial<Vehicle>) => {
-    if (modalMode === 'edit' && selectedVehicle) {
+    if (activeModal === 'edit' && selectedVehicle) {
       setVehicles(vehicles.map(v => v.id === selectedVehicle.id ? { ...v, ...newVehicleData } as Vehicle : v));
     } else {
       const newVehicle: Vehicle = {
@@ -74,17 +66,11 @@ export default function VehiclesPage() {
       } as Vehicle;
       setVehicles([...vehicles, newVehicle]);
     }
-    setIsModalOpen(false);
-    setSelectedVehicle(null);
+    closeModal();
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedVehicle(null);
-  }
-
   const getModalContent = () => {
-    switch (modalMode) {
+    switch (activeModal) {
       case 'register':
         return {
           title: 'Cadastro de Veículo',
@@ -96,6 +82,12 @@ export default function VehiclesPage() {
           title: 'Editar Veículo',
           description: 'Altere as informações do veículo.',
           content: <RegisterVehicleForm onFormSubmit={handleFormSubmit} existingVehicle={selectedVehicle} />
+        };
+       case 'maintenance':
+        return {
+          title: 'Solicitar Manutenção',
+          description: `Abra um chamado de manutenção para o veículo ${selectedVehicle?.vehicleModel} (${selectedVehicle?.licensePlate}).`,
+          content: <RequestMaintenanceForm vehicle={selectedVehicle} onFormSubmit={closeModal} />
         };
       case 'details':
       default:
@@ -149,7 +141,7 @@ export default function VehiclesPage() {
                   </>
                 )}
                  <div className="flex justify-end pt-4">
-                    <Button variant="outline" onClick={() => handleOpenEditModal(selectedVehicle!)}>
+                    <Button variant="outline" onClick={() => openModal('edit', selectedVehicle)}>
                         <Edit className="mr-2 h-4 w-4"/>
                         Editar
                     </Button>
@@ -176,43 +168,52 @@ export default function VehiclesPage() {
               }
             </p>
         </div>
-        <Button onClick={handleOpenRegisterModal} className="bg-primary hover:bg-primary/90">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Cadastrar Novo Veículo
-        </Button>
+        {(userRole === 'admin' || userRole === 'manager') && (
+          <Button onClick={() => openModal('register')} className="bg-primary hover:bg-primary/90">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Cadastrar Novo Veículo
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {visibleVehicles.map((vehicle) => (
             <Card 
               key={vehicle.id} 
-              onClick={() => handleCardClick(vehicle)} 
               className="cursor-pointer hover:shadow-md transition-shadow flex flex-col"
             >
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Car className="w-5 h-5 text-muted-foreground" />
-                  <span className="truncate">{vehicle.vehicleModel}</span>
-                </CardTitle>
-                <CardDescription>Placa: {vehicle.licensePlate}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col flex-grow justify-between">
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center">
-                    <Building className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>Setor: <strong>{vehicle.sector}</strong></span>
+              <div onClick={() => openModal('details', vehicle)}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <Car className="w-5 h-5 text-muted-foreground" />
+                    <span className="truncate">{vehicle.vehicleModel}</span>
+                  </CardTitle>
+                  <CardDescription>Placa: {vehicle.licensePlate}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col flex-grow justify-between">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center">
+                      <Building className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <span>Setor: <strong>{vehicle.sector}</strong></span>
+                    </div>
+                    <div className="flex items-center">
+                      <Gauge className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <span>{vehicle.mileage.toLocaleString('pt-BR')} km</span>
+                    </div>
                   </div>
-                   <div className="flex items-center">
-                    <Gauge className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>{vehicle.mileage.toLocaleString('pt-BR')} km</span>
+                  <div className="mt-4">
+                    <Badge variant={getStatusVariant(vehicle.status)} className="w-full justify-center">
+                      {vehicle.status}
+                    </Badge>
                   </div>
-                </div>
-                <div className="mt-4">
-                  <Badge variant={getStatusVariant(vehicle.status)} className="w-full justify-center">
-                    {vehicle.status}
-                  </Badge>
-                </div>
-              </CardContent>
+                </CardContent>
+              </div>
+              <CardFooter className="p-2 border-t mt-auto">
+                 <Button variant="ghost" size="sm" className="w-full" onClick={() => openModal('maintenance', vehicle)}>
+                    <Wrench className="mr-2 h-4 w-4" />
+                    Solicitar Manutenção
+                  </Button>
+              </CardFooter>
             </Card>
           ))}
       </div>
@@ -224,8 +225,8 @@ export default function VehiclesPage() {
       )}
 
       {/* Modal */}
-       <Dialog open={isModalOpen} onOpenChange={closeModal}>
-        <DialogContent className={modalMode !== 'details' ? 'sm:max-w-3xl' : ''}>
+       <Dialog open={!!activeModal} onOpenChange={closeModal}>
+        <DialogContent className={activeModal !== 'details' ? 'sm:max-w-3xl' : ''}>
           <ScrollArea className="max-h-[80vh] p-4">
               <DialogHeader>
                 <DialogTitle className="text-2xl">{title}</DialogTitle>

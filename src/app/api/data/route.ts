@@ -6,8 +6,16 @@ import { promises as fs } from 'fs';
 // Helper function to read a JSON file
 async function readJsonFile(filename: string) {
     const jsonDirectory = path.join(process.cwd(), 'src', 'data');
-    const fileContents = await fs.readFile(path.join(jsonDirectory, filename), 'utf8');
-    return JSON.parse(fileContents);
+    try {
+        const fileContents = await fs.readFile(path.join(jsonDirectory, filename), 'utf8');
+        return JSON.parse(fileContents);
+    } catch (error) {
+        // If file doesn't exist, return empty array
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+            return [];
+        }
+        throw error;
+    }
 }
 
 
@@ -36,16 +44,20 @@ export async function GET(request: NextRequest) {
       case 'work-schedules':
         data = await readJsonFile('work-schedules.json');
         break;
+      case 'maintenance-requests':
+        data = await readJsonFile('maintenance-requests.json');
+        break;
       case 'all':
-        const [schedules, requests, vehicles, employees, sectors, workSchedules] = await Promise.all([
+        const [schedules, requests, vehicles, employees, sectors, workSchedules, maintenanceRequests] = await Promise.all([
           readJsonFile('schedules.json'),
           readJsonFile('vehicle-requests.json'),
           readJsonFile('vehicles.json'),
           readJsonFile('employees.json'),
           readJsonFile('sectors.json'),
           readJsonFile('work-schedules.json'),
+          readJsonFile('maintenance-requests.json'),
         ]);
-        data = { schedules, requests, vehicles, employees, sectors, workSchedules };
+        data = { schedules, requests, vehicles, employees, sectors, workSchedules, maintenanceRequests };
         break;
       default:
          return new NextResponse('Please specify a data type to fetch.', { status: 400 });

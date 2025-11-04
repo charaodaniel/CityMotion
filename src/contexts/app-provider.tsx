@@ -3,7 +3,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from 'react';
-import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule } from '@/lib/types';
+import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus } from '@/lib/types';
 import { format } from 'date-fns';
 
 
@@ -33,6 +33,11 @@ interface AppContextType {
   workSchedules: WorkSchedule[];
   setWorkSchedules: React.Dispatch<React.SetStateAction<WorkSchedule[]>>;
 
+  maintenanceRequests: MaintenanceRequest[];
+  setMaintenanceRequests: React.Dispatch<React.SetStateAction<MaintenanceRequest[]>>;
+  addMaintenanceRequest: (request: Omit<MaintenanceRequest, 'id' | 'status' | 'requestDate' | 'requesterName'>) => void;
+  updateMaintenanceRequestStatus: (id: string, status: MaintenanceRequestStatus) => void;
+
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -47,6 +52,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([]);
+  const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
+
 
   useEffect(() => {
     async function fetchData() {
@@ -62,6 +69,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setEmployees(data.employees);
         setSectors(data.sectors);
         setWorkSchedules(data.workSchedules);
+        setMaintenanceRequests(data.maintenanceRequests);
       } catch (error) {
         console.error("Could not fetch data:", error);
       }
@@ -150,6 +158,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const addMaintenanceRequest = (request: Omit<MaintenanceRequest, 'id' | 'status' | 'requestDate' | 'requesterName'>) => {
+    const newRequest: MaintenanceRequest = {
+      ...request,
+      id: `MNT${Date.now()}`,
+      status: 'Pendente',
+      requesterName: currentUser?.name || 'Desconhecido',
+      requestDate: new Date().toISOString(),
+    };
+    setMaintenanceRequests(prev => [newRequest, ...prev]);
+  };
+
+  const updateMaintenanceRequestStatus = (id: string, status: MaintenanceRequestStatus) => {
+    setMaintenanceRequests(prev =>
+      prev.map(req => (req.id === id ? { ...req, status } : req))
+    );
+
+    const request = maintenanceRequests.find(req => req.id === id);
+    if (request) {
+        if (status === 'Em Andamento') {
+            setVehicles(prev => prev.map(v => v.id === request.vehicleId ? { ...v, status: 'Manutenção' } : v));
+        } else if (status === 'Concluída') {
+            setVehicles(prev => prev.map(v => v.id === request.vehicleId ? { ...v, status: 'Disponível' } : v));
+        }
+    }
+  };
+
   return (
     <AppContext.Provider value={{ 
         userRole, 
@@ -160,7 +194,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         employees, setEmployees,
         vehicles, setVehicles,
         sectors, setSectors,
-        workSchedules, setWorkSchedules
+        workSchedules, setWorkSchedules,
+        maintenanceRequests, setMaintenanceRequests, addMaintenanceRequest, updateMaintenanceRequestStatus
     }}>
       {children}
     </AppContext.Provider>
