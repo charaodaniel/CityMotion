@@ -7,9 +7,10 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { drivers } from '@/lib/data';
 import type { Driver } from '@/lib/types';
-import { Building, CarFront, ScanLine, User } from 'lucide-react';
+import { Building, CarFront, ScanLine, User, Printer } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 export default function BadgePage() {
   const params = useParams();
@@ -60,8 +61,8 @@ export default function BadgePage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted/40 p-4 font-sans">
-      <Card className="w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden bg-gradient-to-br from-background to-muted/30 border-primary/20">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-muted/40 p-4 font-sans">
+      <Card className="w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden bg-gradient-to-br from-background to-muted/30 border-primary/20 print:shadow-none print:border-none">
         <CardHeader className="bg-primary/10 p-6 text-center space-y-4">
             <div className="flex items-center justify-center gap-3 text-foreground">
                 <div className="bg-foreground text-background p-2.5 rounded-lg">
@@ -106,12 +107,18 @@ export default function BadgePage() {
           ) : (
             <Skeleton className="h-32 w-32" />
           )}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground print:hidden">
             <ScanLine className="h-4 w-4" />
             <span>Aponte a câmera para ver online</span>
           </div>
         </CardFooter>
       </Card>
+      <div className="mt-6 print:hidden">
+          <Button onClick={() => window.print()}>
+            <Printer className="mr-2 h-4 w-4" />
+            Imprimir Crachá
+          </Button>
+      </div>
     </div>
   );
 }
