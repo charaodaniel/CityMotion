@@ -22,7 +22,7 @@ export default function DashboardPage() {
                         Painel de Viagens
                     </h1>
                     <p className="text-muted-foreground">
-                        Acompanhe o status da frota em tempo real.
+                        Acompanhe o status da frota e gerencie suas solicitações.
                     </p>
                 </div>
                 {(userRole === 'admin' || userRole === 'manager' || userRole === 'employee') && (

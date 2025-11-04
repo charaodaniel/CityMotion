@@ -29,7 +29,7 @@ const statusColumns: { title: string; status: ScheduleStatus }[] = [
 ];
 
 
-export default function TripKanbanView() {
+export default function TripKanbanView({ isPublic = false }: { isPublic?: boolean }) {
   const { schedules } = useApp();
   
   const schedulesByStatus = (status: ScheduleStatus) => {
