@@ -14,6 +14,13 @@ function createWindow() {
     const mainWindow = new BrowserWindow({
         width: 1280,
         height: 800,
+        // Opções para uma aparência mais moderna
+        titleBarStyle: 'hidden',
+        titleBarOverlay: {
+            color: '#222222', // Cor de fundo da barra de título (use uma cor do seu tema)
+            symbolColor: '#ffffff', // Cor dos ícones (fechar, minimizar, etc.)
+            height: 32 // Altura da barra de título
+        },
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -31,6 +38,9 @@ function createWindow() {
     // Abre o DevTools se estiver em modo de desenvolvimento
     if (isDev) {
         mainWindow.webContents.openDevTools();
+    } else {
+        // Remove o menu padrão em produção para uma aparência mais limpa
+        mainWindow.setMenu(null);
     }
 }
 
