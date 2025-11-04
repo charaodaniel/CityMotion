@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { FileDown, Car, Clock, User, Filter, Calendar as CalendarIcon, Gauge, Route, Trophy } from 'lucide-react';
 import type { Schedule, ScheduleStatus } from '@/lib/types';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -52,11 +52,14 @@ export default function ReportsPage() {
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
 
   const currentUser = useMemo(() => {
-    if (userRole !== 'driver') return null;
-    return drivers.find(d => d.id === '2'); // Simulating 'Maria Oliveira' for driver role
+    // This logic should match the one in `perfil/page.tsx` for consistency
+    if (userRole === 'driver') {
+      return drivers.find(d => d.id === '2'); // Simulating 'Maria Oliveira'
+    }
+    return null;
   }, [userRole, drivers]);
 
-  useMemo(() => {
+  useEffect(() => {
     if (userRole === 'driver' && currentUser) {
       setSelectedDriver(currentUser.name);
     } else {
@@ -441,3 +444,5 @@ export default function ReportsPage() {
     </div>
   );
 }
+
+    
