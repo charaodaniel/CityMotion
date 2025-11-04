@@ -5,7 +5,7 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText, Check, Fuel } from 'lucide-react';
+import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText, Check, Fuel, AlertTriangle } from 'lucide-react';
 import type { Schedule, ScheduleStatus, Employee, Vehicle } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -19,8 +19,9 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { useApp } from '@/contexts/app-provider';
+import { ReportIncidentForm } from '@/components/report-incident-form';
 
-type ModalState = 'details' | 'finish' | 'start-checklist' | 'form' | 'refueling' | null;
+type ModalState = 'details' | 'finish' | 'start-checklist' | 'form' | 'refueling' | 'incident' | null;
 
 const startChecklistItems = [
     'Nível de óleo e água verificado',
@@ -428,10 +429,16 @@ export default function ViagensPage() {
                                 </Button>
                             )}
                              {selectedSchedule.status === 'Em Andamento' && (
-                                <Button variant="outline" onClick={() => openModal('refueling', selectedSchedule)}>
-                                    <Fuel className="mr-2 h-4 w-4" />
-                                    Registrar Abastecimento
-                                </Button>
+                                <>
+                                    <Button variant="destructive" onClick={() => openModal('incident', selectedSchedule)}>
+                                        <AlertTriangle className="mr-2 h-4 w-4" />
+                                        Relatar Sinistro
+                                    </Button>
+                                    <Button variant="outline" onClick={() => openModal('refueling', selectedSchedule)}>
+                                        <Fuel className="mr-2 h-4 w-4" />
+                                        Registrar Abastecimento
+                                    </Button>
+                                </>
                             )}
                         </div>
                   </div>
@@ -610,6 +617,27 @@ export default function ViagensPage() {
             </div>
           </form>
         </DialogContent>
+      </Dialog>
+
+       {/* Incident Report Modal */}
+        <Dialog open={activeModal === 'incident'} onOpenChange={closeModal}>
+            <DialogContent className="sm:max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle className="text-2xl flex items-center">
+                        <AlertTriangle className="mr-3 text-destructive"/>
+                        Relatar Sinistro / Incidente
+                    </DialogTitle>
+                    <DialogDescription>
+                        Descreva o ocorrido com o máximo de detalhes possível. Este registro é fundamental para as providências cabíveis.
+                    </DialogDescription>
+                </DialogHeader>
+                <ScrollArea className="max-h-[70vh] p-1">
+                    <ReportIncidentForm 
+                        schedule={selectedSchedule}
+                        onFormSubmit={closeModal}
+                    />
+                </ScrollArea>
+            </DialogContent>
       </Dialog>
     </div>
   );
