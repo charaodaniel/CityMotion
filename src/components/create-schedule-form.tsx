@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from 'react-hook-form';
@@ -55,7 +56,7 @@ export function CreateScheduleForm({ onFormSubmit }: CreateScheduleFormProps) {
 
   const repetition = form.watch('repetition');
 
-  const onSubmit = (values: z.infer<typeof formSchema>>) => {
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
     toast({
       title: "Escala Criada",
@@ -378,3 +379,5 @@ export function CreateScheduleForm({ onFormSubmit }: CreateScheduleFormProps) {
     </Form>
   );
 }
+
+    
