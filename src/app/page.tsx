@@ -9,7 +9,8 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/home');
+    // Redirect to the login page as the main entry point for the app
+    router.replace('/login');
   }, [router]);
 
   return <Loading />;
