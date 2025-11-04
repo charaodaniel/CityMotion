@@ -13,6 +13,7 @@ export const vehicles: Vehicle[] = vehiclesData;
 export const workSchedules: WorkSchedule[] = workSchedulesData;
 
 // Schedules and VehicleRequests are now fetched via API in AppProvider
+// These are kept here as empty arrays to avoid breaking imports, but they are not used for data.
 export const schedules: Schedule[] = [];
 export const vehicleRequests: VehicleRequest[] = [];
 
