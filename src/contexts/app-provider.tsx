@@ -43,8 +43,8 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [userRole, setUserRole] = useState<UserRole>('admin');
-  const [userEmailForSimulation, setUserEmailForSimulation] = useState('admin@citymotion.com');
+  const [userRole, setUserRole] = useState<UserRole>('employee');
+  const [userEmailForSimulation, setUserEmailForSimulation] = useState('employee@citymotion.com');
   
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [vehicleRequests, setVehicleRequests] = useState<VehicleRequest[]>([]);
