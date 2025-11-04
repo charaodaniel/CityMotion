@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Car, Clock, User, Wrench, Check, CircleHelp, Settings, CheckCircle } from 'lucide-react';
+import { Car, Clock, User, Wrench, Check, CircleHelp, Settings, CheckCircle, ShoppingCart } from 'lucide-react';
 import type { MaintenanceRequest, MaintenanceRequestStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -13,6 +13,7 @@ import { useApp } from '@/contexts/app-provider';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { RequestPartForm } from '@/components/request-part-form';
 
 function getStatusVariant(status: MaintenanceRequestStatus) {
     switch (status) {
@@ -36,6 +37,7 @@ const statusColumns: { title: string; status: MaintenanceRequestStatus; icon: Re
 export default function MaintenancePage() {
   const { maintenanceRequests, updateMaintenanceRequestStatus, userRole } = useApp();
   const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
+  const [isPartRequestModalOpen, setIsPartRequestModalOpen] = useState(false);
 
   const requestsByStatus = (status: MaintenanceRequestStatus) => {
     return maintenanceRequests.filter(s => s.status === status);
@@ -47,6 +49,7 @@ export default function MaintenancePage() {
   
   const closeModal = () => {
     setSelectedRequest(null);
+    setIsPartRequestModalOpen(false);
   };
 
   const handleUpdateStatus = (newStatus: MaintenanceRequestStatus) => {
@@ -148,7 +151,7 @@ export default function MaintenancePage() {
                         <>
                           <Separator />
                            <div className="pt-4">
-                                <h3 className="text-base font-semibold mb-3">Alterar Status</h3>
+                                <h3 className="text-base font-semibold mb-3">Ações</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {selectedRequest.status === 'Pendente' && (
                                         <Button onClick={() => handleUpdateStatus('Em Andamento')}>
@@ -156,9 +159,14 @@ export default function MaintenancePage() {
                                         </Button>
                                     )}
                                     {selectedRequest.status === 'Em Andamento' && (
-                                        <Button onClick={() => handleUpdateStatus('Concluída')}>
-                                            <Check className="mr-2 h-4 w-4" /> Concluir Manutenção
-                                        </Button>
+                                        <>
+                                            <Button onClick={() => handleUpdateStatus('Concluída')}>
+                                                <Check className="mr-2 h-4 w-4" /> Concluir Manutenção
+                                            </Button>
+                                            <Button variant="secondary" onClick={() => setIsPartRequestModalOpen(true)}>
+                                                <ShoppingCart className="mr-2 h-4 w-4" /> Pedir Compra de Peça
+                                            </Button>
+                                        </>
                                     )}
                                      {selectedRequest.status === 'Concluída' && (
                                         <Button variant="secondary" onClick={() => handleUpdateStatus('Pendente')}>
@@ -174,6 +182,25 @@ export default function MaintenancePage() {
               )}
               </ScrollArea>
           </DialogContent>
+      </Dialog>
+      
+      {/* Part Request Modal */}
+      <Dialog open={isPartRequestModalOpen} onOpenChange={setIsPartRequestModalOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle className="text-2xl flex items-center">
+                    <ShoppingCart className="mr-3"/>
+                    Solicitar Compra de Peça
+                </DialogTitle>
+                <DialogDescription>
+                   Peça necessária para a manutenção do veículo {selectedRequest?.vehicleModel} ({selectedRequest?.licensePlate}).
+                </DialogDescription>
+            </DialogHeader>
+            <RequestPartForm 
+                maintenanceRequest={selectedRequest}
+                onFormSubmit={() => setIsPartRequestModalOpen(false)}
+            />
+        </DialogContent>
       </Dialog>
     </div>
   );
