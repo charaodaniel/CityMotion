@@ -1,64 +1,51 @@
 import { NextResponse, NextRequest } from 'next/server';
-import path from 'path';
-import { promises as fs } from 'fs';
-import type { Employee } from '@/lib/types';
 
-const jsonDirectory = path.join(process.cwd(), 'src', 'data');
-const filePath = path.join(jsonDirectory, 'employees.json');
-
-async function readEmployees(): Promise<Employee[]> {
-  try {
-    const fileContents = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(fileContents);
-  } catch (error) {
-    console.error('Error reading employees file:', error);
-    return [];
-  }
-}
-
-async function writeEmployees(data: Employee[]): Promise<void> {
-  try {
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
-  } catch (error) {
-    console.error('Error writing employees file:', error);
-    throw new Error('Failed to write to data file.');
-  }
-}
+/**
+ * Esta API simulada foi descontinuada.
+ * A lógica de gerenciamento de perfis foi movida para ser tratada diretamente 
+ * no banco de dados (ver src/data/database.sql).
+ * 
+ * Em uma implementação de backend real, esta rota faria a conexão
+ * com o banco de dados para atualizar o campo 'role' do funcionário.
+ * 
+ * Exemplo de como seria com uma biblioteca como 'sqlite':
+ * 
+ * import db from '@/lib/db'; // hypothetical db connection
+ * 
+ * export async function POST(request: NextRequest) {
+ *   const { employeeId, newRole } = await request.json();
+ *   
+ *   try {
+ *     const stmt = db.prepare('UPDATE employees SET role = ? WHERE id = ?');
+ *     stmt.run(newRole, employeeId);
+ *     
+ *     // Retornar o funcionário atualizado e a lista completa
+ *     const updatedEmployee = db.prepare('SELECT * FROM employees WHERE id = ?').get(employeeId);
+ *     const employees = db.prepare('SELECT * FROM employees').all();
+ * 
+ *     return NextResponse.json({
+ *       message: 'Profile updated successfully in the database.',
+ *       updatedEmployee,
+ *       employees
+ *     });
+ *   } catch (error) {
+ *     return new NextResponse('Database error.', { status: 500 });
+ *   }
+ * }
+ */
 
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { employeeId, newRole } = body;
+  
+  console.log("A API /api/profiles foi chamada, mas está desativada. A lógica agora deve ser implementada no backend com o banco de dados.");
 
-    if (!employeeId || !newRole) {
-      return new NextResponse('Missing employeeId or newRole', { status: 400 });
+  // Retornar um erro informativo para o desenvolvedor
+  return new NextResponse(
+    JSON.stringify({ 
+      message: 'Esta API foi descontinuada. A atualização de perfis deve ser implementada no servidor Node.js que se conecta ao banco de dados SQLite.'
+    }), 
+    { 
+      status: 501, // 501 Not Implemented
+      headers: { 'Content-Type': 'application/json' }
     }
-
-    const employees = await readEmployees();
-    
-    let updatedEmployee: Employee | undefined;
-    const updatedEmployees = employees.map(emp => {
-      if (emp.id === employeeId) {
-        updatedEmployee = { ...emp, role: newRole };
-        return updatedEmployee;
-      }
-      return emp;
-    });
-
-    if (!updatedEmployee) {
-      return new NextResponse('Employee not found', { status: 404 });
-    }
-
-    await writeEmployees(updatedEmployees);
-
-    return NextResponse.json({ 
-        message: 'Profile updated successfully',
-        updatedEmployee: updatedEmployee,
-        employees: updatedEmployees // Return the full updated list
-    });
-
-  } catch (error) {
-    console.error('API /api/profiles Error:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
-  }
+  );
 }
