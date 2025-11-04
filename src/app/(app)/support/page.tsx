@@ -80,7 +80,7 @@ export default function SupportPage() {
             </CardHeader>
             <CardContent className="space-y-2">
                <Link href="/docs" className="flex items-center text-primary hover:underline">
-                  <LifeBuoy className="mr-2 h-4 w-4" /> Documentação
+                  <LifeBuoy className="mr-2 h-4 w-4" /> Central de Ajuda
                 </Link>
                  <a href="#" className="flex items-center text-primary hover:underline">
                   <LifeBuoy className="mr-2 h-4 w-4" /> Guia do Gestor de Frota
