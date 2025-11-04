@@ -136,8 +136,8 @@ export default function ViagensPage() {
 
   const [activeModal, setActiveModal] = useState<ModalState>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
-  const [startMileage, setStartMileage] = useState<number | undefined>();
-  const [finalMileage, setFinalMileage] = useState<number | undefined>();
+  const [startMileage, setStartMileage] = useState<number | string>('');
+  const [finalMileage, setFinalMileage] = useState<number | string>('');
   const [checkedItems, setCheckedItems] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   
@@ -167,8 +167,8 @@ export default function ViagensPage() {
   const closeModal = () => {
       openModal(null);
       // Reset dependent states
-      setStartMileage(undefined);
-      setFinalMileage(undefined);
+      setStartMileage('');
+      setFinalMileage('');
       setCheckedItems([]);
       setNotes('');
   }
@@ -217,14 +217,14 @@ export default function ViagensPage() {
   };
 
   const handleStartTrip = () => {
-    if (!selectedSchedule) return;
-    updateScheduleStatus(selectedSchedule.id, 'Em Andamento', { startNotes: notes, startMileage: startMileage, startChecklist: checkedItems });
+    if (!selectedSchedule || !startMileage) return;
+    updateScheduleStatus(selectedSchedule.id, 'Em Andamento', { startNotes: notes, startMileage: Number(startMileage), startChecklist: checkedItems });
     closeModal();
   };
 
   const handleFinishTrip = () => {
     if (!selectedSchedule || !finalMileage) return;
-    updateScheduleStatus(selectedSchedule.id, 'Concluída', { endNotes: notes, endMileage: finalMileage, endChecklist: checkedItems });
+    updateScheduleStatus(selectedSchedule.id, 'Concluída', { endNotes: notes, endMileage: Number(finalMileage), endChecklist: checkedItems });
     closeModal();
   };
   
@@ -235,12 +235,12 @@ export default function ViagensPage() {
 
   const handleOpenChecklistModal = (schedule: Schedule) => {
     const vehicle = vehicles.find(v => schedule.vehicle.includes(v.licensePlate));
-    setStartMileage(vehicle?.mileage);
+    setStartMileage(vehicle?.mileage || '');
     openModal('start-checklist', schedule);
   };
 
   const handleOpenFinishModal = (schedule: Schedule) => {
-    setFinalMileage(schedule.startMileage);
+    setFinalMileage(schedule.startMileage || '');
     openModal('finish', schedule);
   };
   
@@ -464,7 +464,7 @@ export default function ViagensPage() {
                 <Input
                 id="finalMileage"
                 type="number"
-                value={finalMileage}
+                value={finalMileage ?? ''}
                 onChange={(e) => setFinalMileage(Number(e.target.value))}
                 placeholder="KM final do veículo"
                 />
@@ -526,7 +526,7 @@ export default function ViagensPage() {
                 <Input
                     id="startMileage"
                     type="number"
-                    value={startMileage}
+                    value={startMileage ?? ''}
                     onChange={(e) => setStartMileage(Number(e.target.value))}
                     placeholder="KM inicial do veículo"
                 />
@@ -642,3 +642,4 @@ export default function ViagensPage() {
     </div>
   );
 }
+
