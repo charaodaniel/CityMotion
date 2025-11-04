@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PlusCircle, User, ShieldCheck, Edit, FileText, Link as LinkIcon, Briefcase } from 'lucide-react';
 import { RegisterDriverForm } from '@/components/register-driver-form';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -31,10 +31,20 @@ function getStatusVariant(status: DriverStatus) {
 }
 
 export default function DriversPage() {
-  const { drivers, setDrivers } = useApp();
+  const { drivers, setDrivers, userRole } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+  
+  const managerSector = "Secretaria de Obras"; // Simulating manager's sector for filtering
+
+  const visibleDrivers = useMemo(() => {
+    if (userRole === 'manager') {
+      return drivers.filter(d => d.sector === managerSector);
+    }
+    return drivers;
+  }, [drivers, userRole, managerSector]);
+
 
   const handleCardClick = (driver: Driver) => {
     setSelectedDriver(driver);
@@ -187,7 +197,12 @@ export default function DriversPage() {
             <h1 className="text-3xl font-bold tracking-tight font-headline">
                 Gestão de Motoristas
             </h1>
-            <p className="text-muted-foreground">Veja, gerencie e cadastre os motoristas da prefeitura.</p>
+            <p className="text-muted-foreground">
+              {userRole === 'manager'
+                ? `Veja e gerencie os motoristas do setor de ${managerSector}.`
+                : 'Veja, gerencie e cadastre os motoristas da prefeitura.'
+              }
+            </p>
         </div>
         <Button onClick={handleOpenRegisterModal} className="bg-primary hover:bg-primary/90">
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -196,7 +211,7 @@ export default function DriversPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {drivers.map((driver) => (
+        {visibleDrivers.map((driver) => (
           <Card 
             key={driver.id} 
             className="cursor-pointer hover:shadow-md transition-shadow"
@@ -234,7 +249,7 @@ export default function DriversPage() {
         ))}
       </div>
       
-      {drivers.length === 0 && (
+      {visibleDrivers.length === 0 && (
         <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg col-span-full">
             <p>Nenhum motorista cadastrado no momento.</p>
             <p className="text-sm mt-2">Clique em "Cadastrar Novo Motorista" para começar.</p>

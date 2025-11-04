@@ -7,6 +7,7 @@
         "details": "É necessário um veículo com caçamba para buscar cimento e areia no fornecedor X.",
         "priority": "Alta",
         "requestDate": "2024-07-29T10:00:00Z",
+        "requester": "João da Silva",
         "status": "Pendente"
     },
     {
@@ -16,6 +17,7 @@
         "details": "Transportar 3 pessoas da equipe de eventos para a Praça Central para a montagem do palco.",
         "priority": "Média",
         "requestDate": "2024-07-29T11:30:00Z",
+        "requester": "Carlos Pereira",
         "status": "Pendente"
     },
     {
@@ -25,6 +27,7 @@
         "details": "Paciente: Sr. José, precisa de transporte para sessão de fisioterapia no Centro de Reabilitação.",
         "priority": "Alta",
         "requestDate": "2024-07-30T08:00:00Z",
+        "requester": "Maria Oliveira",
         "status": "Aprovada"
     },
     {
@@ -34,6 +37,27 @@
         "details": "Realizar coleta em 3 pontos distintos da cidade para análise da qualidade da água.",
         "priority": "Média",
         "requestDate": "2024-07-30T09:15:00Z",
+        "requester": "Carlos Pereira",
+        "status": "Pendente"
+    },
+    {
+        "id": "REQ005",
+        "title": "Levar documentos para o Fórum",
+        "sector": "Administração",
+        "details": "Entrega de ofícios urgentes no Fórum da cidade.",
+        "priority": "Alta",
+        "requestDate": "2024-08-01T14:00:00Z",
+        "requester": "Pedro Santos",
+        "status": "Pendente"
+    },
+    {
+        "id": "REQ006",
+        "title": "Viagem para Porto Alegre",
+        "sector": "Secretaria de Educação",
+        "details": "Transportar a funcionária Ana Souza para um seminário na capital.",
+        "priority": "Baixa",
+        "requestDate": "2024-08-02T09:00:00Z",
+        "requester": "Ana Souza",
         "status": "Pendente"
     }
 ]

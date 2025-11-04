@@ -6,46 +6,74 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useApp } from "@/contexts/app-provider";
-import type { Driver, ScheduleStatus } from "@/lib/types";
+import type { Driver, VehicleRequest, VehicleRequestStatus } from "@/lib/types";
 import { User, Mail, Building, ShieldCheck } from "lucide-react";
 import { useMemo } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
-function getStatusVariant(status: ScheduleStatus) {
+function getStatusVariant(status: VehicleRequestStatus) {
   switch (status) {
-    case 'Agendada':
+    case 'Pendente':
       return 'secondary';
-    case 'Em Andamento':
+    case 'Aprovada':
       return 'default';
-    case 'Concluída':
-      return 'outline';
+    case 'Rejeitada':
+      return 'destructive';
     default:
       return 'outline';
   }
 }
 
 export default function ProfilePage() {
-  const { userRole, drivers, schedules } = useApp();
+  const { userRole, drivers, vehicleRequests } = useApp();
   
-  const currentUser: Driver | undefined = useMemo(() => {
+  const { currentUser, userEmail } = useMemo(() => {
+    let user: Driver | undefined;
+    let email: string = 'user@citymotion.com';
+
+    // This simulation should be replaced by real auth data
     switch (userRole) {
       case 'admin':
-        return drivers.find(d => d.id === '3'); // Pedro Santos (Administração)
+        user = drivers.find(d => d.name === 'Pedro Santos');
+        email = 'admin@citymotion.com';
+        break;
       case 'manager':
-        return drivers.find(d => d.id === '1'); // João da Silva (Obras)
+        user = drivers.find(d => d.name === 'João da Silva');
+        email = 'manager@citymotion.com';
+        break;
       case 'driver':
-        return drivers.find(d => d.id === '2'); // Maria Oliveira (Saúde)
+        user = drivers.find(d => d.name === 'Maria Oliveira');
+        email = 'driver@citymotion.com';
+        break;
       case 'employee':
-        return drivers.find(d => d.id === '4'); // Ana Souza (Educação)
+        user = drivers.find(d => d.name === 'Ana Souza');
+        email = 'employee@citymotion.com';
+        break;
       default:
-        return drivers[0];
+        user = drivers[0];
+        if (user) {
+          email = `${user.name.toLowerCase().replace(/\s+/g, '.')}@citymotion.com`;
+        }
     }
+    return { currentUser: user, userEmail: email };
   }, [userRole, drivers]);
 
-  const userSchedules = useMemo(() => {
-    if (userRole === 'employee') return []; // Funcionário comum não tem histórico de VIAGENS como motorista
+  const userRequests = useMemo(() => {
+    // This is a simulation. In a real app, you'd filter by the logged-in user's ID.
     if (!currentUser) return [];
-    return schedules.filter(s => s.driver === currentUser.name);
-  }, [currentUser, userRole, schedules]);
+    
+    if (userRole === 'employee') {
+      // Find requests made by 'Ana Souza' (our simulated employee)
+      return vehicleRequests.filter(req => 
+        req.requester?.toLowerCase().includes('ana souza')
+      );
+    }
+    
+    // For drivers, managers, admins, find trips they are the driver for
+    return vehicleRequests.filter(req => req.requester === currentUser.name);
+
+  }, [currentUser, userRole, vehicleRequests]);
 
 
   if (!currentUser) {
@@ -84,7 +112,7 @@ export default function ProfilePage() {
                 <CardHeader className="items-center text-center">
                     <Avatar className="h-24 w-24 mb-4">
                         <AvatarImage src={`https://i.pravatar.cc/150?u=${currentUser.id}`} alt={currentUser.name} />
-                        <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback>{currentUser.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                     </Avatar>
                     <CardTitle className="text-2xl">{currentUser.name}</CardTitle>
                     <CardDescription>{getRoleName(userRole)}</CardDescription>
@@ -92,7 +120,7 @@ export default function ProfilePage() {
                 <CardContent className="space-y-4 text-sm">
                     <div className="flex items-center">
                         <Mail className="mr-3 h-4 w-4 text-muted-foreground" />
-                        <span>{currentUser.name.toLowerCase().replace(/\s+/g, '.')}@citymotion.com</span>
+                        <span>{userEmail}</span>
                     </div>
                      <div className="flex items-center">
                         <Building className="mr-3 h-4 w-4 text-muted-foreground" />
@@ -112,33 +140,31 @@ export default function ProfilePage() {
         <div className="md:col-span-2">
              <Card>
                 <CardHeader>
-                    <CardTitle>Histórico de Viagens</CardTitle>
+                    <CardTitle>Histórico de Solicitações</CardTitle>
                     <CardDescription>
-                        {userSchedules.length > 0 
-                            ? 'Suas viagens mais recentes realizadas no sistema.'
-                            : 'Você ainda não realizou nenhuma viagem.'
+                        {userRequests.length > 0 
+                            ? 'Suas solicitações de viagem mais recentes.'
+                            : 'Você ainda não fez nenhuma solicitação de viagem.'
                         }
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {userSchedules.length > 0 ? (
+                    {userRequests.length > 0 ? (
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Viagem</TableHead>
-                                    <TableHead>Veículo</TableHead>
+                                    <TableHead>Motivo</TableHead>
                                     <TableHead>Data</TableHead>
                                     <TableHead>Status</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {userSchedules.map((schedule) => (
-                                    <TableRow key={schedule.id}>
-                                        <TableCell className="font-medium">{schedule.title}</TableCell>
-                                        <TableCell>{schedule.vehicle}</TableCell>
-                                        <TableCell>{schedule.departureTime.split(' ')[0]}</TableCell>
+                                {userRequests.map((request) => (
+                                    <TableRow key={request.id}>
+                                        <TableCell className="font-medium">{request.title}</TableCell>
+                                        <TableCell>{format(new Date(request.requestDate), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
                                         <TableCell>
-                                            <Badge variant={getStatusVariant(schedule.status)}>{schedule.status}</Badge>
+                                            <Badge variant={getStatusVariant(request.status)}>{request.status}</Badge>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -146,7 +172,7 @@ export default function ProfilePage() {
                         </Table>
                     ) : (
                          <div className="text-center text-muted-foreground py-8">
-                            <p>Nenhum histórico de viagens para exibir.</p>
+                            <p>Nenhum histórico para exibir.</p>
                         </div>
                     )}
                 </CardContent>

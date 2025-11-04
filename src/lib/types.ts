@@ -88,6 +88,7 @@ export type VehicleRequest = {
   priority: RequestPriority;
   requestDate: string;
   status: VehicleRequestStatus;
+  requester?: string;
 };
 
 export type Sector = {

@@ -23,13 +23,12 @@ function getStatusVariant(status: ScheduleStatus) {
 }
 
 export default function DriverDashboard() {
-  const { schedules, userRole } = useApp();
+  const { schedules } = useApp();
+  const currentDriverName = "Maria Oliveira"; // Simulating the logged-in driver 'Maria Oliveira'
 
   const driverSchedules = useMemo(() => {
-    // This should ideally be based on the actual logged-in user's name
-    const currentDriverName = "João da Silva"; // Simulating the logged-in driver
-    return schedules.filter(s => s.driver === currentDriverName);
-  }, [schedules]);
+    return schedules.filter(s => s.driver === currentDriverName && s.status !== 'Concluída' && s.status !== 'Cancelada');
+  }, [schedules, currentDriverName]);
 
 
   return (

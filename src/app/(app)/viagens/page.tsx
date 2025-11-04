@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText, Check, Fuel } from 'lucide-react';
@@ -132,9 +132,7 @@ function TripsView({
 }
 
 export default function ViagensPage() {
-  const { schedules, setSchedules } = useApp();
-  const [drivers, setDrivers] = useState<Driver[]>(initialDrivers);
-  const [vehicles, setVehicles] = useState<Vehicle[]>(initialVehicles);
+  const { schedules, setSchedules, userRole, vehicles, setVehicles, drivers, setDrivers } = useApp();
 
   const [activeModal, setActiveModal] = useState<ModalState>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
@@ -144,6 +142,20 @@ export default function ViagensPage() {
   const [notes, setNotes] = useState('');
   
   const { toast } = useToast();
+
+  const managerSector = "Secretaria de Obras"; // Simulating manager's sector for filtering
+  const currentDriverName = "Maria Oliveira"; // Simulating driver 'Maria Oliveira'
+
+  const visibleSchedules = useMemo(() => {
+    if (userRole === 'driver') {
+      return schedules.filter(s => s.driver === currentDriverName);
+    }
+    if (userRole === 'manager') {
+      const sectorVehicles = vehicles.filter(v => v.sector === managerSector).map(v => v.licensePlate);
+      return schedules.filter(s => sectorVehicles.some(plate => s.vehicle.includes(plate)));
+    }
+    return schedules;
+  }, [schedules, vehicles, userRole, managerSector, currentDriverName]);
 
   const openModal = (modal: ModalState, schedule: Schedule | null = null) => {
     setSelectedSchedule(schedule);
@@ -244,7 +256,7 @@ export default function ViagensPage() {
     closeModal();
   }
 
-  const allSchedules = schedules.filter(s => s.status !== 'Cancelada');
+  const allSchedules = visibleSchedules.filter(s => s.status !== 'Cancelada');
   const schoolSchedules = allSchedules.filter(s => s.category.toLowerCase().includes('escolar'));
   const generalSchedules = allSchedules.filter(s => !s.category.toLowerCase().includes('escolar'));
 
@@ -601,8 +613,3 @@ export default function ViagensPage() {
     </div>
   );
 }
-
-
-
-
-    

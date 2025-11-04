@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -72,6 +73,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...request,
       id: `REQ${Date.now()}`,
       status: 'Pendente',
+      requester: 'Ana Souza', // Simulating the employee 'Ana Souza' is always the requester
       requestDate: new Date().toISOString(),
       priority: request.priority || 'Baixa',
       details: request.details || 'N/A'
@@ -95,8 +97,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (status === 'Aprovada' && requestToProcess) {
       const request = requestToProcess;
         // Simulação da lógica de alocação de recursos
-        const availableDriver = drivers.find(d => d.status === 'Disponível');
-        const availableVehicle = vehicles.find(v => v.status === 'Disponível');
+        const availableDriver = drivers.find(d => d.status === 'Disponível' && d.sector === request.sector);
+        const availableVehicle = vehicles.find(v => v.status === 'Disponível' && v.sector === request.sector);
 
         if (availableDriver && availableVehicle) {
             const newSchedule: Schedule = {
@@ -108,9 +110,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 destination: request.details.split("Destino: ")[1]?.split('.')[0] || "Não especificado",
                 departureTime: format(new Date(), "dd/MM/yyyy HH:mm"),
                 status: 'Agendada',
-                category: request.sector,
+                category: request.sector, // Or a more specific category from the request
             };
             setSchedules(prevSchedules => [newSchedule, ...prevSchedules]);
+             // Update driver and vehicle status
+            setDrivers(drivers.map(d => d.id === availableDriver.id ? { ...d, status: 'Em Serviço' } : d));
+            setVehicles(vehicles.map(v => v.id === availableVehicle.id ? { ...v, status: 'Em Serviço' } : v));
+        } else {
+            // Handle case where no driver or vehicle is available
+             console.warn("No available driver or vehicle for the approved request.");
+             // Optionally, revert the request status or keep it as 'Approved' but unassigned.
+             // For this simulation, we'll leave it as approved.
         }
     }
   };

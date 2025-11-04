@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PlusCircle, Car, Gauge, Building, Edit } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RegisterVehicleForm } from '@/components/register-vehicle-form';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
@@ -30,10 +30,20 @@ function getStatusVariant(status: VehicleStatus) {
 }
 
 export default function VehiclesPage() {
-  const { vehicles, setVehicles } = useApp();
+  const { vehicles, setVehicles, userRole } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+
+  const managerSector = "Secretaria de Obras"; // Simulating manager's sector for filtering
+
+  const visibleVehicles = useMemo(() => {
+    if (userRole === 'manager') {
+      return vehicles.filter(v => v.sector === managerSector);
+    }
+    return vehicles;
+  }, [vehicles, userRole, managerSector]);
+
 
   const handleCardClick = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
@@ -159,7 +169,12 @@ export default function VehiclesPage() {
             <h1 className="text-3xl font-bold tracking-tight font-headline">
                 Gerenciamento da Frota Municipal
             </h1>
-            <p className="text-muted-foreground">Veja, gerencie e cadastre os veículos da prefeitura.</p>
+            <p className="text-muted-foreground">
+              {userRole === 'manager'
+                ? `Veja e gerencie os veículos do setor de ${managerSector}.`
+                : 'Veja, gerencie e cadastre os veículos da prefeitura.'
+              }
+            </p>
         </div>
         <Button onClick={handleOpenRegisterModal} className="bg-primary hover:bg-primary/90">
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -168,7 +183,7 @@ export default function VehiclesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {vehicles.map((vehicle) => (
+          {visibleVehicles.map((vehicle) => (
             <Card 
               key={vehicle.id} 
               onClick={() => handleCardClick(vehicle)} 
@@ -202,10 +217,9 @@ export default function VehiclesPage() {
           ))}
       </div>
 
-      {vehicles.length === 0 && (
+      {visibleVehicles.length === 0 && (
         <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg col-span-full">
-            <p>Nenhum veículo cadastrado no momento.</p>
-            <p className="text-sm mt-2">Clique em "Cadastrar Novo Veículo" para começar.</p>
+            <p>Nenhum veículo para exibir.</p>
         </div>
       )}
 

@@ -27,6 +27,8 @@ export default function ManagerDashboard() {
   const { toast } = useToast();
   const { vehicleRequests, updateVehicleRequestStatus, drivers } = useApp();
 
+  const managerSector = "Secretaria de Obras"; // Simulating manager's sector
+
   const handleRequest = (id: string, approved: boolean) => {
     updateVehicleRequestStatus(id, approved ? 'Aprovada' : 'Rejeitada');
     const request = vehicleRequests.find(req => req.id === id);
@@ -40,13 +42,12 @@ export default function ManagerDashboard() {
 
   const managerRequests = useMemo(() => {
     // This should ideally be based on the actual logged-in user's sector
-    const managerSector = "Secretaria de Obras"; // Simulating manager's sector
     return vehicleRequests.filter(r => r.sector === managerSector && r.status === 'Pendente');
-  }, [vehicleRequests]);
+  }, [vehicleRequests, managerSector]);
 
   const availableDrivers = useMemo(() => {
-    return drivers.filter(d => d.status === 'Disponível').length;
-  }, [drivers]);
+    return drivers.filter(d => d.status === 'Disponível' && d.sector === managerSector).length;
+  }, [drivers, managerSector]);
 
 
   return (
@@ -54,12 +55,12 @@ export default function ManagerDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Motoristas Disponíveis</CardTitle>
+                <CardTitle className="text-sm font-medium">Motoristas Disponíveis no Setor</CardTitle>
                 <UserCheck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{availableDrivers}</div>
-                <p className="text-xs text-muted-foreground">Motoristas prontos para novas viagens</p>
+                <p className="text-xs text-muted-foreground">Motoristas do seu setor prontos para viagens</p>
             </CardContent>
         </Card>
       </div>
@@ -77,7 +78,7 @@ export default function ManagerDashboard() {
                 </Badge>
               </div>
                <CardDescription className="flex items-center text-sm text-muted-foreground mt-2">
-                  <Clock className="mr-2 h-4 w-4" /> Solicitado em: {new Date(request.requestDate).toLocaleDateString('pt-BR')}
+                  <Clock className="mr-2 h-4 w-4" /> Solicitado em: {new Date(request.requestDate).toLocaleDateString('pt-BR')} por {request.requester || 'N/A'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
