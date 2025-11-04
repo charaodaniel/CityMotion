@@ -1,7 +1,7 @@
 
 export default function UserProfilesPage() {
   return (
-    <>
+    <div>
       <h1>Perfis de Usuário e Permissões</h1>
       <p>
         O CityMotion opera com diferentes perfis de usuário, cada um com acesso e permissões específicas, garantindo que cada pessoa veja apenas as informações e ferramentas relevantes para sua função.
@@ -45,6 +45,6 @@ export default function UserProfilesPage() {
           <strong>Se o cargo for "Motorista":</strong> A interface é enriquecida para incluir um painel de viagens, a capacidade de iniciar/finalizar viagens com checklists e acesso ao seu histórico de condução.
         </li>
       </ul>
-    </>
+    </div>
   );
 }

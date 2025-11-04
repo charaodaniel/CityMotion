@@ -25,11 +25,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, Menu, Settings, LifeBuoy, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench } from 'lucide-react';
+import { LayoutDashboard, Car, Menu, Settings, LifeBuoy, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 
 const navItems = [
@@ -45,16 +47,38 @@ const navItems = [
 
 const bottomNavItems = [
     { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['admin', 'manager', 'employee'] },
+    { href: '/docs', label: 'Central de Ajuda', icon: BookOpen, roles: ['admin', 'manager', 'employee'] },
     { href: '/settings', label: 'Configurações', icon: Settings, roles: ['admin'] },
-    { href: '/support', label: 'Suporte', icon: LifeBuoy, roles: ['admin', 'manager', 'employee'] },
 ]
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
+const docsSidebarNavItems = [
+  {
+    title: "Introdução",
+    href: "/docs",
+  },
+  {
+    title: "Perfis de Usuário",
+    href: "/docs/user-profiles",
+  },
+  {
+    title: "Solicitando um Transporte",
+    href: "/docs/requesting-trips",
+  },
+  {
+    title: "Crachá Virtual",
+    href: "/docs/virtual-badge",
+  },
+];
+
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { userRole, setUserRole, currentUser } = useApp();
 
   const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
+  const isDocsPage = pathname.startsWith('/docs');
+
 
   const filteredNavItems = useMemo(() => {
     return navItems.filter(item => {
@@ -91,12 +115,56 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   }
 
+  const renderDocsLayout = (mainContent: React.ReactNode) => (
+    <div className="container mx-auto p-4 sm:p-8">
+       <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-3">
+          <BookOpen className="w-8 h-8 text-primary"/>
+          Central de Ajuda
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Encontre guias, tutoriais e respostas para suas dúvidas sobre o CityMotion.
+        </p>
+      </div>
+      <div className="flex -mx-4">
+        <aside className="w-1/4 px-4">
+          <nav className="sticky top-20">
+            <ScrollArea className="h-[calc(100vh-10rem)]">
+              <div className="space-y-4 pr-4">
+                {docsSidebarNavItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "block rounded-md p-3 text-sm font-medium transition-colors",
+                      pathname === item.href
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    {item.title}
+                  </Link>
+                ))}
+              </div>
+            </ScrollArea>
+          </nav>
+        </aside>
+        <main className="w-3/4 px-4">
+          <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert bg-card p-8 rounded-lg border">
+            {mainContent}
+          </div>
+        </main>
+      </div>
+    </div>
+  )
+
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen">
         <Sidebar>
           <SidebarHeader>
-            <Link href="/" className="flex items-center gap-2 text-sidebar-foreground hover:text-sidebar-foreground">
+            <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground hover:text-sidebar-foreground">
               <Logo />
               <span className="text-lg font-semibold tracking-tighter">
                 CityMotion
@@ -183,6 +251,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                         </Link>
                       </DropdownMenuItem>
                       )}
+                       <DropdownMenuItem asChild>
+                        <Link href="/docs">
+                          <BookOpen className="mr-2 h-4 w-4" />
+                          <span>Ajuda</span>
+                        </Link>
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="mr-2 h-4 w-4" />
@@ -192,7 +266,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   </DropdownMenu>
                 </div>
             </header>
-            <main className="flex-1 overflow-auto">{children}</main>
+            <main className="flex-1 overflow-auto">
+              {isDocsPage ? renderDocsLayout(children) : children}
+            </main>
         </SidebarInset>
       </div>
     </SidebarProvider>

@@ -1,7 +1,7 @@
 
 export default function RequestingTripsPage() {
   return (
-    <>
+    <div>
       <h1>Como Solicitar um Transporte</h1>
       <p>
         Solicitar um veículo para uma viagem é um processo simples e rápido, projetado para que qualquer funcionário possa fazer um pedido com poucos cliques.
@@ -34,6 +34,6 @@ export default function RequestingTripsPage() {
       <p>
         Uma vez aprovada pelo gestor, a solicitação é automaticamente convertida em uma viagem **Agendada**, e o sistema aloca um motorista e um veículo. Você poderá acompanhar o status de todas as suas viagens na página "Viagens".
       </p>
-    </>
+    </div>
   );
 }

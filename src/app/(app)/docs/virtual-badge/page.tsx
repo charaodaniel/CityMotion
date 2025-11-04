@@ -1,7 +1,7 @@
 
 export default function VirtualBadgePage() {
   return (
-    <>
+    <div>
       <h1>Crachá Virtual com QR Code</h1>
       <p>
         O crachá virtual é uma ferramenta de identificação moderna e segura para todos os funcionários cadastrados no sistema. Ele substitui a necessidade de crachás físicos que podem se desatualizar, garantindo que as informações estejam sempre corretas.
@@ -27,6 +27,6 @@ export default function VirtualBadgePage() {
               <strong>Impressão:</strong> Clique no botão "Imprimir Crachá" na parte inferior da página para gerar uma versão otimizada para impressão.
           </li>
       </ol>
-    </>
+    </div>
   );
 }

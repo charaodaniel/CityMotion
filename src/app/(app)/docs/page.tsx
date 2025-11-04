@@ -1,7 +1,7 @@
 
 export default function DocsPage() {
   return (
-    <>
+    <div>
       <h1 className="font-headline">Bem-vindo ao CityMotion</h1>
       <p>
         O CityMotion é um sistema de gestão de frota projetado para modernizar e otimizar a maneira como sua organização gerencia seus recursos de transporte. Esta documentação irá guiá-lo através das principais funcionalidades da plataforma.
@@ -22,6 +22,6 @@ export default function DocsPage() {
       <p>
         Para começar, explore os tópicos na barra de navegação à esquerda. Cada seção fornecerá detalhes sobre como usar as funcionalidades específicas do sistema. Se você for um novo usuário, recomendamos começar pela seção "Perfis de Usuário" para entender as permissões de cada um.
       </p>
-    </>
+    </div>
   );
 }
