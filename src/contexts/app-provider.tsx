@@ -13,6 +13,7 @@ interface AppContextType {
   isLoading: boolean;
   userRole: UserRole;
   setUserRole: (role: UserRole, email?: string) => void;
+  userEmailForSimulation: string;
   currentUser: Employee | null;
   
   schedules: Schedule[];
@@ -193,7 +194,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider value={{ 
         isLoading,
         userRole, 
-        setUserRole: setRoleAndSimulatedEmail, 
+        setUserRole: setRoleAndSimulatedEmail,
+        userEmailForSimulation,
         currentUser,
         schedules, setSchedules, 
         vehicleRequests, addVehicleRequest, updateVehicleRequestStatus,

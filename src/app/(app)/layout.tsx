@@ -115,8 +115,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
   
   const handleLogout = () => {
-    setUserRole('employee'); // Reset to a default role
-    router.push('/home');
+    setUserRole('employee', ''); // Reset to a default role and clear simulated email
+    router.push('/login');
   }
 
   const renderDocsLayout = (mainContent: React.ReactNode) => (
