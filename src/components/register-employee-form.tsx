@@ -14,6 +14,7 @@ import type { Employee } from '@/lib/types';
 import { useEffect } from 'react';
 import { useApp } from '@/contexts/app-provider';
 
+// Esquema Zod atualizado para lidar com objetos de arquivo
 const formSchema = z.object({
   name: z.string().min(2, "O nome completo deve ter pelo menos 2 caracteres."),
   matricula: z.string().min(1, "A matrícula é obrigatória."),
@@ -46,13 +47,14 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
   });
 
   useEffect(() => {
-    if (isEditMode) {
+    if (isEditMode && existingEmployee) {
       form.reset({
         name: existingEmployee.name,
         matricula: existingEmployee.matricula,
         role: existingEmployee.role,
         cnh: existingEmployee.cnh,
         sector: existingEmployee.sector,
+        // Em modo de edição, não pré-populamos os inputs de arquivo
       });
     }
   }, [isEditMode, existingEmployee, form]);
@@ -60,8 +62,10 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const dataToSubmit: Partial<Employee> = {
       ...values,
-      idPhoto: values.idPhoto?.[0]?.name,
-      cnhPhoto: values.cnhPhoto?.[0]?.name,
+      // Se um arquivo foi selecionado, pegue o nome dele.
+      // Em uma aplicação real, aqui você faria o upload do arquivo.
+      idPhoto: values.idPhoto?.[0]?.name || existingEmployee?.idPhoto,
+      cnhPhoto: values.cnhPhoto?.[0]?.name || existingEmployee?.cnhPhoto,
     };
     onFormSubmit(dataToSubmit);
     toast({
@@ -70,6 +74,9 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
     });
     form.reset();
   };
+  
+  const employeeRoles = ["Motorista", "Motorista de Ambulância", "Motorista Escolar", "Secretário(a)", "Médico(a)", "Enfermeiro(a)", "Técnico Administrativo", "Professor(a)", "Engenheiro(a)", "Operador de Máquinas", "Prefeito", "Assessor de Comunicação", "Agente de Arrecadação", "Assistente Social", "Psicóloga", "Veterinário", "Estagiário de TI"];
+
 
   return (
     <Form {...form}>
@@ -109,9 +116,16 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Cargo</FormLabel>
-                  <FormControl>
-                     <Input placeholder="Ex: Professor, Médico, Engenheiro..." {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o cargo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {employeeRoles.sort().map(role => <SelectItem key={role} value={role}>{role}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -156,6 +170,9 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
 
         <div>
           <h3 className="text-lg font-semibold mb-4">Documentação</h3>
+           <p className="text-sm text-muted-foreground mb-4">
+              {isEditMode ? "Para alterar um documento, basta fazer um novo upload." : "Faça o upload dos documentos necessários."}
+            </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
@@ -175,7 +192,7 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
               name="cnhPhoto"
               render={({ field: { value, onChange, ...fieldProps } }) => (
                 <FormItem>
-                  <FormLabel>Foto da CNH (se aplicável)</FormLabel>
+                  <FormLabel>Foto da CNH (se motorista)</FormLabel>
                   <FormControl>
                     <Input type="file" accept="image/*,application/pdf" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
                   </FormControl>
@@ -187,8 +204,8 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
         </div>
 
         <div className="flex justify-end">
-            <Button type="submit" className="w-full md:w-auto bg-accent hover:bg-accent/90">
-                {isEditMode ? 'Salvar Alterações' : 'Enviar Cadastro'}
+            <Button type="submit" className="w-full md:w-auto">
+                {isEditMode ? 'Salvar Alterações' : 'Cadastrar Funcionário'}
             </Button>
         </div>
       </form>

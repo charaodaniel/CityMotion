@@ -27,7 +27,7 @@ export default function ManagerDashboard() {
   const { toast } = useToast();
   const { vehicleRequests, updateVehicleRequestStatus, employees } = useApp();
 
-  const managerSector = "Secretaria de Obras"; // Simulating manager's sector
+  const managerSector = "Secretaria de Obras, Viação e Urbanismo"; // Simulating manager's sector
 
   const handleRequest = (id: string, approved: boolean) => {
     updateVehicleRequestStatus(id, approved ? 'Aprovada' : 'Rejeitada');
@@ -46,7 +46,7 @@ export default function ManagerDashboard() {
   }, [vehicleRequests, managerSector]);
 
   const availableDrivers = useMemo(() => {
-    return employees.filter(d => d.status === 'Disponível' && d.sector === managerSector && d.role === 'Motorista').length;
+    return employees.filter(d => d.status === 'Disponível' && d.sector === managerSector && d.role.toLowerCase().includes('motorista')).length;
   }, [employees, managerSector]);
 
 

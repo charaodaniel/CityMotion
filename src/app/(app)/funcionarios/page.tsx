@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import type { Employee, EmployeeStatus } from '@/lib/types';
@@ -36,7 +35,7 @@ export default function EmployeesPage() {
   const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   
-  const managerSector = "Secretaria de Obras"; // Simulating manager's sector for filtering
+  const managerSector = "Secretaria de Obras, Viação e Urbanismo"; // Simulating manager's sector for filtering
 
   const visibleEmployees = useMemo(() => {
     if (userRole === 'manager') {
@@ -71,7 +70,7 @@ export default function EmployeesPage() {
 
   const handleFormSubmit = (newEmployeeData: Partial<Employee>) => {
     if (modalMode === 'edit' && selectedEmployee) {
-      setEmployees(employees.map(d => d.id === selectedEmployee.id ? { ...d, ...newEmployeeData } : d));
+      setEmployees(employees.map(d => d.id === selectedEmployee.id ? { ...d, ...newEmployeeData } as Employee : d));
     } else {
       const newEmployee: Employee = {
         id: `${employees.length + 1}`,
@@ -163,13 +162,13 @@ export default function EmployeesPage() {
                       </h3>
                       <div className="space-y-2 text-sm">
                         {selectedEmployee.idPhoto && (
-                          <Link href="#" className="flex items-center text-primary hover:underline">
+                          <Link href="#" className="flex items-center text-primary hover:underline" onClick={(e) => e.preventDefault()}>
                             <LinkIcon className="mr-2 h-4 w-4" />
                             <span>Foto 3x4: {selectedEmployee.idPhoto}</span>
                           </Link>
                         )}
                         {selectedEmployee.cnhPhoto && (
-                          <Link href="#" className="flex items-center text-primary hover:underline">
+                          <Link href="#" className="flex items-center text-primary hover:underline" onClick={(e) => e.preventDefault()}>
                             <LinkIcon className="mr-2 h-4 w-4" />
                             <span>CNH: {selectedEmployee.cnhPhoto}</span>
                           </Link>
