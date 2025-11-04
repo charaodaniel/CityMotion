@@ -33,12 +33,12 @@ export default function DocsPage() {
             <h2 className="text-xl font-bold">2. Como Solicitar um Transporte</h2>
             <p>
                 Qualquer funcionário, gestor ou administrador pode solicitar um transporte de forma rápida:
-                <ol>
-                    <li>No painel principal, clique no botão "Pedir Transporte".</li>
-                    <li>Preencha o formulário informando seu setor, o motivo da viagem e, opcionalmente, o destino e a data/hora desejada.</li>
-                    <li>Clique em "Enviar Pedido Rápido". Sua solicitação será enviada para o gestor do seu setor para aprovação.</li>
-                </ol>
             </p>
+            <ol>
+                <li>No painel principal, clique no botão "Pedir Transporte".</li>
+                <li>Preencha o formulário informando seu setor, o motivo da viagem e, opcionalmente, o destino e a data/hora desejada.</li>
+                <li>Clique em "Enviar Pedido Rápido". Sua solicitação será enviada para o gestor do seu setor para aprovação.</li>
+            </ol>
 
             <h2 className="text-xl font-bold">3. Acompanhando Viagens</h2>
             <p>
@@ -53,12 +53,12 @@ export default function DocsPage() {
             <h2 className="text-xl font-bold">4. Crachá Virtual</h2>
             <p>
                 Cada funcionário possui um crachá virtual com um QR Code único para identificação.
-                <ul>
-                    <li>Acesse seu crachá através do link na página "Motoristas" ou no seu perfil.</li>
-                    <li>O QR Code pode ser escaneado para verificar suas informações online, garantindo que os dados estejam sempre atualizados.</li>
-                    <li>Utilize o botão "Imprimir Crachá" para gerar uma versão física, ideal para cartões de visita ou para apresentar em locais que exigem identificação.</li>
-                </ul>
             </p>
+            <ul>
+                <li>Acesse seu crachá através do link na página "Motoristas" ou no seu perfil.</li>
+                <li>O QR Code pode ser escaneado para verificar suas informações online, garantindo que os dados estejam sempre atualizados.</li>
+                <li>Utilize o botão "Imprimir Crachá" para gerar uma versão física, ideal para cartões de visita ou para apresentar em locais que exigem identificação.</li>
+            </ul>
         </CardContent>
       </Card>
     </div>
