@@ -6,6 +6,15 @@ import React, { createContext, useContext, useState, ReactNode, useEffect, useMe
 import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus } from '@/lib/types';
 import { format } from 'date-fns';
 
+// Define a interface para o objeto exposto pelo preload.js
+declare global {
+  interface Window {
+    electronAPI?: {
+      getApiConfig: () => Promise<{ serverIp: string }>;
+    };
+  }
+}
+
 
 type UserRole = 'admin' | 'manager' | 'employee';
 
@@ -59,8 +68,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
 
   useEffect(() => {
+    async function getApiUrl() {
+        let baseUrl = 'http://localhost:3001'; // Padrão para desenvolvimento web
+
+        // Se estiver rodando no Electron, tenta ler a configuração
+        if (window.electronAPI) {
+            try {
+                const config = await window.electronAPI.getApiConfig();
+                if (config.serverIp) {
+                    baseUrl = `http://${config.serverIp}:3001`;
+                    console.log(`Conectando ao servidor customizado: ${baseUrl}`);
+                } else {
+                    console.log("Nenhum IP customizado. Usando localhost como padrão.");
+                }
+            } catch (error) {
+                console.error("Erro ao obter configuração da API via Electron, usando localhost.", error);
+            }
+        }
+        return `${baseUrl}/api`;
+    }
+
     async function fetchData() {
       try {
+        // Por enquanto, esta API simulada /api/data continua a funcionar.
+        // A lógica de `getApiUrl` está aqui para quando você refatorar para
+        // consumir do backend Node.js diretamente.
         const response = await fetch('/api/data?type=all');
         if (!response.ok) {
             throw new Error('Failed to fetch initial data');
