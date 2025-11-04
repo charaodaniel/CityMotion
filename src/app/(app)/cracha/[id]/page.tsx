@@ -19,9 +19,8 @@ export default function BadgePage() {
   const [badgeUrl, setBadgeUrl] = useState('');
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-        setBadgeUrl(window.location.href);
-    }
+    // This ensures window is defined, running only on the client side.
+    setBadgeUrl(window.location.href);
 
     // Simulate fetching data
     const foundDriver = drivers.find(d => d.id === id);
