@@ -24,12 +24,13 @@ Este arquivo organiza as funcionalidades pendentes e melhorias a serem implement
 -   [x] **Central de Ajuda (Documentação):** Criação de uma seção de documentação no estilo SaaS com layout próprio e múltiplos tópicos.
 -   [x] **Hierarquia de Perfis e Permissões (Simulação):** Implementação de regras de visibilidade na interface para diferentes perfis (Admin, Gestor, Motorista, Funcionário), garantindo que cada um veja apenas os dados pertinentes.
 -   [x] **Página de Login (Visual e Funcional para Simulação):** Interface de login que permite alternar entre os perfis de teste.
+-   [x] **Página de Configurações Avançada:** Adição de abas e novas opções de personalização para o administrador.
 
 ## 🚀 Próximas Funcionalidades (Roadmap)
 
 -   [ ] **Painel de Administração de Perfis:**
-    -   [ ] Criar uma nova página onde o **Administrador** possa atribuir o perfil de "Gestor" a qualquer funcionário de um setor.
-    -   [ ] Permitir que o Admin visualize e altere o perfil de qualquer usuário.
+    -   [x] Criar uma nova página (`/perfis`) onde o **Administrador** possa atribuir o perfil a qualquer funcionário.
+    -   [x] Criar uma API (`/api/profiles`) que simula a alteração do perfil no backend, preparando para a integração com banco de dados.
 
 -   [ ] **Página de Perfil 100% Dinâmica:**
     -   [ ] Garantir que a página `/perfil` exiba as informações (nome, cargo, setor) e o histórico de atividades (solicitações ou viagens) do usuário que está "logado" (simulado pelo seletor de perfil), e não de um usuário fixo.
@@ -42,11 +43,11 @@ Este arquivo organiza as funcionalidades pendentes e melhorias a serem implement
 
 ## 🔮 Futuro (Pós-MVP)
 
--   [ ] **Integração com Backend Real:**
-    -   [ ] Substituir a API de dados simulada (`/api/data`) e o `AppProvider` por chamadas a um backend real (ex: Firebase, PocketBase, etc.).
+-   [ ] **Integração com Backend e Banco de Dados (SQLite):**
+    -   [ ] Substituir a API de dados simulada (`/api/data`, `/api/profiles`) e o `AppProvider` por chamadas a um backend real (Node.js) conectado a um banco de dados SQLite.
 -   [ ] **Autenticação Real:**
-    -   [ ] Implementar um sistema de autenticação completo (ex: Firebase Auth, NextAuth.js) para substituir a simulação de perfis.
+    -   [ ] Implementar um sistema de autenticação completo (ex: JWT) para substituir a simulação de perfis.
 -   [ ] **Notificações:**
     -   [ ] Implementar um sistema de notificações (ex: via toast ou um ícone de sino) para alertar gestores sobre novas solicitações ou motoristas sobre novas viagens agendadas.
--   [ ] **Build para Desktop:**
-    -   [ ] Configurar o Electron ou Tauri para empacotar a aplicação para uso como um programa de desktop.
+-   [ ] **Build para Desktop (Electron):**
+    -   [ ] Configurar o Electron para empacotar a aplicação para uso como um programa de desktop, garantindo que o servidor Node.js seja iniciado junto com o aplicativo.

@@ -50,6 +50,7 @@ const navItems = [
 
 const bottomNavItems = [
     { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['admin', 'manager', 'employee'] },
+    { href: '/perfis', label: 'Gerenciar Perfis', icon: UserCog, roles: ['admin'] },
     { href: '/docs', label: 'Central de Ajuda', icon: BookOpen, roles: ['admin', 'manager', 'employee'] },
     { href: '/settings', label: 'Configurações', icon: Settings, roles: ['admin'] },
 ]
@@ -237,7 +238,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </Button>
                 </SidebarTrigger>
                 <div className="ml-auto flex items-center gap-4">
-                  {isLoading ? (
+                  {isLoading || !currentUser ? (
                     <Skeleton className="h-9 w-9 rounded-full" />
                   ) : (
                     <DropdownMenu>
