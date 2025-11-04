@@ -4,11 +4,11 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Clock, Package, UserCheck } from 'lucide-react';
-import { drivers } from '@/lib/data';
-import type { RequestPriority, VehicleRequest } from '@/lib/types';
+import type { RequestPriority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useApp } from '@/contexts/app-provider';
+import { useMemo } from 'react';
 
 function getPriorityVariant(priority: RequestPriority) {
   switch (priority) {
@@ -25,7 +25,7 @@ function getPriorityVariant(priority: RequestPriority) {
 
 export default function ManagerDashboard() {
   const { toast } = useToast();
-  const { vehicleRequests, updateVehicleRequestStatus } = useApp();
+  const { vehicleRequests, updateVehicleRequestStatus, drivers } = useApp();
 
   const handleRequest = (id: string, approved: boolean) => {
     updateVehicleRequestStatus(id, approved ? 'Aprovada' : 'Rejeitada');
@@ -38,9 +38,16 @@ export default function ManagerDashboard() {
     }
   };
 
+  const managerRequests = useMemo(() => {
+    // This should ideally be based on the actual logged-in user's sector
+    const managerSector = "Secretaria de Obras"; // Simulating manager's sector
+    return vehicleRequests.filter(r => r.sector === managerSector && r.status === 'Pendente');
+  }, [vehicleRequests]);
 
-  const managerRequests = vehicleRequests.filter(r => r.sector === 'Secretaria de Obras' && r.status === 'Pendente');
-  const availableDrivers = drivers.filter(d => d.status === 'Disponível').length;
+  const availableDrivers = useMemo(() => {
+    return drivers.filter(d => d.status === 'Disponível').length;
+  }, [drivers]);
+
 
   return (
     <div className='space-y-8'>

@@ -11,12 +11,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { drivers, vehicles } from '@/lib/data';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, Trash2, UserPlus } from 'lucide-react';
 import { Calendar } from './ui/calendar';
 import { format } from 'date-fns';
+import { useApp } from '@/contexts/app-provider';
 
 const passengerSchema = z.object({
   name: z.string().min(3, "O nome do passageiro é obrigatório."),
@@ -43,6 +43,7 @@ interface ScheduleTripFormProps {
 
 export function ScheduleTripForm({ onFormSubmit }: ScheduleTripFormProps) {
   const { toast } = useToast();
+  const { drivers, vehicles, sectors } = useApp();
 
   const tripCategoriesBySector: Record<string, string[]> = {
     "Secretaria de Saúde": ["Transporte de Paciente", "Consulta Agendada", "Entrega de Medicamentos"],
@@ -89,7 +90,6 @@ export function ScheduleTripForm({ onFormSubmit }: ScheduleTripFormProps) {
     form.reset();
   };
 
-  const sectors = Object.keys(tripCategoriesBySector);
 
   return (
           <Form {...form}>
@@ -128,7 +128,7 @@ export function ScheduleTripForm({ onFormSubmit }: ScheduleTripFormProps) {
                           </FormControl>
                           <SelectContent>
                             {sectors.map(sector => (
-                              <SelectItem key={sector} value={sector}>{sector}</SelectItem>
+                              <SelectItem key={sector.id} value={sector.name}>{sector.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>

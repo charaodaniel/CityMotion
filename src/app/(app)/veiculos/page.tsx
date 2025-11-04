@@ -2,17 +2,17 @@
 
 "use client";
 
-import { vehicles as initialVehicles } from '@/lib/data';
 import type { Vehicle, VehicleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, Car, Gauge, Building, Edit } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RegisterVehicleForm } from '@/components/register-vehicle-form';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { useApp } from '@/contexts/app-provider';
 
 function getStatusVariant(status: VehicleStatus) {
   switch (status) {
@@ -30,7 +30,7 @@ function getStatusVariant(status: VehicleStatus) {
 }
 
 export default function VehiclesPage() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>(initialVehicles);
+  const { vehicles, setVehicles } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
@@ -55,15 +55,13 @@ export default function VehiclesPage() {
 
   const handleFormSubmit = (newVehicleData: Partial<Vehicle>) => {
     if (modalMode === 'edit' && selectedVehicle) {
-      // @ts-ignore
-      setVehicles(vehicles.map(v => v.id === selectedVehicle.id ? { ...v, ...newVehicleData } : v));
+      setVehicles(vehicles.map(v => v.id === selectedVehicle.id ? { ...v, ...newVehicleData } as Vehicle : v));
     } else {
       const newVehicle: Vehicle = {
         id: `V${vehicles.length + 1}`,
         status: 'Disponível',
         ...newVehicleData
       } as Vehicle;
-      // @ts-ignore
       setVehicles([...vehicles, newVehicle]);
     }
     setIsModalOpen(false);

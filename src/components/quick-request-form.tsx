@@ -15,9 +15,7 @@ import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from './ui/calendar';
 import { format } from 'date-fns';
-import { sectors } from '@/lib/data';
 import { useApp } from '@/contexts/app-provider';
-import type { VehicleRequest } from '@/lib/types';
 
 
 const formSchema = z.object({
@@ -35,7 +33,7 @@ interface QuickRequestFormProps {
 
 export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
   const { toast } = useToast();
-  const { addVehicleRequest } = useApp();
+  const { addVehicleRequest, sectors } = useApp();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

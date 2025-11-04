@@ -5,9 +5,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileDown, Car, Clock, User, Filter, Calendar as CalendarIcon, Gauge, Route, Trophy } from 'lucide-react';
-import { sectors, vehicles, drivers } from '@/lib/data';
 import type { Schedule, ScheduleStatus } from '@/lib/types';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -44,8 +43,7 @@ function getStatusVariant(status: ScheduleStatus) {
 }
 
 export default function ReportsPage() {
-  const { userRole } = useApp();
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const { userRole, schedules, drivers, vehicles, sectors } = useApp();
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [dateRange, setDateRange] = useState<{from: Date | undefined, to: Date | undefined}>({ from: undefined, to: undefined });
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
@@ -53,29 +51,12 @@ export default function ReportsPage() {
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchSchedules() {
-      try {
-        const response = await fetch('/api/data');
-        if (!response.ok) {
-          throw new Error('Failed to fetch schedules');
-        }
-        const data = await response.json();
-        setSchedules(data);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchSchedules();
-  }, []);
-
   const currentUser = useMemo(() => {
     if (userRole !== 'driver') return null;
-    // This logic should match the one in /perfil to simulate the same logged-in driver
     return drivers.find(d => d.id === '2'); // Simulating 'Maria Oliveira' for driver role
-  }, [userRole]);
+  }, [userRole, drivers]);
 
-  useEffect(() => {
+  useMemo(() => {
     if (userRole === 'driver' && currentUser) {
       setSelectedDriver(currentUser.name);
     } else {
@@ -92,21 +73,21 @@ export default function ReportsPage() {
     setSelectedSchedule(null);
   };
 
-  const filteredSchedules = schedules.filter(s => {
+  const filteredSchedules = useMemo(() => schedules.filter(s => {
     const scheduleDateParts = s.departureTime.split(' ')[0].split('/');
     const scheduleDate = new Date(`${scheduleDateParts[2]}-${scheduleDateParts[1]}-${scheduleDateParts[0]}`);
 
     const isAfterFrom = dateRange.from ? scheduleDate >= dateRange.from : true;
     const isBeforeTo = dateRange.to ? scheduleDate <= dateRange.to : true;
-    // @ts-ignore
-    const scheduleSector = vehicles.find(v => s.vehicle.includes(v.licensePlate))?.sector;
+    const scheduleVehicle = vehicles.find(v => s.vehicle.includes(v.licensePlate));
+    const scheduleSector = scheduleVehicle?.sector;
     const isInSector = selectedSector ? scheduleSector === selectedSector : true;
     const isVehicle = selectedVehicle ? s.vehicle.includes(selectedVehicle) : true;
     const isDriver = selectedDriver ? s.driver === selectedDriver : true;
     const isEmployee = selectedEmployee ? s.driver === selectedEmployee : true;
     
     return s.status === 'Concluída' && isAfterFrom && isBeforeTo && isInSector && isVehicle && isDriver && isEmployee;
-  });
+  }), [schedules, dateRange, selectedSector, selectedVehicle, selectedDriver, selectedEmployee, vehicles]);
 
   const totalTrips = filteredSchedules.length;
 
@@ -121,7 +102,8 @@ export default function ReportsPage() {
     if (filteredSchedules.length === 0) return 'N/A';
 
     const vehicleCount = filteredSchedules.reduce((acc, schedule) => {
-      acc[schedule.vehicle] = (acc[schedule.vehicle] || 0) + 1;
+      const vehicleIdentifier = schedule.vehicle.split(' (')[0];
+      acc[vehicleIdentifier] = (acc[vehicleIdentifier] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
@@ -459,7 +441,3 @@ export default function ReportsPage() {
     </div>
   );
 }
-
-    
-
-    

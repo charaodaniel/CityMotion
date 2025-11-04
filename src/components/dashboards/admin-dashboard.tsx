@@ -4,7 +4,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Car, Clock, User, Pin, ArrowRight, Package, UserCheck, Route } from 'lucide-react';
-import { drivers, vehicles } from '@/lib/data';
 import type { ScheduleStatus, RequestPriority } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import { OverviewChart } from '../overview-chart';
@@ -39,7 +38,7 @@ function getPriorityVariant(priority: RequestPriority) {
 }
 
 export default function AdminDashboard() {
-  const { vehicleRequests, schedules } = useApp();
+  const { vehicleRequests, schedules, drivers, vehicles } = useApp();
   const availableDrivers = drivers.filter(d => d.status === 'Disponível').length;
   const pendingRequests = vehicleRequests.filter(r => r.status === 'Pendente');
   const totalVehicles = vehicles.length;

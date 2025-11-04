@@ -2,8 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { drivers, vehicles } from '@/lib/data';
-import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus } from '@/lib/types';
+import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Driver, Vehicle, Sector, WorkSchedule } from '@/lib/types';
 import { format } from 'date-fns';
 
 
@@ -12,34 +11,54 @@ type UserRole = 'admin' | 'manager' | 'driver' | 'employee';
 interface AppContextType {
   userRole: UserRole;
   setUserRole: (role: UserRole) => void;
+  
+  schedules: Schedule[];
+  setSchedules: React.Dispatch<React.SetStateAction<Schedule[]>>;
+  
   vehicleRequests: VehicleRequest[];
   addVehicleRequest: (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => void;
   updateVehicleRequestStatus: (id: string, status: VehicleRequestStatus) => void;
-  schedules: Schedule[];
-  setSchedules: React.Dispatch<React.SetStateAction<Schedule[]>>;
+  
+  drivers: Driver[];
+  setDrivers: React.Dispatch<React.SetStateAction<Driver[]>>;
+  
+  vehicles: Vehicle[];
+  setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
+
+  sectors: Sector[];
+  setSectors: React.Dispatch<React.SetStateAction<Sector[]>>;
+
+  workSchedules: WorkSchedule[];
+  setWorkSchedules: React.Dispatch<React.SetStateAction<WorkSchedule[]>>;
+
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [userRole, setUserRole] = useState<UserRole>('admin');
-  const [vehicleRequests, setVehicleRequests] = useState<VehicleRequest[]>([]);
+  
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [vehicleRequests, setVehicleRequests] = useState<VehicleRequest[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [sectors, setSectors] = useState<Sector[]>([]);
+  const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([]);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [schedulesRes, requestsRes] = await Promise.all([
-            fetch('/api/data?type=schedules'),
-            fetch('/api/data?type=vehicle-requests')
-        ]);
-        if (!schedulesRes.ok || !requestsRes.ok) {
+        const response = await fetch('/api/data?type=all');
+        if (!response.ok) {
             throw new Error('Failed to fetch initial data');
         }
-        const schedulesData = await schedulesRes.json();
-        const requestsData = await requestsRes.json();
-        setSchedules(schedulesData);
-        setVehicleRequests(requestsData);
+        const data = await response.json();
+        setSchedules(data.schedules);
+        setVehicleRequests(data.requests);
+        setVehicles(data.vehicles);
+        setDrivers(data.drivers);
+        setSectors(data.sectors);
+        setWorkSchedules(data.workSchedules);
       } catch (error) {
         console.error("Could not fetch data:", error);
       }
@@ -97,7 +116,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ userRole, setUserRole, vehicleRequests, addVehicleRequest, updateVehicleRequestStatus, schedules, setSchedules }}>
+    <AppContext.Provider value={{ 
+        userRole, setUserRole, 
+        schedules, setSchedules, 
+        vehicleRequests, addVehicleRequest, updateVehicleRequestStatus,
+        drivers, setDrivers,
+        vehicles, setVehicles,
+        sectors, setSectors,
+        workSchedules, setWorkSchedules
+    }}>
       {children}
     </AppContext.Provider>
   );

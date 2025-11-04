@@ -6,8 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useApp } from "@/contexts/app-provider";
-import { drivers, schedules } from "@/lib/data";
-import type { Driver, Schedule, ScheduleStatus } from "@/lib/types";
+import type { Driver, ScheduleStatus } from "@/lib/types";
 import { User, Mail, Building, ShieldCheck } from "lucide-react";
 import { useMemo } from "react";
 
@@ -25,7 +24,7 @@ function getStatusVariant(status: ScheduleStatus) {
 }
 
 export default function ProfilePage() {
-  const { userRole } = useApp();
+  const { userRole, drivers, schedules } = useApp();
   
   const currentUser: Driver | undefined = useMemo(() => {
     switch (userRole) {
@@ -40,12 +39,13 @@ export default function ProfilePage() {
       default:
         return drivers[0];
     }
-  }, [userRole]);
+  }, [userRole, drivers]);
 
   const userSchedules = useMemo(() => {
     if (userRole === 'employee') return []; // Funcionário comum não tem histórico de VIAGENS como motorista
-    return schedules.filter(s => s.driver === currentUser?.name);
-  }, [currentUser, userRole]);
+    if (!currentUser) return [];
+    return schedules.filter(s => s.driver === currentUser.name);
+  }, [currentUser, userRole, schedules]);
 
 
   if (!currentUser) {

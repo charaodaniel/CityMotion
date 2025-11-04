@@ -4,9 +4,10 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, User, Car, Pin, ArrowRight } from 'lucide-react';
-import { schedules } from '@/lib/data';
 import type { ScheduleStatus } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
+import { useApp } from '@/contexts/app-provider';
+import { useMemo } from 'react';
 
 function getStatusVariant(status: ScheduleStatus) {
   switch (status) {
@@ -22,7 +23,14 @@ function getStatusVariant(status: ScheduleStatus) {
 }
 
 export default function DriverDashboard() {
-  const driverSchedules = schedules.filter(s => s.driver === 'João da Silva'); // Simula o motorista logado
+  const { schedules, userRole } = useApp();
+
+  const driverSchedules = useMemo(() => {
+    // This should ideally be based on the actual logged-in user's name
+    const currentDriverName = "João da Silva"; // Simulating the logged-in driver
+    return schedules.filter(s => s.driver === currentDriverName);
+  }, [schedules]);
+
 
   return (
     <div>

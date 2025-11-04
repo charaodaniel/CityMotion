@@ -9,7 +9,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { drivers } from '@/lib/data';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
@@ -17,6 +16,7 @@ import { Calendar } from './ui/calendar';
 import { format } from 'date-fns';
 import { Separator } from './ui/separator';
 import { Checkbox } from './ui/checkbox';
+import { useApp } from '@/contexts/app-provider';
 
 const weekdays = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"] as const;
 
@@ -39,6 +39,7 @@ interface CreateScheduleFormProps {
 
 export function CreateScheduleForm({ onFormSubmit }: CreateScheduleFormProps) {
   const { toast } = useToast();
+  const { drivers } = useApp();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -54,7 +55,7 @@ export function CreateScheduleForm({ onFormSubmit }: CreateScheduleFormProps) {
 
   const repetition = form.watch('repetition');
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = (values: z.infer<typeof formSchema>>) => {
     console.log(values);
     toast({
       title: "Escala Criada",

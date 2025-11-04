@@ -8,14 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Building, Car, PlusCircle, User, Edit } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { sectors as initialSectors, drivers, vehicles } from '@/lib/data';
 import type { Sector } from '@/lib/types';
 import { RegisterSectorForm } from '@/components/register-sector-form';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useApp } from '@/contexts/app-provider';
 
 export default function SectorsPage() {
-  const [sectors, setSectors] = useState<Sector[]>(initialSectors);
+  const { sectors, setSectors, drivers, vehicles } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
   const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
@@ -45,7 +45,7 @@ export default function SectorsPage() {
 
   const handleFormSubmit = (newSectorData: Partial<Sector>) => {
     if (modalMode === 'edit' && selectedSector) {
-      setSectors(sectors.map(s => s.id === selectedSector.id ? { ...s, ...newSectorData } : s));
+      setSectors(sectors.map(s => s.id === selectedSector.id ? { ...s, ...newSectorData } as Sector : s));
     } else {
       const newSector: Sector = {
         id: `SEC${sectors.length + 1}`,
@@ -184,11 +184,11 @@ export default function SectorsPage() {
               <CardContent className="flex flex-col flex-grow justify-end text-sm space-y-2">
                 <div className="flex items-center text-muted-foreground">
                   <Car className="mr-2 h-4 w-4" />
-                  <span>{vehicles.filter(v => v.sector === sector.name).length} {sector.vehicleCount === 1 ? 'veículo' : 'veículos'}</span>
+                  <span>{vehicles.filter(v => v.sector === sector.name).length} {vehicles.filter(v => v.sector === sector.name).length === 1 ? 'veículo' : 'veículos'}</span>
                 </div>
                 <div className="flex items-center text-muted-foreground">
                   <User className="mr-2 h-4 w-4" />
-                  <span>{drivers.filter(d => d.sector === sector.name).length} {sector.driverCount === 1 ? 'motorista' : 'motoristas'}</span>
+                  <span>{drivers.filter(d => d.sector === sector.name).length} {drivers.filter(d => d.sector === sector.name).length === 1 ? 'motorista' : 'motoristas'}</span>
                 </div>
               </CardContent>
             </Card>

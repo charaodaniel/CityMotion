@@ -5,7 +5,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Clock, User, CalendarDays } from 'lucide-react';
-import { workSchedules } from '@/lib/data';
 import type { WorkSchedule, WorkScheduleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -13,6 +12,7 @@ import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { CreateScheduleForm } from '@/components/create-schedule-form';
 import { Separator } from '@/components/ui/separator';
+import { useApp } from '@/contexts/app-provider';
 
 function getStatusVariant(status: WorkScheduleStatus) {
     switch (status) {
@@ -28,6 +28,7 @@ function getStatusVariant(status: WorkScheduleStatus) {
 }
 
 export default function SchedulesPage() {
+  const { workSchedules } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<WorkSchedule | null>(null);
 

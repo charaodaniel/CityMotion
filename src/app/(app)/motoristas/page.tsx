@@ -2,7 +2,6 @@
 
 "use client";
 
-import { drivers as initialDrivers } from '@/lib/data';
 import type { Driver, DriverStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import { useApp } from '@/contexts/app-provider';
 
 function getStatusVariant(status: DriverStatus) {
   switch (status) {
@@ -31,7 +31,7 @@ function getStatusVariant(status: DriverStatus) {
 }
 
 export default function DriversPage() {
-  const [drivers, setDrivers] = useState<Driver[]>(initialDrivers);
+  const { drivers, setDrivers } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
