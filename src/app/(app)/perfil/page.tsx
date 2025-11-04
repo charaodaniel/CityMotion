@@ -31,7 +31,7 @@ export default function ProfilePage() {
   const userRequests = useMemo(() => {
     if (!currentUser) return [];
     
-    // Find requests where the current user is the requester.
+    // Encontra as solicitações feitas pelo usuário atual.
     return vehicleRequests.filter(req => req.requester === currentUser.name);
 
   }, [currentUser, vehicleRequests]);
@@ -40,7 +40,10 @@ export default function ProfilePage() {
   if (!currentUser) {
     return (
       <div className="container mx-auto p-4 sm:p-8">
-        <p>Usuário não encontrado ou não está logado.</p>
+        <Card className="text-center p-8">
+          <CardTitle>Nenhum usuário logado</CardTitle>
+          <CardDescription>Por favor, acesse a página de login para selecionar um perfil.</CardDescription>
+        </Card>
       </div>
     );
   }
@@ -71,7 +74,7 @@ export default function ProfilePage() {
                 <CardContent className="space-y-4 text-sm">
                     <div className="flex items-center">
                         <Mail className="mr-3 h-4 w-4 text-muted-foreground" />
-                        <span>{userEmailForSimulation}</span>
+                        <span>{userEmailForSimulation || 'Não disponível'}</span>
                     </div>
                      <div className="flex items-center">
                         <Building className="mr-3 h-4 w-4 text-muted-foreground" />
