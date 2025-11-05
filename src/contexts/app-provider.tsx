@@ -24,7 +24,7 @@ interface AppContextType {
   token: string | null;
   userRole: UserRole;
   currentUser: Employee | null;
-  login: (token: string) => Promise<void>;
+  login: (emailAsToken: string) => Promise<void>;
   logout: () => void;
   
   schedules: Schedule[];
@@ -54,9 +54,17 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+// Mapa de e-mails para IDs de usuários de teste do employees.json
+const emailToIdMap: Record<string, string> = {
+    'admin@citymotion.com': '11', // Júlio César (Prefeito)
+    'manager@citymotion.com': '12', // Ricardo Nunes (Engenheiro)
+    'driver@citymotion.com': '9', // Marcos Lima (Motorista Escolar)
+    'employee@citymotion.com': '4', // Ana Souza (Professor)
+};
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null); // Armazena o e-mail de simulação
   const [userRole, setUserRole] = useState<UserRole>('employee');
   const [currentUser, setCurrentUser] = useState<Employee | null>(null);
   
@@ -68,17 +76,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([]);
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
 
-  const fetchData = useCallback(async (authToken: string) => {
+  const fetchData = useCallback(async (simulatedEmail: string) => {
     setIsLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-      const response = await fetch(`${apiUrl}/data`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
+      // Usar a API de simulação interna do Next.js
+      const response = await fetch('/api/data?type=all');
       if (!response.ok) {
-        throw new Error('Falha ao buscar dados do servidor.');
+        throw new Error('Falha ao buscar dados simulados.');
       }
       const data = await response.json();
       setSchedules(data.schedules || []);
@@ -89,30 +93,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setWorkSchedules(data.workSchedules || []);
       setMaintenanceRequests(data.maintenanceRequests || []);
       
-      // Encontra o usuário logado na lista de funcionários recebida
-      const decodedToken = jwtDecode<DecodedToken>(authToken);
-      const loggedUser = data.employees.find((emp: Employee) => emp.id === decodedToken.id);
+      // Encontra o usuário logado com base no email simulado
+      const userId = emailToIdMap[simulatedEmail];
+      const loggedUser = data.employees.find((emp: Employee) => emp.id === userId);
+
       if(loggedUser) {
         setCurrentUser(loggedUser);
-        // Define o userRole com base no cargo
         const roleString = loggedUser.role.toLowerCase();
-        if (roleString.includes('prefeito')) setUserRole('admin');
-        else if (roleString.includes('gestor') || roleString.includes('engenheiro')) setUserRole('manager');
+        if (['prefeito', 'administrador'].some(r => roleString.includes(r))) setUserRole('admin');
+        else if (['gestor', 'engenheiro', 'secretário'].some(r => roleString.includes(r))) setUserRole('manager');
         else setUserRole('employee');
       }
 
     } catch (error) {
       console.error("Não foi possível buscar os dados:", error);
-      logout(); // Desloga o usuário se a busca de dados falhar (ex: token expirado)
+      logout(); 
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const login = useCallback(async (authToken: string) => {
-    localStorage.setItem('authToken', authToken);
-    setToken(authToken);
-    await fetchData(authToken);
+  const login = useCallback(async (emailAsToken: string) => {
+    localStorage.setItem('authToken', emailAsToken);
+    setToken(emailAsToken);
+    await fetchData(emailAsToken);
   }, [fetchData]);
 
   const logout = () => {
@@ -120,6 +124,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setCurrentUser(null);
     setUserRole('employee');
+    // Limpa os dados para garantir um estado limpo
     setSchedules([]);
     setVehicleRequests([]);
     setVehicles([]);
@@ -130,14 +135,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
+    const storedToken = localStorage.getItem('authToken'); // O token é o e-mail de simulação
     if (storedToken) {
-      // Aqui, você pode adicionar uma lógica para verificar a validade do token
-      // antes de tentar buscar os dados. Por simplicidade, vamos direto.
       setToken(storedToken);
       fetchData(storedToken);
     } else {
-      setIsLoading(false); // Se não há token, não há o que carregar
+      // Se não há token, busca apenas os dados públicos (escalas) para a home page
+      const fetchPublicData = async () => {
+          setIsLoading(true);
+           try {
+               const response = await fetch('/api/data?type=work-schedules');
+               const data = await response.json();
+               setWorkSchedules(data);
+           } catch(e) {
+               console.error("Erro ao buscar dados públicos", e);
+           } finally {
+               setIsLoading(false);
+           }
+      }
+      fetchPublicData();
     }
   }, [fetchData]);
 

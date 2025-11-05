@@ -25,30 +25,14 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-      const response = await fetch(`${apiUrl}/login`, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-          throw new Error(data.message || 'Falha na autenticação.');
-      }
-      
-      // Chama a função de login do contexto para salvar o token e o usuário
-      await login(data.token);
-
+      // Simula a chamada de login passando o email como se fosse um token
+      await login(email);
       router.push('/dashboard');
 
     } catch (error: any) {
         toast({
-            title: "Erro de Login",
-            description: error.message || "Não foi possível conectar ao servidor. Verifique se ele está rodando.",
+            title: "Erro de Simulação",
+            description: error.message || "Não foi possível simular o login.",
             variant: "destructive",
         });
     } finally {
