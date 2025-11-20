@@ -1,5 +1,7 @@
 
 
+export type UserRole = 'admin' | 'manager' | 'employee';
+
 export type EmployeeStatus = 'Disponível' | 'Em Viagem' | 'Afastado' | 'Em Serviço';
 
 export type Employee = {
@@ -8,7 +10,7 @@ export type Employee = {
   email: string;
   password?: string;
   status: EmployeeStatus;
-  sector: string[]; // Modificado para aceitar múltiplos setores
+  sector: string[];
   role: string;
   cnh?: string;
   matricula?: string;

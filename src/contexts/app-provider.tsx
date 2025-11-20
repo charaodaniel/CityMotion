@@ -1,18 +1,16 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useMemo } from 'react';
-import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus } from '@/lib/types';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus, UserRole } from '@/lib/types';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
-
-type UserRole = 'admin' | 'manager' | 'employee';
 
 interface AppContextType {
   isLoading: boolean;
   userRole: UserRole;
   currentUser: Employee | null;
-  selectedSector: string | null; // Novo estado para o setor selecionado
+  selectedSector: string | null;
   setSelectedSector: (sector: string | null) => void;
   login: (email: string) => Promise<void>;
   logout: () => void;
@@ -80,10 +78,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const fetchData = useCallback(async () => {
-    if (employees.length > 0) { // Se os dados já foram carregados, não busca novamente
-      setIsLoading(false);
-      return;
-    }
     setIsLoading(true);
     try {
       const response = await fetch('/api/data?type=all');
@@ -98,22 +92,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSectors(data.sectors || []);
       setWorkSchedules(data.workSchedules || []);
       setMaintenanceRequests(data.maintenanceRequests || []);
-      return data; // Retorna os dados para uso imediato no login
+      return data;
     } catch (error) {
       console.error("Não foi possível buscar os dados:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [employees.length]);
+  }, []);
 
 
   const login = useCallback(async (email: string) => {
     setIsLoading(true);
     localStorage.setItem('userEmailForSimulation', email);
     setUserEmailForSimulation(email);
-
-    let data = employees.length > 0 ? { employees } : await fetchData();
-    if (!data) data = { employees: [] };
+    
+    // As a simulation, we refetch data on every login to reset state
+    const data = await fetchData();
+    if (!data) {
+        setIsLoading(false);
+        return;
+    }
     
     const userId = emailToIdMap[email];
     const user = data.employees.find((emp: Employee) => emp.id === userId);
@@ -130,10 +128,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       setUserRole(determinedRole);
       
-      if (determinedRole === 'manager' && user.sector && user.sector.length > 1) {
+      // If the manager is associated with more than one sector, prompt for selection.
+      if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length > 1) {
           router.push('/select-sector');
-      } else if (determinedRole === 'manager' && user.sector && user.sector.length === 1) {
-          setSelectedSector(user.sector[0]);
+      } else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length === 1) {
+          setSelectedSector(user.sector[0]); // Auto-select the only sector
           router.push('/dashboard');
       }
       else {
@@ -141,7 +140,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     }
     setIsLoading(false);
-  }, [fetchData, router, employees]);
+  }, [fetchData, router]);
 
 
   const logout = () => {
@@ -150,53 +149,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUserEmailForSimulation(null);
     setCurrentUser(null);
     setSelectedSectorState(null);
-    setUserRole('employee'); // Reseta para o perfil padrão
+    setUserRole('employee'); 
     router.push('/login');
   };
 
   useEffect(() => {
     const initializeApp = async () => {
-      setIsLoading(true);
       const storedEmail = localStorage.getItem('userEmailForSimulation');
-      
-      let data = employees.length > 0 ? { employees } : await fetchData();
-      if (!data) data = { employees: [] };
-
       if (storedEmail) {
-        const userId = emailToIdMap[storedEmail];
-        const user = data.employees.find((emp: Employee) => emp.id === userId);
-        
-        if (user) {
-          setUserEmailForSimulation(storedEmail);
-          setCurrentUser(user);
-          const roleString = user.role.toLowerCase();
-          
-          let determinedRole: UserRole = 'employee';
-          if (['prefeito', 'administrador'].some(r => roleString.includes(r))) {
-            determinedRole = 'admin';
-          } else if (['gestor', 'engenheiro', 'secretário', 'mecanico', 'mecânico'].some(r => roleString.includes(r))) {
-            determinedRole = 'manager';
-          }
-          setUserRole(determinedRole);
-
-          if (determinedRole === 'manager') {
-            const storedSector = localStorage.getItem('selectedSector');
-            if (storedSector && user.sector.includes(storedSector)) {
-                setSelectedSectorState(storedSector);
-            }
-          }
-        } else {
-            logout(); // Se o usuário do storage não for encontrado, limpa tudo
-        }
-
+        await login(storedEmail);
       } else {
-        // Se não há usuário logado, não precisa fazer nada, a página pública será exibida
+        fetchData(); // Fetch data even for public pages
       }
-      setIsLoading(false);
     };
 
     initializeApp();
-  }, [fetchData, employees.length]);
+    // We only want this to run once on initial load. `login` and `fetchData` are memoized.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   const addVehicleRequest = (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => {
@@ -227,7 +197,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (status === 'Aprovada' && requestToProcess) {
       const request = requestToProcess;
-        const availableDriver = employees.find(d => d.status === 'Disponível' && d.sector.includes(request.sector) && d.role.toLowerCase().includes('motorista'));
+        const availableDriver = employees.find(d => d.status === 'Disponível' && Array.isArray(d.sector) && d.sector.includes(request.sector) && d.role.toLowerCase().includes('motorista'));
         const availableVehicle = vehicles.find(v => v.status === 'Disponível' && v.sector === request.sector);
 
         if (availableDriver && availableVehicle) {

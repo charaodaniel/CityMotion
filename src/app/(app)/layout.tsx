@@ -105,7 +105,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const getRoleName = (role: string) => {
     switch (role) {
       case 'admin': return 'Administrador';
-      case 'manager': return 'Gestor de Setor';
+      case 'manager': return 'Gestor';
       case 'employee': return currentUser?.role || 'Funcionário'; // Show specific role if available
       default: return 'Desconhecido'
     }
@@ -192,7 +192,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen">
         <Sidebar>
           <SidebarHeader>
-            <Link href="/home" className="flex items-center gap-2 text-sidebar-foreground hover:text-sidebar-foreground">
+            <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground hover:text-sidebar-foreground">
               <Logo />
               <span className="text-lg font-semibold tracking-tighter">
                 CityMotion
@@ -282,7 +282,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                           <Avatar className='h-9 w-9'>
-                            <AvatarImage src={`https://avatar.vercel.sh/${currentUser?.id}`} alt="Avatar" />
+                            <AvatarImage src={`https://i.pravatar.cc/150?u=${currentUser.id}`} alt={currentUser.name} />
                             <AvatarFallback>{getInitials(currentUser?.name)}</AvatarFallback>
                           </Avatar>
                         </Button>
@@ -292,7 +292,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                           <div className="flex flex-col space-y-1">
                             <p className="text-sm font-medium leading-none">{currentUser?.name || getRoleName(userRole)}</p>
                             <p className="text-xs leading-none text-muted-foreground">
-                              {getRoleName(userRole)}
+                              {getRoleName(userRole)} {userRole === 'manager' && `(${currentUser?.role})`}
                             </p>
                           </div>
                         </DropdownMenuLabel>

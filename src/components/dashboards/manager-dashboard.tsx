@@ -45,7 +45,7 @@ export default function ManagerDashboard() {
 
   const availableDrivers = useMemo(() => {
     if (!selectedSector) return 0;
-    return employees.filter(d => d.status === 'Disponível' && d.sector.includes(selectedSector) && d.role.toLowerCase().includes('motorista')).length;
+    return employees.filter(d => d.status === 'Disponível' && Array.isArray(d.sector) && d.sector.includes(selectedSector) && d.role.toLowerCase().includes('motorista')).length;
   }, [employees, selectedSector]);
 
 
