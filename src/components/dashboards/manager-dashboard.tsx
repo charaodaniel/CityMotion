@@ -25,9 +25,7 @@ function getPriorityVariant(priority: RequestPriority) {
 
 export default function ManagerDashboard() {
   const { toast } = useToast();
-  const { vehicleRequests, updateVehicleRequestStatus, employees } = useApp();
-
-  const managerSector = "Secretaria de Obras, Viação e Urbanismo"; // Simulating manager's sector
+  const { vehicleRequests, updateVehicleRequestStatus, employees, selectedSector } = useApp();
 
   const handleRequest = (id: string, approved: boolean) => {
     updateVehicleRequestStatus(id, approved ? 'Aprovada' : 'Rejeitada');
@@ -41,13 +39,14 @@ export default function ManagerDashboard() {
   };
 
   const managerRequests = useMemo(() => {
-    // This should ideally be based on the actual logged-in user's sector
-    return vehicleRequests.filter(r => r.sector === managerSector && r.status === 'Pendente');
-  }, [vehicleRequests, managerSector]);
+    if (!selectedSector) return [];
+    return vehicleRequests.filter(r => r.sector === selectedSector && r.status === 'Pendente');
+  }, [vehicleRequests, selectedSector]);
 
   const availableDrivers = useMemo(() => {
-    return employees.filter(d => d.status === 'Disponível' && d.sector === managerSector && d.role.toLowerCase().includes('motorista')).length;
-  }, [employees, managerSector]);
+    if (!selectedSector) return 0;
+    return employees.filter(d => d.status === 'Disponível' && d.sector.includes(selectedSector) && d.role.toLowerCase().includes('motorista')).length;
+  }, [employees, selectedSector]);
 
 
   return (
@@ -65,7 +64,7 @@ export default function ManagerDashboard() {
         </Card>
       </div>
 
-      <h2 className="text-2xl font-semibold mb-4">Solicitações Pendentes do Setor</h2>
+      <h2 className="text-2xl font-semibold mb-4">Solicitações Pendentes do Setor: {selectedSector}</h2>
       <div className="space-y-4">
         {managerRequests.length > 0 ? managerRequests.map((request) => (
           <Card key={request.id}>
@@ -95,7 +94,7 @@ export default function ManagerDashboard() {
           </Card>
         )) : (
             <div className="text-center text-muted-foreground p-8 border-dashed border-2 rounded-lg">
-                Não há solicitações de veículos pendentes para seu setor.
+                Não há solicitações de veículos pendentes para este setor.
             </div>
         )}
       </div>

@@ -10,42 +10,36 @@ import { Building, CarFront, ScanLine, User, Printer, Briefcase } from 'lucide-r
 import QRCode from 'qrcode.react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { useApp } from '@/contexts/app-provider';
 
 export default function BadgePage() {
   const params = useParams();
   const { id } = params;
-  const { employees } = useApp(); // Usando o contexto para obter os funcionários
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(true);
   const [badgeUrl, setBadgeUrl] = useState('');
 
   useEffect(() => {
-    // This ensures window is defined, running only on the client side.
     if (typeof window !== 'undefined') {
       setBadgeUrl(window.location.href);
     }
 
-    if (employees.length > 0) {
-        const foundEmployee = employees.find(d => d.id === id);
-        if (foundEmployee) {
-          setEmployee(foundEmployee);
-        }
-        setLoading(false);
+    if (id) {
+        setLoading(true);
+        fetch('/api/data?type=employees')
+            .then(res => res.json())
+            .then((employees: Employee[]) => {
+                const foundEmployee = employees.find(d => d.id === id);
+                if (foundEmployee) {
+                    setEmployee(foundEmployee);
+                }
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Failed to fetch employee data:", err);
+                setLoading(false);
+            });
     }
-
-  }, [id, employees]);
-
-  // Se os funcionários ainda não carregaram no contexto, esperamos
-  useEffect(() => {
-    if(loading && employees.length > 0) {
-       const foundEmployee = employees.find(d => d.id === id);
-        if (foundEmployee) {
-          setEmployee(foundEmployee);
-        }
-        setLoading(false);
-    }
-  }, [employees, loading, id])
+  }, [id]);
 
 
   if (loading) {
@@ -96,7 +90,7 @@ export default function BadgePage() {
           <div className="mt-6 text-left space-y-3 text-sm">
             <div className="flex items-center">
                 <Building className="mr-3 h-4 w-4 text-muted-foreground" />
-                <span>Setor: <strong>{employee.sector}</strong></span>
+                <span>Setor(es): <strong>{employee.sector.join(', ')}</strong></span>
             </div>
             {employee.matricula && (
                  <div className="flex items-center">

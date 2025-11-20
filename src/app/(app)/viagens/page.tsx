@@ -132,7 +132,7 @@ function TripsView({
 }
 
 export default function ViagensPage() {
-  const { schedules, setSchedules, userRole, vehicles, setVehicles, employees, setEmployees, currentUser } = useApp();
+  const { schedules, setSchedules, userRole, vehicles, setVehicles, employees, setEmployees, currentUser, selectedSector } = useApp();
 
   const [activeModal, setActiveModal] = useState<ModalState>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
@@ -142,8 +142,6 @@ export default function ViagensPage() {
   const [notes, setNotes] = useState('');
   
   const { toast } = useToast();
-
-  const managerSector = "Secretaria de Obras"; // Simulating manager's sector for filtering
   
   const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
 
@@ -152,12 +150,12 @@ export default function ViagensPage() {
     if (isCurrentUserDriver && currentUser) {
       return schedules.filter(s => s.driver === currentUser.name);
     }
-    if (userRole === 'manager') {
-      const sectorVehicles = vehicles.filter(v => v.sector === managerSector).map(v => v.licensePlate);
+    if (userRole === 'manager' && selectedSector) {
+      const sectorVehicles = vehicles.filter(v => v.sector === selectedSector).map(v => v.licensePlate);
       return schedules.filter(s => sectorVehicles.some(plate => s.vehicle.includes(plate)));
     }
     return schedules;
-  }, [schedules, vehicles, userRole, managerSector, currentUser, isCurrentUserDriver]);
+  }, [schedules, vehicles, userRole, selectedSector, currentUser, isCurrentUserDriver]);
 
   const openModal = (modal: ModalState, schedule: Schedule | null = null) => {
     setSelectedSchedule(schedule);
@@ -642,4 +640,3 @@ export default function ViagensPage() {
     </div>
   );
 }
-

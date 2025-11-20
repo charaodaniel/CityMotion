@@ -30,19 +30,17 @@ function getStatusVariant(status: EmployeeStatus) {
 }
 
 export default function EmployeesPage() {
-  const { employees, setEmployees, userRole } = useApp();
+  const { employees, setEmployees, userRole, selectedSector } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   
-  const managerSector = "Secretaria de Obras, Viação e Urbanismo"; // Simulating manager's sector for filtering
-
   const visibleEmployees = useMemo(() => {
-    if (userRole === 'manager') {
-      return employees.filter(d => d.sector === managerSector);
+    if (userRole === 'manager' && selectedSector) {
+      return employees.filter(d => d.sector.includes(selectedSector));
     }
     return employees;
-  }, [employees, userRole, managerSector]);
+  }, [employees, userRole, selectedSector]);
 
 
   const handleCardClick = (employee: Employee) => {
@@ -110,7 +108,7 @@ export default function EmployeesPage() {
                   </Avatar>
                   <DialogTitle className="text-2xl">{selectedEmployee?.name}</DialogTitle>
                   <DialogDescription>
-                      {selectedEmployee?.role} • {selectedEmployee?.sector}
+                      {selectedEmployee?.role} • {selectedEmployee?.sector.join(', ')}
                   </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4 pr-4">
@@ -212,7 +210,7 @@ export default function EmployeesPage() {
             </h1>
             <p className="text-muted-foreground">
               {userRole === 'manager'
-                ? `Veja e gerencie os funcionários do setor de ${managerSector}.`
+                ? `Veja e gerencie os funcionários do setor de ${selectedSector}.`
                 : 'Veja, gerencie e cadastre os funcionários da prefeitura.'
               }
             </p>
@@ -238,7 +236,7 @@ export default function EmployeesPage() {
                     </Avatar>
                     <span className="truncate">{employee.name}</span>
                 </CardTitle>
-                <CardDescription>{employee.role} • {employee.sector}</CardDescription>
+                <CardDescription className="truncate">{employee.role} • {employee.sector.join(', ')}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex items-center justify-between">
                 <Badge variant={getStatusVariant(employee.status)}>{employee.status}</Badge>

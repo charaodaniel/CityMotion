@@ -1,3 +1,4 @@
+
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
@@ -29,6 +30,15 @@ module.exports = function(db) {
             if (password !== user.password) {
                  return res.status(401).json({ message: 'Credenciais inválidas.' });
             }
+
+            // Tenta fazer o parse do campo 'sector', que agora é um array em JSON string
+            try {
+                user.sector = JSON.parse(user.sector);
+            } catch (e) {
+                // Se falhar (ex: string simples), coloca a string dentro de um array
+                user.sector = [user.sector];
+            }
+
 
             // Gera o Token JWT
             const token = jwt.sign(

@@ -8,8 +8,8 @@ export type Employee = {
   email: string;
   password?: string;
   status: EmployeeStatus;
-  sector: string;
-  role: string; // Ex: 'Motorista', 'Médico', 'Secretário(a)', 'Enfermeiro(a)'
+  sector: string[]; // Modificado para aceitar múltiplos setores
+  role: string;
   cnh?: string;
   matricula?: string;
   idPhoto?: string;

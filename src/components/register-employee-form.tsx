@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useForm } from 'react-hook-form';
@@ -13,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import type { Employee } from '@/lib/types';
 import { useEffect } from 'react';
 import { useApp } from '@/contexts/app-provider';
+import { Checkbox } from './ui/checkbox';
 
 // Esquema Zod atualizado para lidar com objetos de arquivo
 const formSchema = z.object({
@@ -22,7 +24,7 @@ const formSchema = z.object({
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres.").optional().or(z.literal('')),
   role: z.string().min(1, "O cargo é obrigatório."),
   cnh: z.string().optional(),
-  sector: z.string().min(3, "O setor é obrigatório."),
+  sector: z.array(z.string()).min(1, "Selecione ao menos um setor."),
   idPhoto: z.any().optional(),
   cnhPhoto: z.any().optional(),
 });
@@ -46,7 +48,7 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
       password: '',
       role: '',
       cnh: '',
-      sector: '',
+      sector: [],
     },
   });
 
@@ -56,10 +58,9 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
         name: existingEmployee.name,
         matricula: existingEmployee.matricula,
         email: existingEmployee.email,
-        // A senha não é pré-preenchida por segurança
         role: existingEmployee.role,
         cnh: existingEmployee.cnh,
-        sector: existingEmployee.sector,
+        sector: Array.isArray(existingEmployee.sector) ? existingEmployee.sector : [existingEmployee.sector],
       });
     }
   }, [isEditMode, existingEmployee, form]);
@@ -67,13 +68,10 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const dataToSubmit: Partial<Employee> = {
       ...values,
-      // Se um arquivo foi selecionado, pegue o nome dele.
-      // Em uma aplicação real, aqui você faria o upload do arquivo.
       idPhoto: values.idPhoto?.[0]?.name || existingEmployee?.idPhoto,
       cnhPhoto: values.cnhPhoto?.[0]?.name || existingEmployee?.cnhPhoto,
     };
 
-    // Não envia a senha se o campo estiver vazio (útil em edições)
     if (!dataToSubmit.password) {
       delete dataToSubmit.password;
     }
@@ -173,26 +171,7 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="sector"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Setor de Lotação</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o setor" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {sectors.map(sector => <SelectItem key={sector.id} value={sector.name}>{sector.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
             <FormField
               control={form.control}
               name="cnh"
@@ -207,6 +186,53 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
               )}
             />
           </div>
+           <FormField
+              control={form.control}
+              name="sector"
+              render={() => (
+                <FormItem className="mt-6">
+                  <div className="mb-4">
+                    <FormLabel className="text-base">Setor(es) de Lotação</FormLabel>
+                    <FormMessage />
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {sectors.map((sector) => (
+                      <FormField
+                        key={sector.id}
+                        control={form.control}
+                        name="sector"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={sector.id}
+                              className="flex flex-row items-center space-x-2 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(sector.name)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...(field.value || []), sector.name])
+                                      : field.onChange(
+                                          field.value?.filter(
+                                            (value) => value !== sector.name
+                                          )
+                                        )
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-sm font-normal">
+                                {sector.name}
+                              </FormLabel>
+                            </FormItem>
+                          )
+                        }}
+                      />
+                    ))}
+                  </div>
+                </FormItem>
+              )}
+            />
         </div>
         
         <Separator />

@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, Menu, Settings, Activity, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Car, Menu, Settings, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen, UserSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
@@ -78,7 +78,7 @@ const docsSidebarNavItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { userRole, logout, currentUser, isLoading } = useApp();
+  const { userRole, logout, currentUser, isLoading, selectedSector, setSelectedSector } = useApp();
 
   const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
   const isDocsPage = pathname.startsWith('/docs');
@@ -116,7 +116,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   
   const handleLogout = () => {
     logout();
-    router.push('/login');
+  }
+
+  const handleChangeSector = () => {
+    setSelectedSector(null);
+    router.push('/select-sector');
   }
 
   const renderDocsLayout = (mainContent: React.ReactNode) => (
@@ -162,6 +166,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </div>
   )
 
+  // Redirect logic for managers without a selected sector
+  if (userRole === 'manager' && !selectedSector && pathname !== '/select-sector') {
+      if (!isLoading) {
+          router.replace('/select-sector');
+      }
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <Skeleton className="h-screen w-full" />
+        </div>
+      );
+  }
+
+  // Render a specific layout for the sector selection page
+  if (pathname === '/select-sector') {
+    return (
+      <div className="min-h-screen bg-background">
+        {children}
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -176,6 +200,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </Link>
           </SidebarHeader>
           <SidebarContent>
+            {userRole === 'manager' && selectedSector && (
+              <div className="p-2">
+                <Button variant="outline" size="sm" className="w-full justify-start text-left h-auto" onClick={handleChangeSector}>
+                  <div className="flex items-center gap-2">
+                    <UserSquare className="h-4 w-4 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="text-xs text-muted-foreground">Gerenciando</span>
+                      <span className="text-sm font-semibold whitespace-normal break-words">{selectedSector}</span>
+                    </div>
+                  </div>
+                </Button>
+              </div>
+            )}
             <SidebarMenu>
               {isLoading ? (
                 <>

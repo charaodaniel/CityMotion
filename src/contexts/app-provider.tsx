@@ -1,29 +1,20 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useMemo } from 'react';
 import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus } from '@/lib/types';
 import { format } from 'date-fns';
-import { jwtDecode } from 'jwt-decode'; // Usaremos para extrair o papel do token
+import { useRouter } from 'next/navigation';
 
 type UserRole = 'admin' | 'manager' | 'employee';
 
-// Interface para o payload decodificado do JWT
-interface DecodedToken {
-  id: string;
-  name: string;
-  role: string; // Ex: 'Prefeito', 'Engenheiro Civil', 'Motorista'
-  sector: string;
-  iat: number;
-  exp: number;
-}
-
 interface AppContextType {
   isLoading: boolean;
-  token: string | null;
   userRole: UserRole;
   currentUser: Employee | null;
-  login: (emailAsToken: string) => Promise<void>;
+  selectedSector: string | null; // Novo estado para o setor selecionado
+  setSelectedSector: (sector: string | null) => void;
+  login: (email: string) => Promise<void>;
   logout: () => void;
   
   schedules: Schedule[];
@@ -53,20 +44,21 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Mapa de e-mails para IDs de usuários de teste do employees.json
 const emailToIdMap: Record<string, string> = {
-    'admin@citymotion.com': '11', // Júlio César (Prefeito)
-    'manager@citymotion.com': '12', // Ricardo Nunes (Engenheiro)
-    'driver@citymotion.com': '9', // Marcos Lima (Motorista Escolar)
-    'employee@citymotion.com': '4', // Ana Souza (Professor)
-    'mecanico@citymotion.com': '17', // Novo usuário Mecânico
+    'admin@citymotion.com': '11', 
+    'manager@citymotion.com': '12', 
+    'driver@citymotion.com': '9', 
+    'employee@citymotion.com': '4', 
+    'mecanico@citymotion.com': '17',
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [token, setToken] = useState<string | null>(null); // Armazena o e-mail de simulação
+  const [userEmailForSimulation, setUserEmailForSimulation] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole>('employee');
   const [currentUser, setCurrentUser] = useState<Employee | null>(null);
+  const [selectedSector, setSelectedSectorState] = useState<string | null>(null);
   
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [vehicleRequests, setVehicleRequests] = useState<VehicleRequest[]>([]);
@@ -76,7 +68,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([]);
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
 
-  const fetchData = useCallback(async (simulatedEmail?: string) => {
+  const setSelectedSector = (sector: string | null) => {
+    if (typeof window !== 'undefined') {
+      if (sector) {
+        localStorage.setItem('selectedSector', sector);
+      } else {
+        localStorage.removeItem('selectedSector');
+      }
+    }
+    setSelectedSectorState(sector);
+  };
+
+  const fetchData = useCallback(async () => {
+    if (employees.length > 0) { // Se os dados já foram carregados, não busca novamente
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
       const response = await fetch('/api/data?type=all');
@@ -91,57 +98,105 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSectors(data.sectors || []);
       setWorkSchedules(data.workSchedules || []);
       setMaintenanceRequests(data.maintenanceRequests || []);
-      
-      if (simulatedEmail) {
-        const userId = emailToIdMap[simulatedEmail];
-        const loggedUser = data.employees.find((emp: Employee) => emp.id === userId);
-
-        if(loggedUser) {
-          setCurrentUser(loggedUser);
-          const roleString = loggedUser.role.toLowerCase();
-          if (['prefeito', 'administrador'].some(r => roleString.includes(r))) setUserRole('admin');
-          else if (['gestor', 'engenheiro', 'secretário', 'mecanico', 'mecânico'].some(r => roleString.includes(r))) setUserRole('manager');
-          else setUserRole('employee');
-        }
-      }
-
+      return data; // Retorna os dados para uso imediato no login
     } catch (error) {
       console.error("Não foi possível buscar os dados:", error);
-      logout(); 
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [employees.length]);
 
-  const login = useCallback(async (emailAsToken: string) => {
-    localStorage.setItem('authToken', emailAsToken);
-    setToken(emailAsToken);
-    await fetchData(emailAsToken);
-  }, [fetchData]);
+
+  const login = useCallback(async (email: string) => {
+    setIsLoading(true);
+    localStorage.setItem('userEmailForSimulation', email);
+    setUserEmailForSimulation(email);
+
+    let data = employees.length > 0 ? { employees } : await fetchData();
+    if (!data) data = { employees: [] };
+    
+    const userId = emailToIdMap[email];
+    const user = data.employees.find((emp: Employee) => emp.id === userId);
+
+    if (user) {
+      setCurrentUser(user);
+      const roleString = user.role.toLowerCase();
+      
+      let determinedRole: UserRole = 'employee';
+      if (['prefeito', 'administrador'].some(r => roleString.includes(r))) {
+          determinedRole = 'admin';
+      } else if (['gestor', 'engenheiro', 'secretário', 'mecanico', 'mecânico'].some(r => roleString.includes(r))) {
+          determinedRole = 'manager';
+      }
+      setUserRole(determinedRole);
+      
+      if (determinedRole === 'manager' && user.sector && user.sector.length > 1) {
+          router.push('/select-sector');
+      } else if (determinedRole === 'manager' && user.sector && user.sector.length === 1) {
+          setSelectedSector(user.sector[0]);
+          router.push('/dashboard');
+      }
+      else {
+          router.push('/dashboard');
+      }
+    }
+    setIsLoading(false);
+  }, [fetchData, router, employees]);
+
 
   const logout = () => {
-    localStorage.removeItem('authToken');
-    setToken(null);
+    localStorage.removeItem('userEmailForSimulation');
+    localStorage.removeItem('selectedSector');
+    setUserEmailForSimulation(null);
     setCurrentUser(null);
-    setUserRole('employee');
-    setSchedules([]);
-    setVehicleRequests([]);
-    setVehicles([]);
-    setEmployees([]);
-    setSectors([]);
-    setWorkSchedules([]);
-    setMaintenanceRequests([]);
+    setSelectedSectorState(null);
+    setUserRole('employee'); // Reseta para o perfil padrão
+    router.push('/login');
   };
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
-    if (storedToken) {
-      setToken(storedToken);
-      fetchData(storedToken);
-    } else {
-      fetchData(); // Busca dados públicos se não houver token
-    }
-  }, [fetchData]);
+    const initializeApp = async () => {
+      setIsLoading(true);
+      const storedEmail = localStorage.getItem('userEmailForSimulation');
+      
+      let data = employees.length > 0 ? { employees } : await fetchData();
+      if (!data) data = { employees: [] };
+
+      if (storedEmail) {
+        const userId = emailToIdMap[storedEmail];
+        const user = data.employees.find((emp: Employee) => emp.id === userId);
+        
+        if (user) {
+          setUserEmailForSimulation(storedEmail);
+          setCurrentUser(user);
+          const roleString = user.role.toLowerCase();
+          
+          let determinedRole: UserRole = 'employee';
+          if (['prefeito', 'administrador'].some(r => roleString.includes(r))) {
+            determinedRole = 'admin';
+          } else if (['gestor', 'engenheiro', 'secretário', 'mecanico', 'mecânico'].some(r => roleString.includes(r))) {
+            determinedRole = 'manager';
+          }
+          setUserRole(determinedRole);
+
+          if (determinedRole === 'manager') {
+            const storedSector = localStorage.getItem('selectedSector');
+            if (storedSector && user.sector.includes(storedSector)) {
+                setSelectedSectorState(storedSector);
+            }
+          }
+        } else {
+            logout(); // Se o usuário do storage não for encontrado, limpa tudo
+        }
+
+      } else {
+        // Se não há usuário logado, não precisa fazer nada, a página pública será exibida
+      }
+      setIsLoading(false);
+    };
+
+    initializeApp();
+  }, [fetchData, employees.length]);
 
 
   const addVehicleRequest = (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => {
@@ -172,7 +227,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (status === 'Aprovada' && requestToProcess) {
       const request = requestToProcess;
-        const availableDriver = employees.find(d => d.status === 'Disponível' && d.sector === request.sector && d.role.toLowerCase().includes('motorista'));
+        const availableDriver = employees.find(d => d.status === 'Disponível' && d.sector.includes(request.sector) && d.role.toLowerCase().includes('motorista'));
         const availableVehicle = vehicles.find(v => v.status === 'Disponível' && v.sector === request.sector);
 
         if (availableDriver && availableVehicle) {
@@ -225,9 +280,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider value={{ 
         isLoading,
-        token,
         userRole,
         currentUser,
+        selectedSector,
+        setSelectedSector,
         login,
         logout,
         schedules, setSchedules, 

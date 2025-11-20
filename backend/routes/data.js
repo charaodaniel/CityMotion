@@ -1,3 +1,4 @@
+
 const express = require('express');
 const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
@@ -25,10 +26,15 @@ module.exports = function(db) {
                     if (err) {
                         reject(err);
                     } else {
-                        // Remove a senha do payload dos funcionários
+                        // Remove a senha do payload dos funcionários e parseia os setores
                         if (key === 'employees') {
                             results[key] = rows.map(row => {
                                 const { password, ...rest } = row;
+                                try {
+                                    rest.sector = JSON.parse(rest.sector);
+                                } catch (e) {
+                                    rest.sector = [rest.sector]; // Fallback para string simples
+                                }
                                 return rest;
                             });
                         } else {

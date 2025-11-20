@@ -5,7 +5,7 @@
     "name": "João da Silva",
     "role": "Motorista",
     "cnh": "123456789",
-    "sector": "Secretaria de Obras, Viação e Urbanismo",
+    "sector": ["Secretaria de Obras, Viação e Urbanismo"],
     "status": "Em Serviço",
     "matricula": "M-001"
   },
@@ -14,7 +14,7 @@
     "name": "Maria Oliveira",
     "role": "Gestor de Setor",
     "cnh": "987654321",
-    "sector": "Secretaria de Saúde",
+    "sector": ["Secretaria de Saúde"],
     "status": "Disponível",
     "matricula": "M-002"
   },
@@ -23,7 +23,7 @@
     "name": "Pedro Santos",
     "role": "Assessor de Comunicação",
     "cnh": null,
-    "sector": "Gabinete do Prefeito",
+    "sector": ["Gabinete do Prefeito"],
     "status": "Disponível",
     "matricula": "ADM-003"
   },
@@ -32,7 +32,7 @@
     "name": "Ana Souza",
     "role": "Professor(a)",
     "cnh": null,
-    "sector": "Secretaria de Educação, Cultura, Desporto e Lazer",
+    "sector": ["Secretaria de Educação, Cultura, Desporto e Lazer"],
     "status": "Afastado",
     "matricula": "EDU-004"
   },
@@ -41,7 +41,7 @@
     "name": "Carlos Pereira",
     "role": "Agente de Arrecadação",
     "cnh": null,
-    "sector": "Secretaria da Fazenda",
+    "sector": ["Secretaria da Fazenda"],
     "status": "Disponível",
     "matricula": "FAZ-005"
   },
@@ -50,7 +50,7 @@
     "name": "Lúcia Ferreira",
     "role": "Enfermeira",
     "cnh": null,
-    "sector": "Secretaria de Saúde",
+    "sector": ["Secretaria de Saúde"],
     "status": "Disponível",
     "matricula": "SAU-006"
   },
@@ -59,7 +59,7 @@
     "name": "Roberto Alves",
     "role": "Operador de Máquinas",
     "cnh": "456456456",
-    "sector": "Secretaria de Obras, Viação e Urbanismo",
+    "sector": ["Secretaria de Obras, Viação e Urbanismo"],
     "status": "Disponível",
     "matricula": "OBR-007"
   },
@@ -68,7 +68,7 @@
     "name": "Fernanda Costa",
     "role": "Assistente Social",
     "cnh": "789789789",
-    "sector": "Secretaria de Assistência Social",
+    "sector": ["Secretaria de Assistência Social"],
     "status": "Disponível",
     "matricula": "SOC-008"
   },
@@ -77,7 +77,7 @@
     "name": "Marcos Lima",
     "role": "Motorista Escolar",
     "cnh": "111222333",
-    "sector": "Secretaria de Educação, Cultura, Desporto e Lazer",
+    "sector": ["Secretaria de Educação, Cultura, Desporto e Lazer"],
     "status": "Em Viagem",
     "matricula": "M-009"
   },
@@ -86,7 +86,7 @@
     "name": "Beatriz Rocha",
     "role": "Médica Clínica Geral",
     "cnh": null,
-    "sector": "Secretaria de Saúde",
+    "sector": ["Secretaria de Saúde"],
     "status": "Disponível",
     "matricula": "SAU-010"
   },
@@ -95,7 +95,7 @@
     "name": "Júlio César",
     "role": "Prefeito",
     "cnh": null,
-    "sector": "Gabinete do Prefeito",
+    "sector": ["Gabinete do Prefeito"],
     "status": "Em Serviço",
     "matricula": "GP-001"
   },
@@ -104,7 +104,7 @@
     "name": "Ricardo Nunes",
     "role": "Engenheiro Civil",
     "cnh": "444555666",
-    "sector": "Secretaria de Obras, Viação e Urbanismo",
+    "sector": ["Secretaria de Obras, Viação e Urbanismo", "Secretaria de Agricultura e Meio Ambiente"],
     "status": "Disponível",
     "matricula": "OBR-012"
   },
@@ -113,7 +113,7 @@
     "name": "Laura Martins",
     "role": "Psicóloga",
     "cnh": null,
-    "sector": "Secretaria de Assistência Social",
+    "sector": ["Secretaria de Assistência Social"],
     "status": "Disponível",
     "matricula": "SOC-013"
   },
@@ -122,7 +122,7 @@
     "name": "Felipe Arruda",
     "role": "Veterinário",
     "cnh": null,
-    "sector": "Secretaria de Agricultura e Meio Ambiente",
+    "sector": ["Secretaria de Agricultura e Meio Ambiente"],
     "status": "Em Viagem",
     "matricula": "AGR-014"
   },
@@ -131,7 +131,7 @@
     "name": "Patrícia Borges",
     "role": "Secretária de Administração",
     "cnh": null,
-    "sector": "Secretaria de Administração e Planejamento",
+    "sector": ["Secretaria de Administração e Planejamento"],
     "status": "Disponível",
     "matricula": "ADM-001"
   },
@@ -140,7 +140,7 @@
     "name": "Lucas Gabriel",
     "role": "Estagiário de TI",
     "cnh": null,
-    "sector": "Secretaria de Administração e Planejamento",
+    "sector": ["Secretaria de Administração e Planejamento"],
     "status": "Disponível",
     "matricula": "EST-001"
   },
@@ -149,7 +149,7 @@
     "name": "Sérgio Moraes",
     "role": "Mecânico Chefe",
     "cnh": "777888999",
-    "sector": "Secretaria de Obras, Viação e Urbanismo",
+    "sector": ["Secretaria de Obras, Viação e Urbanismo"],
     "status": "Disponível",
     "matricula": "MEC-001"
   }

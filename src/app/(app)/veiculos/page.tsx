@@ -33,18 +33,16 @@ function getStatusVariant(status: VehicleStatus) {
 }
 
 export default function VehiclesPage() {
-  const { vehicles, setVehicles, userRole } = useApp();
+  const { vehicles, setVehicles, userRole, selectedSector } = useApp();
   const [activeModal, setActiveModal] = useState<ModalState>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
-  const managerSector = "Secretaria de Obras"; // Simulating manager's sector for filtering
-
   const visibleVehicles = useMemo(() => {
-    if (userRole === 'manager') {
-      return vehicles.filter(v => v.sector === managerSector);
+    if (userRole === 'manager' && selectedSector) {
+      return vehicles.filter(v => v.sector === selectedSector);
     }
     return vehicles;
-  }, [vehicles, userRole, managerSector]);
+  }, [vehicles, userRole, selectedSector]);
 
   const openModal = (modal: ModalState, vehicle: Vehicle | null = null) => {
     setSelectedVehicle(vehicle);
@@ -163,7 +161,7 @@ export default function VehiclesPage() {
             </h1>
             <p className="text-muted-foreground">
               {userRole === 'manager'
-                ? `Veja e gerencie os veículos do setor de ${managerSector}.`
+                ? `Veja e gerencie os veículos do setor de ${selectedSector}.`
                 : 'Veja, gerencie e cadastre os veículos da prefeitura.'
               }
             </p>
