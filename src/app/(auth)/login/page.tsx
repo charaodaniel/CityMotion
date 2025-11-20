@@ -116,10 +116,11 @@ export default function LoginPage() {
               <CardDescription>Clique em um e-mail abaixo para preencher os campos de login (a senha padrão é "123456").</CardDescription>
           </CardHeader>
           <CardContent className="text-sm space-y-2">
-              <p><strong>Administrador (Prefeito):</strong> <button onClick={() => handleSimulatedLogin('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
-              <p><strong>Gestor (Engenheiro):</strong> <button onClick={() => handleSimulatedLogin('manager@citymotion.com')} className="text-primary hover:underline">manager@citymotion.com</button></p>
+              <p><strong>Administrador:</strong> <button onClick={() => handleSimulatedLogin('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
+              <p><strong>Gestor de Obras:</strong> <button onClick={() => handleSimulatedLogin('manager@citymotion.com')} className="text-primary hover:underline">manager@citymotion.com</button></p>
               <p><strong>Motorista:</strong> <button onClick={() => handleSimulatedLogin('driver@citymotion.com')} className="text-primary hover:underline">driver@citymotion.com</button></p>
-              <p><strong>Funcionário (Professor):</strong> <button onClick={() => handleSimulatedLogin('employee@citymotion.com')} className="text-primary hover:underline">employee@citymotion.com</button></p>
+              <p><strong>Funcionário (Educação):</strong> <button onClick={() => handleSimulatedLogin('employee@citymotion.com')} className="text-primary hover:underline">employee@citymotion.com</button></p>
+              <p><strong>Mecânico:</strong> <button onClick={() => handleSimulatedLogin('mecanico@citymotion.com')} className="text-primary hover:underline">mecanico@citymotion.com</button></p>
           </CardContent>
         </Card>
 

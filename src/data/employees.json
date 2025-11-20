@@ -1,3 +1,4 @@
+
 [
   {
     "id": "1",
@@ -142,5 +143,14 @@
     "sector": "Secretaria de Administração e Planejamento",
     "status": "Disponível",
     "matricula": "EST-001"
+  },
+  {
+    "id": "17",
+    "name": "Sérgio Moraes",
+    "role": "Mecânico Chefe",
+    "cnh": "777888999",
+    "sector": "Secretaria de Obras, Viação e Urbanismo",
+    "status": "Disponível",
+    "matricula": "MEC-001"
   }
 ]

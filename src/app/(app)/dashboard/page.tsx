@@ -11,6 +11,7 @@ import { QuickRequestForm } from '@/components/quick-request-form';
 import AdminDashboard from '@/components/dashboards/admin-dashboard';
 import ManagerDashboard from '@/components/dashboards/manager-dashboard';
 import DriverDashboard from '@/components/dashboards/driver-dashboard';
+import MechanicDashboard from '@/components/dashboards/mechanic-dashboard';
 
 export default function DashboardPage() {
     const { userRole, currentUser } = useApp();
@@ -21,11 +22,19 @@ export default function DashboardPage() {
         return currentUser.role.toLowerCase().includes('motorista');
     }, [currentUser]);
 
+    const isCurrentUserMechanic = useMemo(() => {
+        if (!currentUser || !currentUser.role) return false;
+        return currentUser.role.toLowerCase().includes('mecânico') || currentUser.role.toLowerCase().includes('mecanico');
+    }, [currentUser]);
+
     const renderDashboard = () => {
         switch (userRole) {
             case 'admin':
                 return <AdminDashboard />;
             case 'manager':
+                 if (isCurrentUserMechanic) {
+                    return <MechanicDashboard />;
+                }
                 return <ManagerDashboard />;
             case 'employee':
                 if (isCurrentUserDriver) {
@@ -58,7 +67,7 @@ export default function DashboardPage() {
                         {userRole === 'admin' ? 'Visão geral do sistema e da frota.' : 'Acompanhe suas tarefas e solicitações.'}
                     </p>
                 </div>
-                {(userRole === 'employee' || userRole === 'manager') && !isCurrentUserDriver && (
+                {(userRole === 'employee' || userRole === 'manager') && !isCurrentUserDriver && !isCurrentUserMechanic && (
                     <Dialog open={isRequestModalOpen} onOpenChange={setIsRequestModalOpen}>
                         <DialogTrigger asChild>
                             <Button>

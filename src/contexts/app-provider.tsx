@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
@@ -60,6 +59,7 @@ const emailToIdMap: Record<string, string> = {
     'manager@citymotion.com': '12', // Ricardo Nunes (Engenheiro)
     'driver@citymotion.com': '9', // Marcos Lima (Motorista Escolar)
     'employee@citymotion.com': '4', // Ana Souza (Professor)
+    'mecanico@citymotion.com': '17', // Novo usuário Mecânico
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -76,10 +76,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([]);
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
 
-  const fetchData = useCallback(async (simulatedEmail: string) => {
+  const fetchData = useCallback(async (simulatedEmail?: string) => {
     setIsLoading(true);
     try {
-      // Usar a API de simulação interna do Next.js
       const response = await fetch('/api/data?type=all');
       if (!response.ok) {
         throw new Error('Falha ao buscar dados simulados.');
@@ -93,16 +92,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setWorkSchedules(data.workSchedules || []);
       setMaintenanceRequests(data.maintenanceRequests || []);
       
-      // Encontra o usuário logado com base no email simulado
-      const userId = emailToIdMap[simulatedEmail];
-      const loggedUser = data.employees.find((emp: Employee) => emp.id === userId);
+      if (simulatedEmail) {
+        const userId = emailToIdMap[simulatedEmail];
+        const loggedUser = data.employees.find((emp: Employee) => emp.id === userId);
 
-      if(loggedUser) {
-        setCurrentUser(loggedUser);
-        const roleString = loggedUser.role.toLowerCase();
-        if (['prefeito', 'administrador'].some(r => roleString.includes(r))) setUserRole('admin');
-        else if (['gestor', 'engenheiro', 'secretário'].some(r => roleString.includes(r))) setUserRole('manager');
-        else setUserRole('employee');
+        if(loggedUser) {
+          setCurrentUser(loggedUser);
+          const roleString = loggedUser.role.toLowerCase();
+          if (['prefeito', 'administrador'].some(r => roleString.includes(r))) setUserRole('admin');
+          else if (['gestor', 'engenheiro', 'secretário', 'mecanico', 'mecânico'].some(r => roleString.includes(r))) setUserRole('manager');
+          else setUserRole('employee');
+        }
       }
 
     } catch (error) {
@@ -124,7 +124,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setCurrentUser(null);
     setUserRole('employee');
-    // Limpa os dados para garantir um estado limpo
     setSchedules([]);
     setVehicleRequests([]);
     setVehicles([]);
@@ -135,25 +134,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('authToken'); // O token é o e-mail de simulação
+    const storedToken = localStorage.getItem('authToken');
     if (storedToken) {
       setToken(storedToken);
       fetchData(storedToken);
     } else {
-      // Se não há token, busca apenas os dados públicos (escalas) para a home page
-      const fetchPublicData = async () => {
-          setIsLoading(true);
-           try {
-               const response = await fetch('/api/data?type=work-schedules');
-               const data = await response.json();
-               setWorkSchedules(data);
-           } catch(e) {
-               console.error("Erro ao buscar dados públicos", e);
-           } finally {
-               setIsLoading(false);
-           }
-      }
-      fetchPublicData();
+      fetchData(); // Busca dados públicos se não houver token
     }
   }, [fetchData]);
 
