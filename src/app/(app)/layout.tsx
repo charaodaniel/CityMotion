@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo } from 'react';
@@ -89,12 +90,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const filteredNavItems = useMemo(() => {
     return navItems.filter(item => {
+      // 1. Check if the general role has access
       if (!item.roles.includes(userRole)) return false;
       
-      const isDriverOrAdminOrManager = isCurrentUserDriver || userRole === 'admin' || userRole === 'manager';
+      // 2. Admins and Managers see everything within their roles
+      if (userRole === 'admin' || userRole === 'manager') return true;
 
-      if (['/viagens', '/relatorios', '/veiculos', '/manutencao'].includes(item.href)) {
-         return userRole === 'employee' ? isDriverOrAdminOrManager : true;
+      // 3. For Employees, we only show certain tools if they are Drivers
+      const restrictedRoutes = ['/veiculos', '/viagens', '/manutencao', '/relatorios'];
+      if (userRole === 'employee' && restrictedRoutes.includes(item.href)) {
+         return isCurrentUserDriver;
       }
       
       return true;
@@ -109,7 +114,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     switch (role) {
       case 'admin': return 'Administrador';
       case 'manager': return 'Gestor';
-      case 'employee': return currentUser?.role || 'Funcionário'; 
+      case 'employee': return currentUser?.role || 'Colaborador'; 
       default: return 'Desconhecido'
     }
   }

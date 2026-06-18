@@ -169,11 +169,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const roleString = user.role.toLowerCase();
       
       let determinedRole: UserRole = 'employee';
-      if (['administrador', 'ti', 'diretor'].some(r => roleString.includes(r))) {
+      
+      // Keywords more broad for SaaS generalization
+      const adminKeywords = ['administrador', 'ti', 'diretor', 'prefeito', 'ceo', 'dono', 'admin', 'gerente geral'];
+      const managerKeywords = ['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico', 'lider', 'supervisor', 'engenheiro'];
+
+      if (adminKeywords.some(r => roleString.includes(r))) {
           determinedRole = 'admin';
-      } else if (['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico'].some(r => roleString.includes(r))) {
+      } else if (managerKeywords.some(r => roleString.includes(r))) {
           determinedRole = 'manager';
       }
+      
       setUserRole(determinedRole);
       
       if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length > 1) {
