@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
@@ -59,7 +60,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
-  const [userEmailForSimulation, setUserEmailForSimulation] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole>('employee');
   const [currentUser, setCurrentUser] = useState<Employee | null>(null);
   const [selectedSector, setSelectedSectorState] = useState<string | null>(null);
@@ -73,7 +73,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
-  // Refs to keep track of previous states for notification triggers
   const prevRequestsLength = useRef<number>(0);
   const prevSchedulesLength = useRef<number>(0);
 
@@ -93,7 +92,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const response = await fetch('/api/data?type=all');
       if (!response.ok) {
-        throw new Error('Falha ao buscar dados simulados.');
+        throw new Error('Falha ao buscar dados da organização.');
       }
       const data = await response.json();
       setSchedules(data.schedules || []);
@@ -104,11 +103,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setWorkSchedules(data.workSchedules || []);
       setMaintenanceRequests(data.maintenanceRequests || []);
       
-      // Initialize refs
       prevRequestsLength.current = data.requests?.length || 0;
       prevSchedulesLength.current = data.schedules?.length || 0;
 
-      // Load notifications from localStorage
       const savedNotifications = localStorage.getItem('app_notifications');
       if (savedNotifications) {
         setNotifications(JSON.parse(savedNotifications));
@@ -116,7 +113,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       return data;
     } catch (error) {
-      console.error("Não foi possível buscar os dados:", error);
+      console.error("Não foi possível carregar os dados:", error);
     } finally {
       setIsLoading(false);
     }
@@ -130,7 +127,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       read: false
     };
     setNotifications(prev => {
-      const updated = [newNotif, ...prev].slice(0, 50); // Keep last 50
+      const updated = [newNotif, ...prev].slice(0, 50);
       localStorage.setItem('app_notifications', JSON.stringify(updated));
       return updated;
     });
@@ -157,7 +154,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string) => {
     setIsLoading(true);
     localStorage.setItem('userEmailForSimulation', email);
-    setUserEmailForSimulation(email);
     
     const data = await fetchData();
     if (!data) {
@@ -173,9 +169,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const roleString = user.role.toLowerCase();
       
       let determinedRole: UserRole = 'employee';
-      if (['prefeito', 'administrador'].some(r => roleString.includes(r))) {
+      if (['administrador', 'ti', 'diretor'].some(r => roleString.includes(r))) {
           determinedRole = 'admin';
-      } else if (['gestor', 'engenheiro', 'secretário', 'mecanico', 'mecânico'].some(r => roleString.includes(r))) {
+      } else if (['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico'].some(r => roleString.includes(r))) {
           determinedRole = 'manager';
       }
       setUserRole(determinedRole);
@@ -196,7 +192,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem('userEmailForSimulation');
     localStorage.removeItem('selectedSector');
-    setUserEmailForSimulation(null);
     setCurrentUser(null);
     setSelectedSectorState(null);
     setUserRole('employee'); 
@@ -215,11 +210,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     initializeApp();
   }, []);
 
-  // Effect to watch for external alerts (Simulation for Demo)
   useEffect(() => {
     if (!currentUser || isLoading) return;
 
-    // Trigger notification if a new request appears for the manager's sector
     if (userRole === 'manager' && selectedSector && vehicleRequests.length > prevRequestsLength.current) {
       const latestRequest = vehicleRequests[0];
       if (latestRequest.sector === selectedSector && latestRequest.status === 'Pendente' && latestRequest.requester !== currentUser.name) {
@@ -232,14 +225,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     prevRequestsLength.current = vehicleRequests.length;
 
-    // Trigger notification if a new trip appears for a driver
     const isDriver = currentUser.role.toLowerCase().includes('motorista');
     if (isDriver && schedules.length > prevSchedulesLength.current) {
       const latestTrip = schedules[0];
       if (latestTrip.driver === currentUser.name && latestTrip.status === 'Agendada') {
         addNotification({
           title: "Nova Viagem Agendada",
-          message: `Você tem uma nova viagem: "${latestTrip.title}" para ${latestTrip.destination}.`,
+          message: `Você tem uma nova viagem atribuída: "${latestTrip.title}" para ${latestTrip.destination}.`,
           type: 'trip'
         });
       }
@@ -254,9 +246,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...request,
       id: `REQ${Date.now()}`,
       status: 'Pendente',
-      requester: currentUser?.name || 'Funcionário Desconhecido',
+      requester: currentUser?.name || 'Usuário do Sistema',
       requestDate: new Date().toISOString(),
-      priority: request.priority || 'Baixa',
+      priority: request.priority || 'Média',
       details: request.details || 'N/A'
     };
     setVehicleRequests(prev => [newRequest, ...prev]);
@@ -286,8 +278,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 title: request.title,
                 driver: availableDriver.name,
                 vehicle: `${availableVehicle.vehicleModel} (${availableVehicle.licensePlate})`,
-                origin: "Garagem da Prefeitura",
-                destination: request.details.split("Destino: ")[1]?.split('.')[0] || "Não especificado",
+                origin: "Sede da Organização",
+                destination: request.details.split("Destino: ")[1]?.split('.')[0] || "Destino não especificado",
                 departureTime: format(new Date(), "dd/MM/yyyy HH:mm"),
                 status: 'Agendada',
                 category: request.sector,
@@ -295,8 +287,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
             setSchedules(prevSchedules => [newSchedule, ...prevSchedules]);
             setEmployees(prev => prev.map(d => d.id === availableDriver.id ? { ...d, status: 'Em Serviço' } : d));
             setVehicles(prev => prev.map(v => v.id === availableVehicle.id ? { ...v, status: 'Em Serviço' } : v));
-        } else {
-            console.warn("No available driver or vehicle for the approved request.");
         }
     }
   };
@@ -306,7 +296,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...request,
       id: `MNT${Date.now()}`,
       status: 'Pendente',
-      requesterName: currentUser?.name || 'Desconhecido',
+      requesterName: currentUser?.name || 'Usuário',
       requestDate: new Date().toISOString(),
     };
     setMaintenanceRequests(prev => [newRequest, ...prev]);
@@ -353,7 +343,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 export function useApp() {
   const context = useContext(AppContext);
   if (context === undefined) {
-    throw new Error('useApp must be used within an AppProvider');
+    throw new Error('useApp deve ser usado dentro de um AppProvider');
   }
   return context;
 }

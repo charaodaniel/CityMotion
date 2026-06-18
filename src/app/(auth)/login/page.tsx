@@ -25,14 +25,14 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Simula a chamada de login passando o email como se fosse um token
+      // O login continua simulado por enquanto para facilitar a demonstração
       await login(email);
       router.push('/dashboard');
 
     } catch (error: any) {
         toast({
-            title: "Erro de Simulação",
-            description: error.message || "Não foi possível simular o login.",
+            title: "Erro no Acesso",
+            description: error.message || "Não foi possível realizar o login.",
             variant: "destructive",
         });
     } finally {
@@ -42,7 +42,7 @@ export default function LoginPage() {
 
   const handleSimulatedLogin = (simulatedEmail: string) => {
     setEmail(simulatedEmail);
-    setPassword('123456'); // Senha padrão para todos os usuários de teste
+    setPassword('123456'); 
   }
 
   return (
@@ -62,17 +62,17 @@ export default function LoginPage() {
           <CardHeader>
             <CardTitle className="text-2xl">Acessar o Painel</CardTitle>
             <CardDescription>
-              Use suas credenciais para entrar no sistema de gestão de frota.
+              Entre com suas credenciais para gerenciar a frota da sua organização.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">E-mail Corporativo</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="seu.email@prefeitura.gov.br"
+                  placeholder="seu.nome@empresa.com"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -101,45 +101,33 @@ export default function LoginPage() {
                 ) : (
                     <LogIn className="mr-2 h-4 w-4" />
                 )}
-                Entrar
+                Entrar no Sistema
               </Button>
             </form>
           </CardContent>
         </Card>
         
-        <Card className="bg-muted/50">
-          <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <Users className="mr-2 h-5 w-5" />
-                Perfis de Teste
+        <Card className="bg-muted/50 border-dashed">
+          <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center">
+                <Users className="mr-2 h-4 w-4" />
+                MODO DEMONSTRAÇÃO (Perfis SaaS)
               </CardTitle>
-              <CardDescription>Clique em um e-mail abaixo para preencher os campos de login (a senha padrão é "123456").</CardDescription>
+              <CardDescription className="text-xs">Simule acessos de diferentes cargos em uma organização cliente.</CardDescription>
           </CardHeader>
-          <CardContent className="text-sm space-y-2">
-              <p><strong>Administrador:</strong> <button onClick={() => handleSimulatedLogin('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
-              <p><strong>Gestor de Obras:</strong> <button onClick={() => handleSimulatedLogin('manager@citymotion.com')} className="text-primary hover:underline">manager@citymotion.com</button></p>
+          <CardContent className="text-xs space-y-1.5 pt-2">
+              <p><strong>Admin Geral:</strong> <button onClick={() => handleSimulatedLogin('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
+              <p><strong>Gestor de Setor:</strong> <button onClick={() => handleSimulatedLogin('manager@citymotion.com')} className="text-primary hover:underline">manager@citymotion.com</button></p>
               <p><strong>Motorista:</strong> <button onClick={() => handleSimulatedLogin('driver@citymotion.com')} className="text-primary hover:underline">driver@citymotion.com</button></p>
-              <p><strong>Funcionário (Educação):</strong> <button onClick={() => handleSimulatedLogin('employee@citymotion.com')} className="text-primary hover:underline">employee@citymotion.com</button></p>
-              <p><strong>Mecânico:</strong> <button onClick={() => handleSimulatedLogin('mecanico@citymotion.com')} className="text-primary hover:underline">mecanico@citymotion.com</button></p>
+              <p><strong>Colaborador:</strong> <button onClick={() => handleSimulatedLogin('employee@citymotion.com')} className="text-primary hover:underline">employee@citymotion.com</button></p>
+              <p><strong>Técnico Mecânico:</strong> <button onClick={() => handleSimulatedLogin('mecanico@citymotion.com')} className="text-primary hover:underline">mecanico@citymotion.com</button></p>
           </CardContent>
         </Card>
 
-         <p className="px-8 text-center text-sm text-muted-foreground">
-            Ao clicar em continuar, você concorda com nossos{' '}
-            <a
-              href="#"
-              className="underline underline-offset-4 hover:text-primary"
-            >
-              Termos de Serviço
-            </a>{' '}
-            e{' '}
-            <a
-              href="#"
-              className="underline underline-offset-4 hover:text-primary"
-            >
-              Política de Privacidade
-            </a>
-            .
+         <p className="px-8 text-center text-xs text-muted-foreground">
+            Ao acessar o sistema, você concorda com nossos{' '}
+            <a href="#" className="underline underline-offset-4 hover:text-primary">Termos de Uso</a> e{' '}
+            <a href="#" className="underline underline-offset-4 hover:text-primary">Privacidade</a>.
           </p>
       </div>
     </div>

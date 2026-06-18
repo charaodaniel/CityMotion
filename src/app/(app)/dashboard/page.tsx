@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -11,7 +12,6 @@ import AdminDashboard from '@/components/dashboards/admin-dashboard';
 import ManagerDashboard from '@/components/dashboards/manager-dashboard';
 import DriverDashboard from '@/components/dashboards/driver-dashboard';
 import MechanicDashboard from '@/components/dashboards/mechanic-dashboard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function DashboardPage() {
     const { userRole, currentUser, addNotification, selectedSector } = useApp();
@@ -31,7 +31,7 @@ export default function DashboardPage() {
         if (userRole === 'manager' && selectedSector) {
             addNotification({
                 title: "Simulação: Nova Solicitação",
-                message: `Um funcionário acabou de solicitar um veículo para a ${selectedSector}.`,
+                message: `Um colaborador acabou de solicitar um veículo para o setor: ${selectedSector}.`,
                 type: 'request'
             });
         } else if (isCurrentUserDriver) {
@@ -43,7 +43,7 @@ export default function DashboardPage() {
         } else {
             addNotification({
                 title: "Aviso do Sistema",
-                message: "Sua conta está ativa e sincronizada com a prefeitura.",
+                message: "Sua conta está ativa e sincronizada com a organização.",
                 type: 'system'
             });
         }
@@ -63,14 +63,14 @@ export default function DashboardPage() {
                     return <DriverDashboard />;
                 }
                 return (
-                    <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
+                    <div className="text-center text-muted-foreground py-12 border-dashed border-2 rounded-lg">
                         <p className="text-lg">Bem-vindo(a) ao CityMotion.</p>
-                        <p className="text-sm mt-2">Use o botão "Pedir Transporte" para iniciar uma solicitação.</p>
+                        <p className="text-sm mt-2">Use o botão "Pedir Transporte" para iniciar uma solicitação de veículo.</p>
                     </div>
                 );
             default:
                  return (
-                    <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
+                    <div className="text-center text-muted-foreground py-12 border-dashed border-2 rounded-lg">
                         <p className="text-lg">Painel não disponível para este perfil.</p>
                     </div>
                 );
@@ -85,7 +85,7 @@ export default function DashboardPage() {
                         Painel de Controle
                     </h1>
                     <p className="text-muted-foreground">
-                        {userRole === 'admin' ? 'Visão geral do sistema e da frota.' : 'Acompanhe suas tarefas e solicitações.'}
+                        {userRole === 'admin' ? 'Visão geral da frota e operações.' : 'Acompanhe suas tarefas e solicitações de transporte.'}
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -106,7 +106,7 @@ export default function DashboardPage() {
                                 <DialogHeader>
                                     <DialogTitle className="text-2xl">Solicitar um Transporte</DialogTitle>
                                     <DialogDescription>
-                                        Preencha o formulário para fazer um pedido rápido. O gestor do seu setor será notificado.
+                                        Preencha o formulário para fazer um pedido rápido. O gestor da sua unidade será notificado.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <ScrollArea className="max-h-[70vh] p-4">

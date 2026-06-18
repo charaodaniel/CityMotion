@@ -4,47 +4,47 @@ export default function UserProfilesPage() {
     <div>
       <h1>Perfis de Usuário e Permissões</h1>
       <p>
-        O CityMotion opera com diferentes perfis de usuário, cada um com acesso e permissões específicas, garantindo que cada pessoa veja apenas as informações e ferramentas relevantes para sua função.
+        O CityMotion opera com diferentes perfis de acesso, garantindo que cada pessoa na organização veja apenas as informações e ferramentas relevantes para sua função.
       </p>
 
-      <h2>Os Três Perfis Principais</h2>
+      <h2>Os Perfis do Sistema</h2>
       <p>
-        O sistema possui três tipos de perfis de acesso. No ambiente de teste, você pode alternar entre eles usando os e-mails de teste na página de login.
+        Nossa arquitetura SaaS permite definir papéis claros para cada membro da equipe. No ambiente de demonstração, você pode alternar entre eles na tela de login.
       </p>
 
       <h3>1. Administrador (Admin)</h3>
       <p>
-        O Administrador tem controle total sobre o sistema. Este perfil é geralmente destinado à equipe de TI ou ao gestor geral da frota.
+        Responsável pelo gerenciamento estratégico da frota e configurações globais.
       </p>
       <ul>
-        <li>Visualiza todos os dashboards.</li>
-        <li>Gerencia todos os Veículos, Funcionários e Setores.</li>
-        <li>Acessa todos os relatórios e configurações do sistema.</li>
-        <li>Pode solicitar e agendar viagens.</li>
+        <li>Visualização completa de dashboards e KPIs.</li>
+        <li>Gerenciamento de todos os Veículos, Colaboradores e Setores.</li>
+        <li>Configuração de regras de negócio e identidade visual.</li>
       </ul>
 
       <h3>2. Gestor de Setor (Manager)</h3>
       <p>
-        O Gestor (geralmente um Secretário de pasta) é responsável por aprovar as solicitações de transporte do seu próprio setor e gerenciar os recursos vinculados a ele.
+        Responsável por operacionalizar os recursos de uma unidade ou departamento específico.
       </p>
       <ul>
-        <li>Aprova ou rejeita solicitações de veículos feitas por funcionários do seu setor.</li>
-        <li>Visualiza e gerencia os funcionários e veículos do seu setor.</li>
-        <li>Pode agendar viagens e acessar relatórios restritos ao seu setor.</li>
+        <li>Aprova ou rejeita solicitações de veículos feitas por sua equipe.</li>
+        <li>Visualiza a disponibilidade de motoristas e veículos do seu setor.</li>
+        <li>Atua de forma híbrida: pode gerenciar e também solicitar transportes.</li>
       </ul>
 
-      <h3>3. Funcionário (Employee)</h3>
+      <h3>3. Colaborador (Employee)</h3>
       <p>
-        Este é o perfil padrão para todos os outros servidores públicos, como professores, médicos, técnicos e, inclusive, **motoristas**. A interface se adapta com base no cargo do funcionário.
+        Perfil de uso geral para membros da empresa que necessitam de mobilidade.
       </p>
       <ul>
-        <li>A principal função é solicitar transporte através do formulário rápido.</li>
-        <li>Pode visualizar o status de suas solicitações e seu histórico.</li>
-        <li>Tem acesso ao seu próprio crachá virtual.</li>
-        <li>
-          <strong>Se o cargo for "Motorista":</strong> A interface é enriquecida para incluir um painel de viagens, a capacidade de iniciar/finalizar viagens com checklists e acesso ao seu histórico de condução.
-        </li>
+        <li>Principal função: Solicitar transporte de forma rápida e intuitiva.</li>
+        <li>Acesso ao crachá virtual funcional com QR Code.</li>
       </ul>
+
+      <h3>4. Motorista e Mecânico</h3>
+      <p>
+        Perfis técnicos com interfaces específicas para a execução de viagens e serviços de manutenção, incluindo checklists e controle de quilometragem.
+      </p>
     </div>
   );
 }

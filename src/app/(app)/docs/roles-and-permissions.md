@@ -1,61 +1,59 @@
+
 # Hierarquia de Perfis e Permissões no CityMotion
 
-O CityMotion foi projetado com uma estrutura de permissões flexível para garantir que cada usuário tenha acesso apenas às ferramentas e informações relevantes para sua função dentro da prefeitura. A hierarquia é dividida em quatro perfis principais, que podem ser simulados na página de login para testes.
+O CityMotion foi projetado com uma estrutura de permissões flexível para garantir que cada usuário tenha acesso apenas às ferramentas e informações relevantes para sua função dentro da organização. A hierarquia é dividida em perfis principais que atendem a fluxos de trabalho corporativos e operacionais.
 
 ---
 
 ## 1. Administrador (Admin)
 
-O **Administrador** é o superusuário do sistema. Este perfil tem controle total e irrestrito sobre todas as funcionalidades e dados da plataforma.
+O **Administrador** é o perfil de controle total. Geralmente destinado à equipe de operações de frota central ou gestores de TI da empresa.
 
--   **Visão:** Total. Vê todos os veículos, todos os funcionários, todos os setores e todas as viagens.
--   **Permissões de Gestão:**
-    -   Pode cadastrar, editar e remover **qualquer** veículo, funcionário ou setor.
-    -   Pode agendar viagens para qualquer motorista/veículo.
-    -   Tem acesso a todos os relatórios sem filtros de permissão.
--   **Configurações:** É o único perfil que pode acessar a página de **Configurações** para personalizar a aparência do sistema.
--   **Atribuição de Perfis (Futuro):** Será o responsável por atribuir ou remover o perfil de **Gestor** a outros funcionários.
-
-> **E-mail de teste:** `admin@citymotion.com`
+-   **Visão:** Total e irrestrita sobre veículos, funcionários, setores e viagens.
+-   **Permissões:**
+    -   Gerenciamento completo (CRUD) de todos os recursos.
+    -   Configurações de identidade visual e regras de negócio globais.
+    -   Acesso a todos os relatórios e logs do sistema.
 
 ---
 
-## 2. Gestor de Setor (Manager)
+## 2. Gestor de Unidade/Setor (Manager)
 
-O **Gestor** é, tipicamente, o Secretário de uma pasta (Saúde, Obras, Educação) ou um funcionário designado para gerenciar os recursos de um setor específico. Ele tem permissões elevadas, mas **apenas dentro do seu próprio setor**.
+O **Gestor** é o responsável por um departamento ou unidade de negócio específica. Ele gerencia os recursos alocados para a sua área.
 
--   **Visão:** Restrita ao seu setor. Vê apenas os veículos, funcionários e viagens associados ao seu setor.
--   **Principal Função:**
-    -   **Aprovar ou Rejeitar** solicitações de transporte feitas por funcionários do seu setor.
--   **Permissões de Gestão:**
-    -   Pode gerenciar os veículos e funcionários que pertencem ao seu setor.
-    -   Pode agendar viagens utilizando os recursos (motoristas e veículos) do seu setor.
--   **Relatórios:** Pode gerar relatórios, mas os dados são pré-filtrados para mostrar apenas informações relacionadas ao seu setor.
-
-> **E-mail de teste:** `manager@citymotion.com` (simula um gestor da Secretaria de Obras)
+-   **Visão:** Restrita aos recursos (veículos e motoristas) do seu setor.
+-   **Funções:**
+    -   **Aprovação:** Analisa e autoriza solicitações de transporte feitas pela sua equipe.
+    -   **Gestão Local:** Acompanha a escala e disponibilidade dos recursos sob sua responsabilidade.
+-   **Perfil Híbrido:** O gestor também pode atuar como um colaborador comum para solicitar transportes para si mesmo.
 
 ---
 
-## 3. Funcionário (Employee)
+## 3. Colaborador (Employee)
 
-Este é o perfil padrão para a maioria dos servidores da prefeitura, incluindo motoristas, professores, médicos, técnicos, etc.
+Este é o perfil padrão para a maioria dos membros da organização que necessitam de transporte para realizar suas atividades.
 
--   **Visão:** A mais restrita, focada em suas próprias solicitações e atividades.
--   **Principal Função:**
-    -   **Solicitar um transporte** através do formulário "Pedir Transporte".
--   **Funções Específicas do Cargo:**
-    -   Se um funcionário tiver o cargo de **Motorista**, sua interface será adaptada. Ele poderá:
-        -   Visualizar as viagens que foram **atribuídas a ele**.
-        -   **Iniciar e Finalizar** viagens, preenchendo os checklists de pré e pós-viagem.
-        -   Registrar quilometragem e abastecimentos.
-        -   Acessar o histórico de relatórios apenas das viagens que ele mesmo realizou.
--   **Permissões Gerais de Funcionário:**
-    -   Pode visualizar o status de suas próprias solicitações (Pendente, Aprovada, Rejeitada).
-    -   Acessa sua página de perfil para ver seu histórico de solicitações.
-    -   Acessa seu crachá virtual.
--   **Restrições:** Não tem acesso a painéis de gestão, viagens de outros funcionários ou relatórios gerais (a menos que seja um motorista visualizando seu próprio histórico).
+-   **Função Principal:** Solicitar veículos através do formulário de "Pedido Rápido".
+-   **Acesso:** Visualiza o status de suas próprias solicitações e acessa seu crachá virtual funcional.
 
-> **E-mails de teste:** 
-> - `employee@citymotion.com` (simula a funcionária Ana Souza)
-> - `driver@citymotion.com` (simula a motorista Maria Oliveira, que é um tipo de funcionário)
+---
 
+## 4. Motorista (Driver)
+
+Um perfil especializado focado na execução das viagens. Embora tecnicamente seja um "colaborador", sua interface é otimizada para o campo.
+
+-   **Funções:**
+    -   Visualiza viagens atribuídas a ele.
+    -   Executa checklists de segurança obrigatórios.
+    -   Registra eventos de viagem como abastecimentos e incidentes.
+
+---
+
+## 5. Técnico Mecânico (Mechanic)
+
+Perfil voltado para a manutenção e conservação da frota.
+
+-   **Funções:**
+    -   Gerencia ordens de serviço e chamados de manutenção.
+    -   Solicita compra de peças e componentes.
+    -   Controla o status de veículos que entram e saem da oficina.

@@ -32,8 +32,6 @@ export default function HomePage() {
   const [selectedSchedule, setSelectedSchedule] = useState<WorkSchedule | null>(null);
 
   useEffect(() => {
-    // If a user is logged in (based on the simulation), redirect to the dashboard.
-    // We don't need to wait for data loading to be complete, just the user check.
     if (currentUser) {
       router.replace('/dashboard');
     }
@@ -47,14 +45,10 @@ export default function HomePage() {
     setSelectedSchedule(null);
   };
   
-  // Show loading skeleton only while initial data is being fetched
-  // and no user is determined yet. Once currentUser is null, we can show the page.
   if (isLoading && !currentUser) {
     return <Loading />;
   }
 
-  // If a user is found, this component will trigger the redirect and show a loading state
-  // to avoid a flash of the public page.
   if (currentUser) {
      return <Loading />;
   }
@@ -63,11 +57,11 @@ export default function HomePage() {
     <div className="container mx-auto p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight font-headline">
-            Escalas de Trabalho Públicas
+          <h1 className="text-3xl font-bold tracking-tight font-headline text-primary">
+            Quadro de Escalas Operacionais
           </h1>
           <p className="text-muted-foreground">
-            Acompanhe as escalas, plantões e jornadas dos funcionários da prefeitura.
+            Consulte o cronograma de atividades, plantões e jornadas da organização.
           </p>
         </div>
       </div>
@@ -78,23 +72,23 @@ export default function HomePage() {
                 <Card 
                     key={schedule.id} 
                     onClick={() => handleCardClick(schedule)} 
-                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    className="cursor-pointer hover:shadow-md transition-shadow border-primary/10"
                 >
                     <CardHeader className="pb-4">
                         <CardTitle className="text-base flex items-center gap-2">
-                          <CalendarDays className="h-4 w-4 text-muted-foreground"/> 
+                          <CalendarDays className="h-4 w-4 text-primary"/> 
                           {schedule.title}
                         </CardTitle>
                         <CardDescription asChild className="flex items-center text-xs pt-1">
                            <div>
-                            <Badge variant="outline">{schedule.type}</Badge>
+                            <Badge variant="outline" className="text-[10px]">{schedule.type}</Badge>
                            </div>
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="text-sm space-y-3">
                         <div className="flex items-center">
-                            <User className="mr-2 h-4 w-4" />
-                            <span>{schedule.employee}</span>
+                            <User className="mr-2 h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{schedule.employee}</span>
                         </div>
                         <div className="flex items-center text-xs text-muted-foreground">
                             <Clock className="mr-2 h-4 w-4" />
@@ -108,8 +102,8 @@ export default function HomePage() {
             ))}
         </div>
       ) : (
-        <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
-            <p className="text-lg">Nenhuma escala pública para exibir no momento.</p>
+        <div className="text-center text-muted-foreground py-20 border-dashed border-2 rounded-lg">
+            <p className="text-lg italic">Nenhuma escala pública disponível para consulta no momento.</p>
         </div>
       )}
 
@@ -120,39 +114,39 @@ export default function HomePage() {
               {selectedSchedule && (
                 <>
                   <DialogHeader>
-                    <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
+                    <DialogTitle className="text-2xl text-primary">{selectedSchedule.title}</DialogTitle>
                     <DialogDescription>
-                      Detalhes da escala de trabalho.
+                      Informações detalhadas do cronograma.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4 pr-4">
                      <div>
-                        <span className="text-sm font-semibold text-muted-foreground">Tipo</span>
-                        <p className="text-lg">{selectedSchedule.type}</p>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Tipo de Atividade</span>
+                        <p className="text-lg font-medium">{selectedSchedule.type}</p>
                     </div>
                     <Separator />
                     <div>
-                        <span className="text-sm font-semibold text-muted-foreground">Funcionário</span>
-                        <p className="text-lg">{selectedSchedule.employee}</p>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Responsável</span>
+                        <p className="text-lg font-medium">{selectedSchedule.employee}</p>
                     </div>
                     <Separator />
                      <div>
-                        <span className="text-sm font-semibold text-muted-foreground">Período</span>
-                        <p className="text-lg">{selectedSchedule.startDate} até {selectedSchedule.endDate}</p>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Período de Vigência</span>
+                        <p className="text-lg font-medium">{selectedSchedule.startDate} até {selectedSchedule.endDate}</p>
                     </div>
                     <Separator />
                     {selectedSchedule.description && (
                       <>
                         <div>
-                          <span className="text-sm font-semibold text-muted-foreground">Observações</span>
-                          <p className="text-base mt-1">{selectedSchedule.description}</p>
+                          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Observações Operacionais</span>
+                          <p className="text-sm mt-2 p-3 bg-muted rounded-md border">{selectedSchedule.description}</p>
                         </div>
                         <Separator />
                       </>
                     )}
                     <div>
-                        <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                        <div>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status Atual</span>
+                        <div className="mt-2">
                             <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
                         </div>
                     </div>

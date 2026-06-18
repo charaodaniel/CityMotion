@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useForm } from 'react-hook-form';
@@ -39,11 +38,11 @@ const systemStatus = [
 ];
 
 const recentLogs = [
-    { id: 1, type: 'Security', user: 'system', action: 'Failed login attempt for user: "guest"', timestamp: 'Há 2 minutos' },
-    { id: 2, type: 'Trips', user: 'Maria Oliveira', action: 'Iniciou a viagem SCH002', timestamp: 'Há 5 minutos' },
-    { id: 3, type: 'Admin', user: 'Júlio César', action: 'Atualizou o perfil de "Ricardo Nunes" para "Gestor de Setor"', timestamp: 'Há 15 minutos' },
-    { id: 4, type: 'System', user: 'system', action: 'Backup do banco de dados concluído com sucesso', timestamp: 'Há 1 hora' },
-    { id: 5, type: 'Users', user: 'Ana Souza', action: 'Realizou login no sistema', timestamp: 'Há 2 horas' },
+    { id: 1, type: 'Segurança', user: 'system', action: 'Tentativa de login falhou para: "guest"', timestamp: 'Há 2 minutos' },
+    { id: 2, type: 'Viagens', user: 'Maria Oliveira', action: 'Iniciou a viagem SCH002', timestamp: 'Há 5 minutos' },
+    { id: 3, type: 'Admin', user: 'Júlio César', action: 'Atualizou o perfil de "Ricardo Nunes" para "Gestor"', timestamp: 'Há 15 minutos' },
+    { id: 4, type: 'Sistema', user: 'system', action: 'Backup do banco de dados concluído com sucesso', timestamp: 'Há 1 hora' },
+    { id: 5, type: 'Usuários', user: 'Ana Souza', action: 'Realizou login no sistema', timestamp: 'Há 2 horas' },
 ];
 
 
@@ -53,13 +52,13 @@ export default function SettingsPage() {
   const form = useForm<z.infer<typeof settingsSchema>>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      organizationName: 'Prefeitura Municipal',
+      organizationName: 'CityMotion Client',
       primaryColor: '215 80% 55%',
       accentColor: '140 70% 40%',
       backgroundColor: '220 20% 98%',
-      defaultRequestPriority: 'Baixa',
-      requireDestination: false,
-      maintenanceMileageThreshold: 20000,
+      defaultRequestPriority: 'Média',
+      requireDestination: true,
+      maintenanceMileageThreshold: 10000,
     },
   });
 
@@ -72,7 +71,7 @@ export default function SettingsPage() {
 
     toast({
       title: "Configurações Salvas",
-      description: "As preferências do sistema foram atualizadas com sucesso.",
+      description: "As preferências da organização foram atualizadas com sucesso.",
     });
   };
 
@@ -80,10 +79,10 @@ export default function SettingsPage() {
     <div className="container mx-auto p-4 sm:p-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight font-headline">
-          Configurações
+          Configurações da Organização
         </h1>
         <p className="text-muted-foreground">
-          Gerencie as configurações, personalizações e regras do sistema.
+          Gerencie as diretrizes, personalizações e regras operacionais da sua frota.
         </p>
       </div>
       
@@ -100,9 +99,9 @@ export default function SettingsPage() {
             <TabsContent value="general">
               <Card>
                 <CardHeader>
-                  <CardTitle>Configurações Gerais</CardTitle>
+                  <CardTitle>Dados Gerais</CardTitle>
                   <CardDescription>
-                    Parâmetros gerais de funcionamento do sistema.
+                    Informações básicas de identificação da empresa no sistema.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -113,7 +112,7 @@ export default function SettingsPage() {
                         <FormItem>
                           <FormLabel>Nome da Organização</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ex: Prefeitura de..." {...field} />
+                            <Input placeholder="Ex: Empresa de Transportes LTDA" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -129,7 +128,7 @@ export default function SettingsPage() {
                             <Input type="file" accept="image/png, image/jpeg, image/svg+xml" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
                           </FormControl>
                           <FormDescription>
-                            Faça o upload do logo (recomendado: formato SVG ou PNG com fundo transparente).
+                            Faça o upload do logo (recomendado: formato SVG ou PNG transparente).
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -142,9 +141,9 @@ export default function SettingsPage() {
             <TabsContent value="visual">
               <Card>
                 <CardHeader>
-                  <CardTitle>Cores do Tema</CardTitle>
+                  <CardTitle>Cores da Marca</CardTitle>
                   <CardDescription>
-                    Personalize as cores do sistema para combinar com a identidade visual da sua prefeitura. Insira os valores no formato HSL (matiz, saturação, luminosidade). Ex: 215 80% 55%
+                    Personalize as cores do sistema para combinar com a identidade visual da sua organização.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -154,7 +153,7 @@ export default function SettingsPage() {
                       name="primaryColor"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Cor Primária</FormLabel>
+                          <FormLabel>Cor Primária (HSL)</FormLabel>
                           <FormControl>
                             <Input placeholder="215 80% 55%" {...field} />
                           </FormControl>
@@ -167,7 +166,7 @@ export default function SettingsPage() {
                       name="accentColor"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Cor de Destaque</FormLabel>
+                          <FormLabel>Cor de Destaque (HSL)</FormLabel>
                           <FormControl>
                             <Input placeholder="140 70% 40%" {...field} />
                           </FormControl>
@@ -180,7 +179,7 @@ export default function SettingsPage() {
                       name="backgroundColor"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Cor de Fundo</FormLabel>
+                          <FormLabel>Cor de Fundo (HSL)</FormLabel>
                           <FormControl>
                             <Input placeholder="220 20% 98%" {...field} />
                           </FormControl>
@@ -198,12 +197,12 @@ export default function SettingsPage() {
                 <CardHeader>
                   <CardTitle>Regras de Operação</CardTitle>
                   <CardDescription>
-                    Defina regras para os fluxos de viagens e manutenção.
+                    Defina comportamentos padrão para os fluxos de viagens e manutenção.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-8">
                   <div>
-                    <h3 className="text-md font-medium">Viagens</h3>
+                    <h3 className="text-md font-medium">Fluxo de Viagens</h3>
                     <Separator className="my-4" />
                     <div className="space-y-6">
                       <FormField
@@ -224,7 +223,7 @@ export default function SettingsPage() {
                                 <SelectItem value="Alta">Alta</SelectItem>
                               </SelectContent>
                             </Select>
-                             <FormDescription>Define a prioridade inicial para todas as novas solicitações de transporte.</FormDescription>
+                             <FormDescription>Define a prioridade inicial aplicada a novos pedidos de transporte.</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -237,7 +236,7 @@ export default function SettingsPage() {
                             <div className="space-y-0.5">
                               <FormLabel className="text-base">Exigir Destino na Solicitação</FormLabel>
                               <FormDescription>
-                                Se ativado, o campo "Destino" será obrigatório no formulário de solicitação rápida.
+                                Obriga o preenchimento do campo "Destino" em todas as solicitações.
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -252,19 +251,19 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-md font-medium">Manutenção</h3>
+                    <h3 className="text-md font-medium">Manutenção Preventiva</h3>
                     <Separator className="my-4" />
                      <FormField
                         control={form.control}
                         name="maintenanceMileageThreshold"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Alerta de Revisão Preventiva (km)</FormLabel>
+                            <FormLabel>Alerta de Revisão (km)</FormLabel>
                             <FormControl>
                               <Input type="number" placeholder="Ex: 10000" {...field} />
                             </FormControl>
                             <FormDescription>
-                                O sistema irá sugerir uma revisão preventiva quando um veículo atingir esta quilometragem desde a última revisão.
+                                O sistema alertará quando um veículo atingir esta quilometragem desde o último serviço.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -277,12 +276,11 @@ export default function SettingsPage() {
 
             <TabsContent value="monitoring">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column */}
                 <div className="lg:col-span-1 space-y-8">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Status da Conexão da API</CardTitle>
-                            <CardDescription>Saúde da conexão com o back-end.</CardDescription>
+                            <CardTitle>Status da Infraestrutura</CardTitle>
+                            <CardDescription>Saúde dos serviços de back-end.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {systemStatus.map((service) => {
@@ -303,21 +301,20 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
                 </div>
-                 {/* Right Column */}
                 <div className="lg:col-span-2">
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center">
                               <Activity className="mr-2 h-5 w-5"/>
-                              Log de Atividades da API
+                              Log de Atividades Técnicas
                             </CardTitle>
-                            <CardDescription>Últimas ações registradas pelo servidor.</CardDescription>
+                            <CardDescription>Eventos registrados no servidor.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Usuário</TableHead>
+                                        <TableHead>Responsável</TableHead>
                                         <TableHead>Ação</TableHead>
                                         <TableHead className="text-right">Horário</TableHead>
                                     </TableRow>
