@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Network, Server, Route as RouteIcon, Play, Code, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Network, Server, Route as RouteIcon, Play, Code, CheckCircle2, AlertCircle, RefreshCw, X, Search } from 'lucide-react';
 import nexusConfig from '@/nexusbridge/config/nexus-settings.json';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -20,7 +20,9 @@ export default function NexusControlPage() {
   const runTest = async () => {
     setIsTesting(true);
     try {
-      const response = await fetch(`/api/nexus/${testPath}`);
+      // Remove leading slash if exists to avoid double slash
+      const cleanPath = testPath.startsWith('/') ? testPath.substring(1) : testPath;
+      const response = await fetch(`/api/nexus/${cleanPath}`);
       const data = await response.json();
       setTestResult(data);
     } catch (error) {
@@ -29,6 +31,11 @@ export default function NexusControlPage() {
       setIsTesting(false);
     }
   };
+
+  const clearTest = () => {
+    setTestTestPath('');
+    setTestResult(null);
+  }
 
   return (
     <div className="container mx-auto p-4 sm:p-8 space-y-8">
@@ -191,24 +198,33 @@ export default function NexusControlPage() {
                 <CardTitle>Execução de Teste</CardTitle>
                 <CardDescription>Simule uma requisição através da ponte.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Path Virtual</label>
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">Path Virtual (Endpoint)</label>
                   <div className="flex gap-2">
-                    <div className="flex-1 flex items-center px-3 border rounded-md bg-muted text-muted-foreground text-sm font-mono">
-                      /api/nexus/
+                    <div className="flex-1 flex items-center px-3 border rounded-md bg-muted text-muted-foreground text-sm font-mono overflow-hidden">
+                      <span className="shrink-0 select-none">/api/nexus/</span>
                       <input 
-                        className="bg-transparent border-none outline-none text-foreground ml-1 flex-1"
+                        className="bg-transparent border-none outline-none text-foreground ml-1 flex-1 min-w-0"
                         value={testPath}
                         onChange={(e) => setTestTestPath(e.target.value)}
                         placeholder="ex: users"
+                        onKeyDown={(e) => e.key === 'Enter' && runTest()}
                       />
+                      {testPath && (
+                         <button onClick={clearTest} className="ml-2 hover:text-foreground">
+                            <X className="h-4 w-4" />
+                         </button>
+                      )}
                     </div>
-                    <Button onClick={runTest} disabled={isTesting}>
-                      {isTesting ? "Executando..." : "Testar Rota"}
+                    <Button onClick={runTest} disabled={isTesting || !testPath}>
+                      {isTesting ? "Executando..." : "Testar"}
                       <Play className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
+                  <p className="text-[10px] text-muted-foreground italic">
+                    Tente caminhos como: <code className="text-primary">users</code>, <code className="text-primary">fleet</code> ou <code className="text-primary">test/db-employees</code>
+                  </p>
                 </div>
                 
                 <div className="p-4 rounded-lg bg-blue-500/5 border border-blue-500/20">
@@ -238,7 +254,8 @@ export default function NexusControlPage() {
                       {JSON.stringify(testResult, null, 2)}
                     </pre>
                   ) : (
-                    <div className="flex items-center justify-center h-full text-zinc-600 italic text-sm">
+                    <div className="flex flex-col items-center justify-center h-full text-zinc-600 italic text-sm gap-2">
+                      <Search className="h-8 w-8 opacity-20" />
                       Aguardando execução de teste...
                     </div>
                   )}

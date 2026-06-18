@@ -1,7 +1,8 @@
 
--- CityMotion Database Schema
+-- CityMotion - Database Schema and Seed Data
+-- Database: SQLite3
 
--- Setores
+-- 1. Sectors
 CREATE TABLE IF NOT EXISTS sectors (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -10,7 +11,7 @@ CREATE TABLE IF NOT EXISTS sectors (
     driverCount INTEGER DEFAULT 0
 );
 
--- Funcionários
+-- 2. Employees
 CREATE TABLE IF NOT EXISTS employees (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -18,26 +19,26 @@ CREATE TABLE IF NOT EXISTS employees (
     password TEXT NOT NULL,
     role TEXT NOT NULL,
     status TEXT NOT NULL,
-    sector TEXT NOT NULL, -- JSON array string
+    sector TEXT, -- Store as JSON string ["Sector A", "Sector B"]
     cnh TEXT,
     matricula TEXT,
     idPhoto TEXT,
     cnhPhoto TEXT
 );
 
--- Veículos
+-- 3. Vehicles
 CREATE TABLE IF NOT EXISTS vehicles (
     id TEXT PRIMARY KEY,
     vehicleModel TEXT NOT NULL,
     licensePlate TEXT UNIQUE NOT NULL,
     status TEXT NOT NULL,
     mileage INTEGER DEFAULT 0,
-    sector TEXT,
+    sector TEXT NOT NULL,
     driverName TEXT,
     destination TEXT
 );
 
--- Viagens (Schedules)
+-- 4. Trips
 CREATE TABLE IF NOT EXISTS trips (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -51,14 +52,14 @@ CREATE TABLE IF NOT EXISTS trips (
     endMileage INTEGER,
     status TEXT NOT NULL,
     category TEXT,
-    passengers TEXT, -- JSON string
+    passengers TEXT, -- Store as JSON string
+    startChecklist TEXT, -- Store as JSON string
+    endChecklist TEXT, -- Store as JSON string
     startNotes TEXT,
-    endNotes TEXT,
-    startChecklist TEXT, -- JSON string
-    endChecklist TEXT -- JSON string
+    endNotes TEXT
 );
 
--- Solicitações de Veículo
+-- 5. Vehicle Requests
 CREATE TABLE IF NOT EXISTS vehicle_requests (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -66,11 +67,11 @@ CREATE TABLE IF NOT EXISTS vehicle_requests (
     details TEXT,
     priority TEXT NOT NULL,
     requestDate TEXT NOT NULL,
-    requester TEXT NOT NULL,
-    status TEXT NOT NULL
+    status TEXT NOT NULL,
+    requester TEXT NOT NULL
 );
 
--- Escalas de Trabalho
+-- 6. Work Schedules
 CREATE TABLE IF NOT EXISTS work_schedules (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -82,7 +83,7 @@ CREATE TABLE IF NOT EXISTS work_schedules (
     description TEXT
 );
 
--- Manutenções
+-- 7. Maintenance Requests
 CREATE TABLE IF NOT EXISTS maintenance_requests (
     id TEXT PRIMARY KEY,
     vehicleId TEXT NOT NULL,
@@ -91,34 +92,24 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
     requesterName TEXT NOT NULL,
     requestDate TEXT NOT NULL,
     type TEXT NOT NULL,
-    description TEXT,
+    description TEXT NOT NULL,
     status TEXT NOT NULL
 );
 
--- DADOS INICIAIS --
-
+-- SEED DATA
 INSERT INTO sectors (id, name, description) VALUES 
-('SEC01', 'Gabinete do Prefeito', 'Assessoramento direto ao comando da organização.'),
-('SEC02', 'Administração e Planejamento', 'Gestão de pessoal, patrimônio e planejamento.'),
-('SEC05', 'Saúde', 'Gestão de saúde pública e unidades de atendimento.'),
-('SEC06', 'Obras e Infraestrutura', 'Manutenção de vias e serviços urbanos.');
+('SEC01', 'Diretoria Executiva', 'Alta gestão e coordenação estratégica.'),
+('SEC02', 'Administração e RH', 'Gestão de pessoas e infraestrutura corporativa.'),
+('SEC03', 'Operações e Logística', 'Manutenção da frota e fluxos de transporte.');
 
-INSERT INTO employees (id, name, email, password, role, status, sector, matricula, cnh) VALUES 
-('11', 'Júlio César', 'admin@citymotion.com', '123456', 'Administrador', 'Em Serviço', '["Gabinete do Prefeito"]', 'GP-001', NULL),
-('12', 'Ricardo Nunes', 'manager@citymotion.com', '123456', 'Engenheiro Civil', 'Disponível', '["Obras e Infraestrutura", "Saúde"]', 'OBR-012', '444555666'),
-('9', 'Marcos Lima', 'driver@citymotion.com', '123456', 'Motorista', 'Em Viagem', '["Administração e Planejamento"]', 'M-009', '111222333'),
-('4', 'Ana Souza', 'employee@citymotion.com', '123456', 'Colaborador', 'Afastado', '["Administração e Planejamento"]', 'EDU-004', NULL),
-('17', 'Sérgio Moraes', 'mecanico@citymotion.com', '123456', 'Mecânico Chefe', 'Disponível', '["Obras e Infraestrutura"]', 'MEC-001', '777888999');
+INSERT INTO employees (id, name, email, password, role, status, sector, matricula) VALUES 
+('11', 'Admin CityMotion', 'admin@citymotion.com', '123456', 'Administrador', 'Disponível', '["Diretoria Executiva"]', 'ADM-001'),
+('12', 'Ricardo Gestor', 'manager@citymotion.com', '123456', 'Gestor de Unidade', 'Disponível', '["Operações e Logística", "Administração e RH"]', 'GST-001'),
+('9', 'Marcos Motorista', 'driver@citymotion.com', '123456', 'Motorista', 'Disponível', '["Operações e Logística"]', 'MOT-001'),
+('4', 'Ana Colaboradora', 'employee@citymotion.com', '123456', 'Analista Administrativo', 'Disponível', '["Administração e RH"]', 'EMP-001'),
+('17', 'Sérgio Mecânico', 'mecanico@citymotion.com', '123456', 'Mecânico Chefe', 'Disponível', '["Operações e Logística"]', 'MEC-001');
 
 INSERT INTO vehicles (id, vehicleModel, licensePlate, status, mileage, sector) VALUES 
-('V1', 'Fiat Strada', 'PM-001', 'Disponível', 15000, 'Obras e Infraestrutura'),
-('V2', 'VW Gol', 'PM-002', 'Disponível', 8525, 'Saúde'),
-('V3', 'Renault Kwid', 'PM-003', 'Em Viagem', 22000, 'Administração e Planejamento'),
-('V4', 'Chevrolet Onix', 'PM-004', 'Manutenção', 41000, 'Administração e Planejamento');
-
-INSERT INTO vehicle_requests (id, title, sector, details, priority, requestDate, requester, status) VALUES 
-('REQ001', 'Vistoria em Unidade Local', 'Saúde', 'Necessário transporte para equipe de enfermagem.', 'Alta', '2024-07-29T10:00:00Z', 'Maria Oliveira', 'Pendente'),
-('REQ002', 'Entrega de Relatórios', 'Administração e Planejamento', 'Entrega de documentos no escritório central.', 'Média', '2024-07-29T11:30:00Z', 'Ana Souza', 'Pendente');
-
-INSERT INTO trips (id, title, driver, vehicle, origin, destination, departureTime, status, category) VALUES 
-('SCH001', 'Transporte de Equipe', 'Marcos Lima', 'Renault Kwid (PM-003)', 'Sede Central', 'Unidade Regional', '29/07/2024 09:30', 'Em Andamento', 'Administração');
+('V1', 'Fiat Strada', 'ABC-1234', 'Disponível', 15000, 'Operações e Logística'),
+('V2', 'VW Gol', 'XYZ-5678', 'Disponível', 8500, 'Administração e RH'),
+('V4', 'Chevrolet Onix', 'MNT-0000', 'Manutenção', 41000, 'Operações e Logística');

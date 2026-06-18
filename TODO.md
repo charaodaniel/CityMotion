@@ -1,36 +1,33 @@
 
-# 📋 CityMotion - Lista de Tarefas (Recapitulação e Roadmap)
+# 📋 CityMotion - Roadmap e Lista de Tarefas
 
-Este arquivo organiza o que já foi construído e o que ainda pode ser explorado no CityMotion.
+Este arquivo organiza as funcionalidades construídas e os próximos passos do projeto.
 
-## ✅ Funcionalidades Implementadas (Protótipo Completo)
+## ✅ Funcionalidades Implementadas
 
-### **Arquitetura e Integração**
-- [x] **NexusBridge:** Implementada camada de adaptação de rotas para multi-backend.
-- [x] **Configuração via JSON:** Gerenciamento de endpoints e backends centralizado.
-- [x] **Transformers:** Estrutura inicial para normalização de respostas de API.
+### **Arquitetura e Backend**
+- [x] **NexusBridge:** Camada de adaptação de rotas para multi-backend via JSON.
+- [x] **SQLite3 Integration:** Banco de dados real configurado para persistência de dados.
+- [x] **Backend Node.js:** Servidor Express robusto servindo dados e autenticação.
+- [x] **Script SQL:** Gerador de banco de dados automático (`db:init`).
 
-### **Autenticação e Perfis**
-- [x] **Login Simulado/Real:** Suporte a diferentes fluxos de acesso.
-- [x] **Hierarquia de Permissões:** Admin, Gestor, Motorista, Funcionário e Mecânico.
-- [x] **Multi-setor:** Seleção de unidade para gestores híbridos.
-- [x] **Notificações:** Alertas em tempo real para novos pedidos e viagens.
+### **Gestão e Operações**
+- [x] **Módulo de Mecânica:** Fluxo completo de manutenção e compra de peças.
+- [x] **SaaS Generalization:** Interface e termos adaptados para qualquer tipo de organização.
+- [x] **Multi-setor para Gestores:** Seleção de unidade para usuários com múltiplas responsabilidades.
+- [x] **Sistema de Notificações:** Alertas em tempo real para novos pedidos e viagens.
 
-### **Dashboard e UI/UX**
-- [x] **Layout Adaptativo:** Sidebar inteligente por cargo.
-- [x] **Modo SaaS:** Linguagem genérica para atender diversos tipos de empresas.
-- [x] **LGPD:** Banner de consentimento e política de privacidade integrada.
-
-### **Operações de Frota**
-- [x] **Painel Kanban:** Gestão visual de viagens.
-- [x] **Checklists Digitais:** Verificação de segurança pré e pós-trajeto.
-- [x] **Mecânica:** Dashboard exclusivo e fluxo de ordens de serviço.
+### **Segurança e Identidade**
+- [x] **LGPD:** Banner de consentimento e política de privacidade.
+- [x] **Crachá Virtual:** Identificação funcional com QR Code dinâmico corrigida.
+- [x] **Perfis SaaS:** Hierarquia de permissões para Admin, Gestor, Motorista, Colaborador e Mecânico.
 
 ## 🛠️ Próximos Passos Sugeridos
 
-- [ ] **Migrar Frontend para NexusBridge:** Alterar as chamadas `fetch` no `AppProvider` para usarem `/api/nexus/*`.
-- [ ] **Mapeamento de Parâmetros Dinâmicos:** Implementar suporte a `:id` na engine do NexusBridge.
-- [ ] **Middlewares de Log:** Adicionar registro de todas as transações que passam pela ponte.
+- [ ] **Migrar Frontend Progressivamente:** Alterar gradualmente as funções de mutação no `AppProvider` para usarem a ponte `/api/nexus/*`.
+- [ ] **Mapeamento Dinâmico de IDs:** Implementar suporte a parâmetros `:id` na engine do NexusBridge.
+- [ ] **Gerador de Logs da Ponte:** Salvar histórico de todas as transações que passam pelo NexusBridge no SQLite.
+- [ ] **Upload de Arquivos Real:** Conectar os campos de foto do frontend para salvar arquivos físicos no servidor.
 
 ---
 **CityMotion — Mobilidade, transparência e eficiência para a gestão moderna.**
