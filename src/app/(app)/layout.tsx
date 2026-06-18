@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, Menu, Settings, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen, UserSquare, Bell, Check, Trash2, Info } from 'lucide-react';
+import { LayoutDashboard, Car, Menu, Settings, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen, UserSquare, Bell, Check, Trash2, Info, Network } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
@@ -51,6 +51,7 @@ const navItems = [
 ];
 
 const bottomNavItems = [
+    { href: '/nexus', label: 'NexusBridge', icon: Network, roles: ['admin'] },
     { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['admin', 'manager', 'employee'] },
     { href: '/perfis', label: 'Gerenciar Perfis', icon: UserCog, roles: ['admin'] },
     { href: '/docs', label: 'Central de Ajuda', icon: BookOpen, roles: ['admin', 'manager', 'employee'] },
