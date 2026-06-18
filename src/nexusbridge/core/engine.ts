@@ -1,0 +1,73 @@
+
+/**
+ * @fileOverview NexusBridge Core Engine
+ * Responsável por gerenciar o fluxo: Request -> Match Route -> Adapter -> Transform -> Response
+ */
+
+import config from '../config/nexus-settings.json';
+import { HttpAdapter } from '../adapters/http-adapter';
+import { DataTransformer } from '../transformers/data-transformer';
+
+export interface NexusBridgeRequest {
+  path: string;
+  method: string;
+  body?: any;
+  headers?: any;
+}
+
+export class NexusBridge {
+  private adapter: HttpAdapter;
+  private transformer: DataTransformer;
+
+  constructor() {
+    this.adapter = new HttpAdapter();
+    this.transformer = new DataTransformer();
+  }
+
+  async handleRequest(request: NexusBridgeRequest) {
+    console.log(`[NexusBridge] Processing ${request.method} ${request.path}`);
+
+    // 1. Encontrar a rota correspondente
+    const route = config.routes.find(r => r.path === request.path && r.method === request.method);
+
+    if (!route) {
+      return {
+        status: 404,
+        data: { message: `NexusBridge: Route not found for ${request.path}` }
+      };
+    }
+
+    // 2. Resolver o Backend
+    const backend = (config.backends as any)[route.backendId];
+    if (!backend) {
+      throw new Error(`NexusBridge: Backend ${route.backendId} not configured.`);
+    }
+
+    const targetUrl = `${backend.baseUrl}${route.target}`;
+
+    try {
+      // 3. Executar a requisição via Adaptador
+      const response = await this.adapter.execute({
+        url: targetUrl,
+        method: request.method,
+        body: request.body,
+        headers: request.headers
+      });
+
+      // 4. Transformar a Resposta se necessário
+      const transformedData = this.transformer.transform(response.data, route.transformer);
+
+      return {
+        status: response.status,
+        data: transformedData
+      };
+
+    } catch (error: any) {
+      console.error(`[NexusBridge] Error executing request:`, error);
+      return {
+        status: 500,
+        data: { message: "NexusBridge internal execution error.", detail: error.message }
+      };
+    }
+  }
+}

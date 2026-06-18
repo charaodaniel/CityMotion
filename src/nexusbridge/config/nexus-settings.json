@@ -1,0 +1,36 @@
+
+{
+  "backends": {
+    "local-sim": {
+      "baseUrl": "http://localhost:9002/api",
+      "description": "API de Simulação Interna (JSON Files)"
+    },
+    "node-backend": {
+      "baseUrl": "http://localhost:3001/api",
+      "description": "Servidor Backend Principal (Node/SQLite)"
+    }
+  },
+  "routes": [
+    {
+      "path": "users",
+      "method": "GET",
+      "backendId": "local-sim",
+      "target": "/data?type=employees",
+      "transformer": "identity"
+    },
+    {
+      "path": "fleet",
+      "method": "GET",
+      "backendId": "local-sim",
+      "target": "/data?type=vehicles",
+      "transformer": "identity"
+    },
+    {
+      "path": "auth/login",
+      "method": "POST",
+      "backendId": "node-backend",
+      "target": "/login",
+      "transformer": "auth"
+    }
+  ]
+}

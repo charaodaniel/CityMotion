@@ -1,48 +1,36 @@
+
 # 📋 CityMotion - Lista de Tarefas (Recapitulação e Roadmap)
 
 Este arquivo organiza o que já foi construído e o que ainda pode ser explorado no CityMotion.
 
 ## ✅ Funcionalidades Implementadas (Protótipo Completo)
 
+### **Arquitetura e Integração**
+- [x] **NexusBridge:** Implementada camada de adaptação de rotas para multi-backend.
+- [x] **Configuração via JSON:** Gerenciamento de endpoints e backends centralizado.
+- [x] **Transformers:** Estrutura inicial para normalização de respostas de API.
+
 ### **Autenticação e Perfis**
-- [x] **Login Simulado:** Troca rápida de perfis para demonstração.
+- [x] **Login Simulado/Real:** Suporte a diferentes fluxos de acesso.
 - [x] **Hierarquia de Permissões:** Admin, Gestor, Motorista, Funcionário e Mecânico.
-- [x] **Multi-setor:** Seleção de secretaria para gestores com acúmulo de cargos.
-- [x] **Perfil Híbrido:** Gestor pode fazer solicitações como funcionário comum.
+- [x] **Multi-setor:** Seleção de unidade para gestores híbridos.
+- [x] **Notificações:** Alertas em tempo real para novos pedidos e viagens.
 
 ### **Dashboard e UI/UX**
-- [x] **Loading Skeletons:** Animações de carregamento em todas as páginas principais.
-- [x] **Layout Adaptativo:** Menu lateral inteligente que muda conforme o cargo.
-- [x] **Gráficos:** Visão geral de viagens e atividade de motoristas (Recharts).
-- [x] **Performance:** Otimização do fluxo de login e redirecionamento.
+- [x] **Layout Adaptativo:** Sidebar inteligente por cargo.
+- [x] **Modo SaaS:** Linguagem genérica para atender diversos tipos de empresas.
+- [x] **LGPD:** Banner de consentimento e política de privacidade integrada.
 
 ### **Operações de Frota**
-- [x] **Painel Kanban:** Gestão de viagens em tempo real.
-- [x] **Checklists Digitais:** Verificação obrigatória antes e depois de cada trajeto.
-- [x] **Relatórios de Campo:** Registro de sinistros e abastecimentos durante a viagem.
-- [x] **Gestão de Escalas:** Calendário de plantões e folgas.
-
-### **Setor de Mecânica**
-- [x] **Dashboard Exclusivo:** KPIs de manutenção e atalhos rápidos.
-- [x] **Chamados de Manutenção:** Fluxo de abertura e conclusão de serviços.
-- [x] **Pedido de Peças:** Integração com o setor de compras.
-
-### **Recursos Especiais**
-- [x] **Relatórios PDF:** Geração de documentos com filtros avançados.
-- [x] **Crachá Virtual:** Identificação online via QR Code (página pública).
-- [x] **Desktop (Electron):** Janela moderna e clean para uso em computadores da prefeitura.
+- [x] **Painel Kanban:** Gestão visual de viagens.
+- [x] **Checklists Digitais:** Verificação de segurança pré e pós-trajeto.
+- [x] **Mecânica:** Dashboard exclusivo e fluxo de ordens de serviço.
 
 ## 🛠️ Próximos Passos Sugeridos
 
-- [ ] **Integração de Back-end (Produção):**
-    - Conectar definitivamente o front-end ao servidor Node.js/SQLite criado.
-    - Implementar persistência real de dados (atualmente os dados resetam ao recarregar).
-- [ ] **Notificações em Tempo Real:**
-    - Alertar motoristas sobre novas viagens e gestores sobre novos pedidos.
-- [ ] **Módulo de Combustível Avançado:**
-    - Controle de média de consumo (KM/L) por veículo.
-- [ ] **Upload Real de Arquivos:**
-    - Implementar o salvamento de fotos de CNH e documentos no servidor.
+- [ ] **Migrar Frontend para NexusBridge:** Alterar as chamadas `fetch` no `AppProvider` para usarem `/api/nexus/*`.
+- [ ] **Mapeamento de Parâmetros Dinâmicos:** Implementar suporte a `:id` na engine do NexusBridge.
+- [ ] **Middlewares de Log:** Adicionar registro de todas as transações que passam pela ponte.
 
 ---
-**CityMotion — Mobilidade, transparência e eficiência para a gestão pública municipal.**
+**CityMotion — Mobilidade, transparência e eficiência para a gestão moderna.**
