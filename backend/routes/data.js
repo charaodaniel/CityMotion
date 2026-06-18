@@ -4,10 +4,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
 module.exports = function(db) {
-    // Middleware de autenticação para todas as rotas de dados
-    router.use(authMiddleware);
-
-    // Rota para buscar todos os dados iniciais
+    // Rota para buscar todos os dados iniciais consolidada
     router.get('/data', (req, res) => {
         const queries = {
             schedules: 'SELECT * FROM trips',
@@ -26,20 +23,23 @@ module.exports = function(db) {
                     if (err) {
                         reject(err);
                     } else {
-                        // Remove a senha do payload dos funcionários e parseia os setores
-                        if (key === 'employees') {
-                            results[key] = rows.map(row => {
-                                const { password, ...rest } = row;
-                                try {
-                                    rest.sector = JSON.parse(rest.sector);
-                                } catch (e) {
-                                    rest.sector = [rest.sector]; // Fallback para string simples
-                                }
-                                return rest;
-                            });
-                        } else {
-                            results[key] = rows;
-                        }
+                        // Tratamento de campos JSON
+                        results[key] = rows.map(row => {
+                            const newRow = { ...row };
+                            // Remover senhas por segurança
+                            if (key === 'employees') delete newRow.password;
+                            
+                            // Parsear campos que são strings JSON no SQLite
+                            if (key === 'employees' && newRow.sector) {
+                                try { newRow.sector = JSON.parse(newRow.sector); } catch(e) { newRow.sector = [newRow.sector]; }
+                            }
+                            if (key === 'schedules') {
+                                if (newRow.passengers) try { newRow.passengers = JSON.parse(newRow.passengers); } catch(e) { newRow.passengers = []; }
+                                if (newRow.startChecklist) try { newRow.startChecklist = JSON.parse(newRow.startChecklist); } catch(e) { newRow.startChecklist = []; }
+                                if (newRow.endChecklist) try { newRow.endChecklist = JSON.parse(newRow.endChecklist); } catch(e) { newRow.endChecklist = []; }
+                            }
+                            return newRow;
+                        });
                         resolve();
                     }
                 });
@@ -51,24 +51,23 @@ module.exports = function(db) {
                 res.json(results);
             })
             .catch(err => {
-                console.error('Erro ao buscar todos os dados:', err);
+                console.error('Erro ao buscar dados do banco:', err);
                 res.status(500).json({ message: 'Erro ao buscar dados do banco.' });
             });
     });
 
-    // Exemplo de uma rota POST para adicionar uma solicitação de veículo
-    router.post('/vehicle-requests', (req, res) => {
-        const { title, sector, details, priority, requester } = req.body;
+    // Endpoints específicos para cada recurso via GET (útil para o NexusBridge)
+    router.get('/employees', (req, res) => {
+        db.all('SELECT id, name, email, role, status, sector FROM employees', [], (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(rows.map(r => ({ ...r, sector: JSON.parse(r.sector) })));
+        });
+    });
 
-        const sql = `INSERT INTO vehicle_requests (title, sector, details, priority, requester, status, requestDate)
-                     VALUES (?, ?, ?, ?, ?, 'Pendente', datetime('now'))`;
-
-        db.run(sql, [title, sector, details, priority, requester], function(err) {
-            if (err) {
-                console.error('Erro ao inserir solicitação:', err);
-                return res.status(500).json({ message: 'Erro ao criar solicitação.' });
-            }
-            res.status(201).json({ id: this.lastID, ...req.body });
+    router.get('/vehicles', (req, res) => {
+        db.all('SELECT * FROM vehicles', [], (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(rows);
         });
     });
 

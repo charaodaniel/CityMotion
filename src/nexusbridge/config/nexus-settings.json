@@ -31,6 +31,20 @@
       "backendId": "node-backend",
       "target": "/login",
       "transformer": "auth"
+    },
+    {
+      "path": "test/db-employees",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/employees",
+      "transformer": "identity"
+    },
+    {
+      "path": "test/db-vehicles",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/vehicles",
+      "transformer": "identity"
     }
   ]
 }
