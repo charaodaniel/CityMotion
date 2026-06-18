@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import React, { useMemo } from 'react';
@@ -27,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, Menu, Settings, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen, UserSquare } from 'lucide-react';
+import { LayoutDashboard, Car, Menu, Settings, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen, UserSquare, Bell, Check, Trash2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
@@ -35,6 +33,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 
 const navItems = [
@@ -78,7 +79,9 @@ const docsSidebarNavItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { userRole, logout, currentUser, isLoading, selectedSector, setSelectedSector } = useApp();
+  const { userRole, logout, currentUser, isLoading, selectedSector, setSelectedSector, notifications, markNotificationAsRead, clearNotifications } = useApp();
+
+  const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
 
   const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
   const isDocsPage = pathname.startsWith('/docs');
@@ -106,7 +109,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     switch (role) {
       case 'admin': return 'Administrador';
       case 'manager': return 'Gestor';
-      case 'employee': return currentUser?.role || 'Funcionário'; // Show specific role if available
+      case 'employee': return currentUser?.role || 'Funcionário'; 
       default: return 'Desconhecido'
     }
   }
@@ -166,7 +169,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </div>
   )
 
-  // Redirect logic for managers without a selected sector
   if (userRole === 'manager' && !selectedSector && pathname !== '/select-sector') {
       if (!isLoading) {
           router.replace('/select-sector');
@@ -178,7 +180,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       );
   }
 
-  // Render a specific layout for the sector selection page
   if (pathname === '/select-sector') {
     return (
       <div className="min-h-screen bg-background">
@@ -275,6 +276,56 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </Button>
                 </SidebarTrigger>
                 <div className="ml-auto flex items-center gap-4">
+                  {/* Notification Center */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="relative">
+                        <Bell className="h-5 w-5" />
+                        {unreadCount > 0 && (
+                          <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 rounded-full text-[10px]">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </Badge>
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-80">
+                      <DropdownMenuLabel className="flex items-center justify-between">
+                        <span>Notificações</span>
+                        {notifications.length > 0 && (
+                           <Button variant="ghost" size="sm" className="h-auto p-1 text-xs text-muted-foreground" onClick={clearNotifications}>
+                             <Trash2 className="h-3 w-3 mr-1" /> Limpar
+                           </Button>
+                        )}
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <ScrollArea className="h-80">
+                        {notifications.length > 0 ? (
+                          notifications.map((n) => (
+                            <DropdownMenuItem 
+                              key={n.id} 
+                              className={cn("flex flex-col items-start p-4 cursor-pointer gap-1 border-b last:border-0", !n.read && "bg-muted/40")}
+                              onClick={() => markNotificationAsRead(n.id)}
+                            >
+                              <div className="flex w-full items-center justify-between">
+                                <span className={cn("text-sm font-semibold", !n.read && "text-primary")}>{n.title}</span>
+                                {!n.read && <div className="h-2 w-2 rounded-full bg-primary" />}
+                              </div>
+                              <p className="text-xs text-muted-foreground line-clamp-2">{n.message}</p>
+                              <span className="text-[10px] text-muted-foreground mt-1">
+                                {formatDistanceToNow(new Date(n.date), { addSuffix: true, locale: ptBR })}
+                              </span>
+                            </DropdownMenuItem>
+                          ))
+                        ) : (
+                          <div className="flex flex-col items-center justify-center p-8 text-center">
+                            <Info className="h-8 w-8 text-muted-foreground mb-2" />
+                            <p className="text-sm text-muted-foreground">Nenhuma notificação nova.</p>
+                          </div>
+                        )}
+                      </ScrollArea>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
                   {isLoading || !currentUser ? (
                     <Skeleton className="h-9 w-9 rounded-full" />
                   ) : (

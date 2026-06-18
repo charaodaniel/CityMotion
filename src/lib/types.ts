@@ -1,5 +1,3 @@
-
-
 export type UserRole = 'admin' | 'manager' | 'employee';
 
 export type EmployeeStatus = 'Disponível' | 'Em Viagem' | 'Afastado' | 'Em Serviço';
@@ -118,4 +116,13 @@ export type MaintenanceRequest = {
     type: MaintenanceRequestType;
     description: string;
     status: MaintenanceRequestStatus;
+};
+
+export type AppNotification = {
+  id: string;
+  title: string;
+  message: string;
+  type: 'request' | 'trip' | 'maintenance' | 'system';
+  date: string;
+  read: boolean;
 };

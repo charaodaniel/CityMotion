@@ -1,10 +1,10 @@
-
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus, UserRole } from '@/lib/types';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
+import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus, UserRole, AppNotification } from '@/lib/types';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 interface AppContextType {
   isLoading: boolean;
@@ -38,6 +38,11 @@ interface AppContextType {
   setMaintenanceRequests: React.Dispatch<React.SetStateAction<MaintenanceRequest[]>>;
   addMaintenanceRequest: (request: Omit<MaintenanceRequest, 'id' | 'status' | 'requestDate' | 'requesterName'>) => void;
   updateMaintenanceRequestStatus: (id: string, status: MaintenanceRequestStatus) => void;
+
+  notifications: AppNotification[];
+  addNotification: (notification: Omit<AppNotification, 'id' | 'date' | 'read'>) => void;
+  markNotificationAsRead: (id: string) => void;
+  clearNotifications: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -52,6 +57,7 @@ const emailToIdMap: Record<string, string> = {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [userEmailForSimulation, setUserEmailForSimulation] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole>('employee');
@@ -65,6 +71,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([]);
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+
+  // Refs to keep track of previous states for notification triggers
+  const prevRequestsLength = useRef<number>(0);
+  const prevSchedulesLength = useRef<number>(0);
 
   const setSelectedSector = (sector: string | null) => {
     if (typeof window !== 'undefined') {
@@ -92,6 +103,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSectors(data.sectors || []);
       setWorkSchedules(data.workSchedules || []);
       setMaintenanceRequests(data.maintenanceRequests || []);
+      
+      // Initialize refs
+      prevRequestsLength.current = data.requests?.length || 0;
+      prevSchedulesLength.current = data.schedules?.length || 0;
+
+      // Load notifications from localStorage
+      const savedNotifications = localStorage.getItem('app_notifications');
+      if (savedNotifications) {
+        setNotifications(JSON.parse(savedNotifications));
+      }
+
       return data;
     } catch (error) {
       console.error("Não foi possível buscar os dados:", error);
@@ -100,13 +122,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const addNotification = useCallback((notification: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
+    const newNotif: AppNotification = {
+      ...notification,
+      id: `NOTIF-${Date.now()}`,
+      date: new Date().toISOString(),
+      read: false
+    };
+    setNotifications(prev => {
+      const updated = [newNotif, ...prev].slice(0, 50); // Keep last 50
+      localStorage.setItem('app_notifications', JSON.stringify(updated));
+      return updated;
+    });
+
+    toast({
+      title: newNotif.title,
+      description: newNotif.message,
+    });
+  }, [toast]);
+
+  const markNotificationAsRead = (id: string) => {
+    setNotifications(prev => {
+      const updated = prev.map(n => n.id === id ? { ...n, read: true } : n);
+      localStorage.setItem('app_notifications', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+    localStorage.removeItem('app_notifications');
+  };
 
   const login = useCallback(async (email: string) => {
     setIsLoading(true);
     localStorage.setItem('userEmailForSimulation', email);
     setUserEmailForSimulation(email);
     
-    // As a simulation, we refetch data on every login to reset state
     const data = await fetchData();
     if (!data) {
         setIsLoading(false);
@@ -128,11 +180,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       setUserRole(determinedRole);
       
-      // If the manager is associated with more than one sector, prompt for selection.
       if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length > 1) {
           router.push('/select-sector');
       } else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length === 1) {
-          setSelectedSector(user.sector[0]); // Auto-select the only sector
+          setSelectedSector(user.sector[0]);
           router.push('/dashboard');
       }
       else {
@@ -141,7 +192,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     setIsLoading(false);
   }, [fetchData, router]);
-
 
   const logout = () => {
     localStorage.removeItem('userEmailForSimulation');
@@ -159,14 +209,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (storedEmail) {
         await login(storedEmail);
       } else {
-        fetchData(); // Fetch data even for public pages
+        fetchData();
       }
     };
-
     initializeApp();
-    // We only want this to run once on initial load. `login` and `fetchData` are memoized.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Effect to watch for external alerts (Simulation for Demo)
+  useEffect(() => {
+    if (!currentUser || isLoading) return;
+
+    // Trigger notification if a new request appears for the manager's sector
+    if (userRole === 'manager' && selectedSector && vehicleRequests.length > prevRequestsLength.current) {
+      const latestRequest = vehicleRequests[0];
+      if (latestRequest.sector === selectedSector && latestRequest.status === 'Pendente' && latestRequest.requester !== currentUser.name) {
+        addNotification({
+          title: "Nova Solicitação de Veículo",
+          message: `${latestRequest.requester} solicitou transporte: "${latestRequest.title}"`,
+          type: 'request'
+        });
+      }
+    }
+    prevRequestsLength.current = vehicleRequests.length;
+
+    // Trigger notification if a new trip appears for a driver
+    const isDriver = currentUser.role.toLowerCase().includes('motorista');
+    if (isDriver && schedules.length > prevSchedulesLength.current) {
+      const latestTrip = schedules[0];
+      if (latestTrip.driver === currentUser.name && latestTrip.status === 'Agendada') {
+        addNotification({
+          title: "Nova Viagem Agendada",
+          message: `Você tem uma nova viagem: "${latestTrip.title}" para ${latestTrip.destination}.`,
+          type: 'trip'
+        });
+      }
+    }
+    prevSchedulesLength.current = schedules.length;
+
+  }, [vehicleRequests, schedules, userRole, selectedSector, currentUser, isLoading, addNotification]);
 
 
   const addVehicleRequest = (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => {
@@ -213,8 +293,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 category: request.sector,
             };
             setSchedules(prevSchedules => [newSchedule, ...prevSchedules]);
-            setEmployees(employees.map(d => d.id === availableDriver.id ? { ...d, status: 'Em Serviço' } : d));
-            setVehicles(vehicles.map(v => v.id === availableVehicle.id ? { ...v, status: 'Em Serviço' } : v));
+            setEmployees(prev => prev.map(d => d.id === availableDriver.id ? { ...d, status: 'Em Serviço' } : d));
+            setVehicles(prev => prev.map(v => v.id === availableVehicle.id ? { ...v, status: 'Em Serviço' } : v));
         } else {
             console.warn("No available driver or vehicle for the approved request.");
         }
@@ -262,7 +342,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         vehicles, setVehicles,
         sectors, setSectors,
         workSchedules, setWorkSchedules,
-        maintenanceRequests, setMaintenanceRequests, addMaintenanceRequest, updateMaintenanceRequestStatus
+        maintenanceRequests, setMaintenanceRequests, addMaintenanceRequest, updateMaintenanceRequestStatus,
+        notifications, addNotification, markNotificationAsRead, clearNotifications
     }}>
       {children}
     </AppContext.Provider>
