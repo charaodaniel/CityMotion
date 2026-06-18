@@ -1,55 +1,48 @@
-# 📋 CityMotion - Lista de Tarefas (To-Do)
+# 📋 CityMotion - Lista de Tarefas (Recapitulação e Roadmap)
 
-Este arquivo organiza as funcionalidades pendentes e melhorias a serem implementadas no projeto CityMotion.
+Este arquivo organiza o que já foi construído e o que ainda pode ser explorado no CityMotion.
 
-## 🚀 Prioridade Alta
+## ✅ Funcionalidades Implementadas (Protótipo Completo)
 
--   [ ] **Corrigir Navegação e Páginas Duplicadas**
-    -   [x] Renomear o link "Deslocamentos" para "Viagens" no menu lateral.
-    -   [x] Ajustar a página `/escalas` para gerenciar escalas de trabalho (plantões, folgas) em vez de duplicar a página de viagens.
+### **Autenticação e Perfis**
+- [x] **Login Simulado:** Troca rápida de perfis para demonstração.
+- [x] **Hierarquia de Permissões:** Admin, Gestor, Motorista, Funcionário e Mecânico.
+- [x] **Multi-setor:** Seleção de secretaria para gestores com acúmulo de cargos.
+- [x] **Perfil Híbrido:** Gestor pode fazer solicitações como funcionário comum.
 
--   [ ] **Melhorar Página de Relatórios (`/relatorios`)**
-    -   [x] Adicionar cartões de resumo (KPIs) para "Total de Viagens", "Quilometragem Total" e "Veículo Mais Utilizado".
-    -   [x] Garantir que os KPIs sejam atualizados com base nos filtros aplicados.
-    -   [x] Adicionar filtros por "Motorista" e "Funcionário".
+### **Dashboard e UI/UX**
+- [x] **Loading Skeletons:** Animações de carregamento em todas as páginas principais.
+- [x] **Layout Adaptativo:** Menu lateral inteligente que muda conforme o cargo.
+- [x] **Gráficos:** Visão geral de viagens e atividade de motoristas (Recharts).
+- [x] **Performance:** Otimização do fluxo de login e redirecionamento.
 
--   [ ] **Implementar Checklists de Viagem**
-    -   [x] Criar modal de checklist de pré-viagem ao clicar em "Iniciar".
-    -   [x] Incluir campo para KM inicial no checklist.
-    -   [x] Incluir campo para observações no checklist.
-    -   [x] Criar modal de checklist de pós-viagem ao clicar em "Finalizar".
-    -   [x] Incluir campos para KM final e observações.
-    -   [x] Exibir os checklists preenchidos (itens e observações) nos detalhes da viagem.
+### **Operações de Frota**
+- [x] **Painel Kanban:** Gestão de viagens em tempo real.
+- [x] **Checklists Digitais:** Verificação obrigatória antes e depois de cada trajeto.
+- [x] **Relatórios de Campo:** Registro de sinistros e abastecimentos durante a viagem.
+- [x] **Gestão de Escalas:** Calendário de plantões e folgas.
 
-## 🛠️ Próximas Funcionalidades
+### **Setor de Mecânica**
+- [x] **Dashboard Exclusivo:** KPIs de manutenção e atalhos rápidos.
+- [x] **Chamados de Manutenção:** Fluxo de abertura e conclusão de serviços.
+- [x] **Pedido de Peças:** Integração com o setor de compras.
 
--   [ ] **Implementar Fluxo de Aprovação de Viagens**
-    -   [ ] Conectar o formulário "Pedir Transporte" para que ele crie uma "Solicitação de Veículo" com status "Pendente".
-    -   [ ] Exibir solicitações pendentes no painel do "Gestor de Setor" (`ManagerDashboard`).
-    -   [ ] Implementar a lógica nos botões "Aprovar" e "Rejeitar" para que mudem o status da solicitação.
-    -   [ ] Uma vez aprovada, a solicitação deve se tornar uma viagem "Agendada" na página `/viagens`.
+### **Recursos Especiais**
+- [x] **Relatórios PDF:** Geração de documentos com filtros avançados.
+- [x] **Crachá Virtual:** Identificação online via QR Code (página pública).
+- [x] **Desktop (Electron):** Janela moderna e clean para uso em computadores da prefeitura.
 
--   [ ] **Dinamizar Página de Perfil (`/perfil`)**
-    -   [ ] Fazer com que a página exiba as informações do usuário "logado" (simulado pelo seletor de perfil).
-    -   [ ] O histórico de viagens na página de perfil deve ser do usuário selecionado.
+## 🛠️ Próximos Passos Sugeridos
 
--   [ ] **Aprimorar Painel Principal (`/`)**
-    -   [ ] Adicionar mais cartões de resumo (KPIs) ao `AdminDashboard`, como "Total de Veículos na Frota" e "Viagens em Andamento".
+- [ ] **Integração de Back-end (Produção):**
+    - Conectar definitivamente o front-end ao servidor Node.js/SQLite criado.
+    - Implementar persistência real de dados (atualmente os dados resetam ao recarregar).
+- [ ] **Notificações em Tempo Real:**
+    - Alertar motoristas sobre novas viagens e gestores sobre novos pedidos.
+- [ ] **Módulo de Combustível Avançado:**
+    - Controle de média de consumo (KM/L) por veículo.
+- [ ] **Upload Real de Arquivos:**
+    - Implementar o salvamento de fotos de CNH e documentos no servidor.
 
-## ✨ Melhorias e UI/UX
-
--   [ ] **Criar Página de Login (Visual)**
-    -   [ ] Desenvolver a interface da página de login, sem a lógica de autenticação por enquanto.
-
--   [ ] **Internacionalização (Tradução)**
-    -   [ ] Traduzir componentes de UI que ainda exibem textos em inglês (ex: `Calendar`).
-
--   [ ] **Gerenciamento de Documentos**
-    -   [ ] Implementar a lógica para upload e visualização de documentos para veículos e motoristas.
-
-## 🔮 Futuro (Pós-Apresentação)
-
--   [ ] **Integração com Backend**
-    -   [ ] Substituir os arquivos JSON por chamadas de API para um backend real (ex: PocketBase).
--   [ ] **Build para Desktop**
-    -   [ ] Configurar o Electron para empacotar a aplicação para desktop.
+---
+**CityMotion — Mobilidade, transparência e eficiência para a gestão pública municipal.**
