@@ -12,10 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, ShieldCheck } from 'lucide-react';
 import { Calendar } from './ui/calendar';
 import { format } from 'date-fns';
 import { useApp } from '@/contexts/app-provider';
+import Link from 'next/link';
 
 
 const formSchema = z.object({
@@ -73,7 +74,7 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
           name="sector"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Seu Setor</FormLabel>
+              <FormLabel>Seu Setor / Unidade</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -96,9 +97,9 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Motivo da Viagem</FormLabel>
+              <FormLabel>Motivo da Viagem / Trabalho</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: Levar documentos ao Fórum" {...field} />
+                <Input placeholder="Ex: Levar documentos ao Fórum ou Visita técnica" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -110,7 +111,7 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
             name="destination"
             render={({ field }) => (
             <FormItem>
-                <FormLabel>Destino (Opcional)</FormLabel>
+                <FormLabel>Destino</FormLabel>
                 <FormControl>
                 <Input placeholder="Endereço ou local de destino" {...field} />
                 </FormControl>
@@ -125,7 +126,7 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
                 name="departureDate"
                 render={({ field }) => (
                 <FormItem className="flex flex-col">
-                    <FormLabel>Data Desejada (Opcional)</FormLabel>
+                    <FormLabel>Data Desejada</FormLabel>
                     <Popover>
                     <PopoverTrigger asChild>
                         <FormControl>
@@ -154,7 +155,7 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
                 name="departureTime"
                 render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Horário (Opcional)</FormLabel>
+                    <FormLabel>Horário</FormLabel>
                     <FormControl>
                     <Input type="time" {...field} />
                     </FormControl>
@@ -169,7 +170,7 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
           name="details"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Observações (Opcional)</FormLabel>
+              <FormLabel>Observações Adicionais</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Alguma informação adicional importante?"
@@ -182,8 +183,15 @@ export function QuickRequestForm({ onFormSubmit }: QuickRequestFormProps) {
           )}
         />
 
+        <div className="bg-muted/50 p-3 rounded-lg flex items-start gap-2 border">
+            <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-[10px] text-muted-foreground leading-tight">
+                Os dados geográficos e motivos de viagem informados são coletados exclusivamente para fins de auditoria e otimização logística da organização, em conformidade com a <Link href="/privacy" className="underline">Política de Privacidade (LGPD)</Link>.
+            </p>
+        </div>
+
         <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
-          Enviar Pedido Rápido
+          Enviar Pedido de Transporte
         </Button>
       </form>
     </Form>

@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useForm } from 'react-hook-form';
@@ -7,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
@@ -15,8 +14,9 @@ import type { Employee } from '@/lib/types';
 import { useEffect } from 'react';
 import { useApp } from '@/contexts/app-provider';
 import { Checkbox } from './ui/checkbox';
+import { ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
 
-// Esquema Zod atualizado para lidar com objetos de arquivo
 const formSchema = z.object({
   name: z.string().min(2, "O nome completo deve ter pelo menos 2 caracteres."),
   matricula: z.string().min(1, "A matrícula é obrigatória."),
@@ -27,6 +27,7 @@ const formSchema = z.object({
   sector: z.array(z.string()).min(1, "Selecione ao menos um setor."),
   idPhoto: z.any().optional(),
   cnhPhoto: z.any().optional(),
+  lgpdConsent: z.boolean().refine(val => val === true, "É necessário aceitar os termos de uso de dados."),
 });
 
 interface RegisterEmployeeFormProps {
@@ -49,6 +50,7 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
       role: '',
       cnh: '',
       sector: [],
+      lgpdConsent: isEditMode, // No modo edição assume-se que já consentiu
     },
   });
 
@@ -61,13 +63,15 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
         role: existingEmployee.role,
         cnh: existingEmployee.cnh,
         sector: Array.isArray(existingEmployee.sector) ? existingEmployee.sector : [existingEmployee.sector],
+        lgpdConsent: true,
       });
     }
   }, [isEditMode, existingEmployee, form]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    const { lgpdConsent, ...rest } = values;
     const dataToSubmit: Partial<Employee> = {
-      ...values,
+      ...rest,
       idPhoto: values.idPhoto?.[0]?.name || existingEmployee?.idPhoto,
       cnhPhoto: values.cnhPhoto?.[0]?.name || existingEmployee?.cnhPhoto,
     };
@@ -79,12 +83,12 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
     onFormSubmit(dataToSubmit);
     toast({
       title: isEditMode ? "Cadastro Atualizado" : "Cadastro Enviado",
-      description: `O cadastro do funcionário foi ${isEditMode ? 'atualizado' : 'realizado'} com sucesso.`,
+      description: `O cadastro do colaborador foi ${isEditMode ? 'atualizado' : 'realizado'} com sucesso.`,
     });
     form.reset();
   };
   
-  const employeeRoles = ["Motorista", "Motorista de Ambulância", "Motorista Escolar", "Secretário(a)", "Médico(a)", "Enfermeiro(a)", "Técnico Administrativo", "Professor(a)", "Engenheiro(a)", "Operador de Máquinas", "Prefeito", "Assessor de Comunicação", "Agente de Arrecadação", "Assistente Social", "Psicóloga", "Veterinário", "Estagiário de TI"];
+  const employeeRoles = ["Motorista", "Motorista de Ambulância", "Motorista Escolar", "Secretário(a)", "Médico(a)", "Enfermeiro(a)", "Técnico Administrativo", "Professor(a)", "Engenheiro(a)", "Operador de Máquinas", "Gerente Geral", "Diretor", "CEO", "Coordenador de Setor", "Supervisor", "Estagiário", "Técnico de TI"];
 
 
   return (
@@ -98,7 +102,7 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Email Corporativo</FormLabel>
                     <FormControl>
                       <Input type="email" placeholder="email.de@acesso.com" {...field} />
                     </FormControl>
@@ -123,7 +127,10 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
         </div>
         <Separator />
         <div>
-          <h3 className="text-lg font-semibold mb-4">Informações Pessoais e Funcionais</h3>
+          <h3 className="text-lg font-semibold mb-4 text-primary flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5" />
+            Informações Pessoais e Funcionais (LGPD)
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
@@ -132,7 +139,7 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
                 <FormItem>
                   <FormLabel>Nome Completo</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome do funcionário" {...field} />
+                    <Input placeholder="Nome do colaborador" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -143,7 +150,7 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
               name="matricula"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Matrícula</FormLabel>
+                  <FormLabel>Matrícula / ID Interno</FormLabel>
                   <FormControl>
                     <Input placeholder="Número da matrícula" {...field} />
                   </FormControl>
@@ -177,10 +184,13 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
               name="cnh"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nº da CNH (se aplicável)</FormLabel>
+                  <FormLabel>Nº da CNH (apenas para motoristas)</FormLabel>
                   <FormControl>
                     <Input placeholder="0123456789" {...field} />
                   </FormControl>
+                  <FormDescription className="text-[10px]">
+                    Dado coletado para fins de validação jurídica de condutor.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -240,7 +250,7 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
         <div>
           <h3 className="text-lg font-semibold mb-4">Documentação</h3>
            <p className="text-sm text-muted-foreground mb-4">
-              {isEditMode ? "Para alterar um documento, basta fazer um novo upload." : "Faça o upload dos documentos necessários."}
+              {isEditMode ? "Para alterar um documento, basta fazer um novo upload." : "O upload de documentos é criptografado e de acesso restrito."}
             </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
@@ -248,7 +258,7 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
               name="idPhoto"
               render={({ field: { value, onChange, ...fieldProps } }) => (
                 <FormItem>
-                  <FormLabel>Foto 3x4</FormLabel>
+                  <FormLabel>Foto Funcional (3x4)</FormLabel>
                   <FormControl>
                     <Input type="file" accept="image/*" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
                   </FormControl>
@@ -261,7 +271,7 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
               name="cnhPhoto"
               render={({ field: { value, onChange, ...fieldProps } }) => (
                 <FormItem>
-                  <FormLabel>Foto da CNH (se motorista)</FormLabel>
+                  <FormLabel>Foto da CNH (se condutor)</FormLabel>
                   <FormControl>
                     <Input type="file" accept="image/*,application/pdf" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
                   </FormControl>
@@ -272,9 +282,35 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
           </div>
         </div>
 
+        <Separator />
+
+        <FormField
+          control={form.control}
+          name="lgpdConsent"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-muted/30">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>
+                  Declaro que li e aceito a <Link href="/privacy" className="text-primary underline">Política de Privacidade</Link>
+                </FormLabel>
+                <FormDescription className="text-xs">
+                  Autorizo o processamento dos dados acima pela organização para fins de gestão operacional da frota municipal/corporativa, conforme a LGPD.
+                </FormDescription>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
+
         <div className="flex justify-end">
             <Button type="submit" className="w-full md:w-auto">
-                {isEditMode ? 'Salvar Alterações' : 'Cadastrar Funcionário'}
+                {isEditMode ? 'Salvar Alterações' : 'Cadastrar Colaborador'}
             </Button>
         </div>
       </form>

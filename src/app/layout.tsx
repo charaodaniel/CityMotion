@@ -1,16 +1,17 @@
+
 import type { Metadata } from 'next';
 import { AppProvider } from '@/contexts/app-provider';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
-
+import { LGPDBanner } from '@/components/lgpd-banner';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
   title: 'CityMotion',
-  description: 'Gestão de motoristas e táxis para uma prefeitura',
+  description: 'Sistema inteligente de gestão de frota corporativa',
 };
 
 export default function RootLayout({
@@ -24,6 +25,7 @@ export default function RootLayout({
         <AppProvider>
             {children}
             <Toaster />
+            <LGPDBanner />
         </AppProvider>
       </body>
     </html>

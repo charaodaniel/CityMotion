@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,11 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useApp } from "@/contexts/app-provider";
 import type { VehicleRequest, VehicleRequestStatus } from "@/lib/types";
-import { User, Mail, Building, ShieldCheck, Briefcase } from "lucide-react";
+import { User, Mail, Building, ShieldCheck, Briefcase, ShieldAlert, FileText } from "lucide-react";
 import { useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 function getStatusVariant(status: VehicleRequestStatus) {
   switch (status) {
@@ -63,18 +64,26 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-8 max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight font-headline">
-          Meu Perfil
-        </h1>
-        <p className="text-muted-foreground">
-          Suas informações pessoais e histórico de atividades.
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+            <h1 className="text-3xl font-bold tracking-tight font-headline">
+            Meu Perfil
+            </h1>
+            <p className="text-muted-foreground">
+            Suas informações funcionais e histórico de atividades.
+            </p>
+        </div>
+        <Button variant="outline" size="sm" asChild>
+            <Link href="/privacy">
+                <ShieldAlert className="mr-2 h-4 w-4" />
+                Sua Privacidade (LGPD)
+            </Link>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* User Info Card */}
-        <div className="md:col-span-1 space-y-8">
+        <div className="md:col-span-1 space-y-6">
             <Card>
                 <CardHeader className="items-center text-center">
                     <Avatar className="h-24 w-24 mb-4">
@@ -87,11 +96,11 @@ export default function ProfilePage() {
                 <CardContent className="space-y-4 text-sm">
                     <div className="flex items-center">
                         <Mail className="mr-3 h-4 w-4 text-muted-foreground" />
-                        <span>{currentUser.email || 'Não disponível'}</span>
+                        <span className="truncate">{currentUser.email || 'Não disponível'}</span>
                     </div>
                      <div className="flex items-center">
                         <Building className="mr-3 h-4 w-4 text-muted-foreground" />
-                        <span>Setor: <strong>{currentUser.sector}</strong></span>
+                        <span>Setor: <strong>{Array.isArray(currentUser.sector) ? currentUser.sector.join(', ') : currentUser.sector}</strong></span>
                     </div>
                      <div className="flex items-center">
                         <Briefcase className="mr-3 h-4 w-4 text-muted-foreground" />
@@ -103,6 +112,19 @@ export default function ProfilePage() {
                             <span>CNH: {currentUser.cnh}</span>
                         </div>
                     )}
+                </CardContent>
+            </Card>
+
+            <Card className="bg-muted/30">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-primary" />
+                        Dados e LGPD
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="text-[11px] text-muted-foreground leading-tight">
+                    Seus dados pessoais são processados apenas para finalidades legítimas de gestão de frota. 
+                    <Link href="/privacy" className="text-primary underline ml-1">Leia nossa política completa.</Link>
                 </CardContent>
             </Card>
         </div>
