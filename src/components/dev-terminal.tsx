@@ -81,15 +81,38 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
     switch (command) {
       case 'help':
         addLine('--- Comandos Disponíveis ---', 'system');
+        addLine('users           - Lista todos os funcionários do banco de dados (SQLite).');
         addLine('top | btop      - Mostra uso de CPU, RAM e Uptime em tempo real.');
         addLine('status          - Testa conectividade com NexusBridge e Banco SQLite.');
         addLine('whoami          - Exibe detalhes do seu perfil e permissões atuais.');
-        addLine('nexus <path>    - Executa consulta GET na ponte (Ex: nexus users).');
-        addLine('nexus-post <p>  - Envia dados via POST para a ponte (Ex: nexus-post test/db-employees {"name":"Teste"}).');
+        addLine('nexus <path>    - Executa consulta GET na ponte (Ex: nexus fleet).');
+        addLine('nexus-post <p>  - Envia dados via POST para a ponte (Ex: nexus-post employees {...}).');
         addLine('db-reset        - HARD RESET: Reinicia o backend e restaura o banco original.');
         addLine('clear | cls     - Limpa o histórico de mensagens deste console.');
         addLine('exit            - Fecha a janela do terminal de desenvolvedor.');
         addLine('----------------------------', 'system');
+        break;
+
+      case 'users':
+        addLine('Buscando lista de usuários no SQLite...', 'system');
+        try {
+            const res = await fetch('/api/nexus/test/db-employees');
+            const data = await res.json();
+            if (res.ok && Array.isArray(data)) {
+                addLine(`Encontrados ${data.length} registros:`, 'success');
+                addLine('ID  | NOME                 | CARGO', 'system');
+                addLine('------------------------------------------');
+                data.forEach((u: any) => {
+                    const idStr = String(u.id).padEnd(3);
+                    const nameStr = String(u.name).substring(0, 20).padEnd(20);
+                    addLine(`${idStr} | ${nameStr} | ${u.role}`);
+                });
+            } else {
+                addLine('Erro: Não foi possível obter a lista de usuários.', 'error');
+            }
+        } catch (e) {
+            addLine('Falha catastrófica ao conectar com o banco.', 'error');
+        }
         break;
 
       case 'btop':
