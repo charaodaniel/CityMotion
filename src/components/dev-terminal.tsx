@@ -2,15 +2,15 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity, UserCog } from 'lucide-react';
+import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity, Save, ArrowLeft } from 'lucide-react';
 import { useApp } from '@/contexts/app-provider';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from './ui/progress';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
+import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { RegisterEmployeeForm } from './register-employee-form';
+import { Label } from './ui/label';
 import type { Employee } from '@/lib/types';
 
 interface TerminalLine {
@@ -36,11 +36,10 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   const [input, setInput] = useState('');
   const [stats, setStats] = useState<SystemStats | null>(null);
   
-  // State for Interactive Edit Modal
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  // TUI (Terminal User Interface) State
+  const [tuiMode, setTuiMode] = useState<'edit' | null>(null);
   const [editingUser, setEditingUser] = useState<Employee | null>(null);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -68,10 +67,10 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !tuiMode) {
       bottomRef.current?.scrollIntoView({ behavior: 'auto' });
     }
-  }, [history, isOpen]);
+  }, [history, isOpen, tuiMode]);
 
   const addLine = (content: string, type: TerminalLine['type'] = 'output') => {
     setHistory(prev => [...prev, { type, content }]);
@@ -95,7 +94,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
       case 'help':
         addLine('--- Comandos Disponíveis ---', 'system');
         addLine('users           - Lista todos os funcionários do banco de dados (SQLite).');
-        addLine('user-edit <id>  - Abre diálogo interativo para editar funcionário.');
+        addLine('user-edit <id>  - Abre a interface TUI para editar um funcionário.');
         addLine('top | btop      - Mostra uso de CPU, RAM e Uptime em tempo real.');
         addLine('status          - Testa conectividade com NexusBridge e Banco SQLite.');
         addLine('whoami          - Exibe detalhes do seu perfil e permissões atuais.');
@@ -131,46 +130,25 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
       case 'user-edit':
         if (!args[0]) {
             addLine('Erro: Use user-edit <id>.', 'error');
-            addLine('Exemplo: user-edit 1', 'system');
             break;
         }
 
         const userId = args[0];
         
-        // Se tiver segundo argumento, processa como JSON (modo hacker)
-        if (args[1]) {
-            try {
-                const body = JSON.parse(args.slice(1).join(' '));
-                addLine(`Enviando atualização (Hacker Mode) para ID ${userId}...`, 'system');
-                const res = await fetch(`/api/nexus/test/db-employees/${userId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                const data = await res.json();
-                if (res.ok) addLine(`SUCESSO: ${data.message}`, 'success');
-                else addLine(`ERRO: ${data.error}`, 'error');
-            } catch (e) {
-                addLine('Erro: Payload JSON inválido.', 'error');
-            }
-            break;
-        }
-
-        // Modo interativo: Abre o Diálogo
-        addLine(`Buscando dados do funcionário ID ${userId} para edição...`, 'system');
+        addLine(`Iniciando TUI Dialog para funcionário ID ${userId}...`, 'system');
         try {
             const res = await fetch(`/api/nexus/test/db-employees/${userId}`);
             const userData = await res.json();
             
             if (res.ok) {
                 setEditingUser(userData);
-                setIsEditDialogOpen(true);
-                addLine('Diálogo de edição aberto.', 'success');
+                setTuiMode('edit');
+                addLine('Interface TUI aberta.', 'success');
             } else {
                 addLine(`Erro: ${userData.error || 'Não encontrado.'}`, 'error');
             }
         } catch (e) {
-            addLine('Falha ao tentar abrir diálogo de edição.', 'error');
+            addLine('Falha ao tentar carregar dados do usuário.', 'error');
         }
         break;
 
@@ -178,10 +156,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
       case 'top':
         await fetchStats();
         addLine('Estatísticas de Recursos Atualizadas.', 'success');
-        if (stats) {
-            addLine(`CPU: ${stats.cpu.model} (${stats.cpu.cores} cores)`);
-            addLine(`Load: ${stats.cpu.load}% | RAM: ${stats.memory.percentage}% (${stats.memory.used} / ${stats.memory.total})`);
-        }
         break;
 
       case 'status':
@@ -213,7 +187,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         break;
 
       case 'nexus':
-        if (!args[0]) { addLine('Erro: Especifique um path (Ex: nexus users).', 'error'); break; }
+        if (!args[0]) { addLine('Erro: Especifique um path.', 'error'); break; }
         try {
           const res = await fetch(`/api/nexus/${args[0]}`);
           const data = await res.json();
@@ -224,7 +198,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
       case 'whoami':
         addLine(`NOME: ${currentUser?.name || 'N/A'}`);
         addLine(`ID: ${currentUser?.id || 'N/A'}`);
-        addLine(`SETOR: ${Array.isArray(currentUser?.sector) ? currentUser?.sector.join(', ') : currentUser?.sector}`);
         addLine(`CARGO: ${currentUser?.role || 'N/A'}`);
         break;
 
@@ -238,32 +211,40 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         break;
 
       default:
-        if (cmd.trim() !== '') addLine(`Comando não reconhecido: "${command}". Digite "help" para ajuda.`, 'error');
+        if (cmd.trim() !== '') addLine(`Comando não reconhecido: "${command}". Digite "help".`, 'error');
     }
   };
 
-  const handleInteractiveSubmit = async (data: Partial<Employee>) => {
+  const handleTuiSave = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!editingUser) return;
     
-    addLine(`Salvando alterações no SQLite para ID ${editingUser.id}...`, 'system');
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const updatedData = {
+        name: formData.get('name') as string,
+        role: formData.get('role') as string,
+        status: formData.get('status') as string,
+        email: formData.get('email') as string,
+    };
+
+    addLine(`Salvando alterações via TUI no SQLite para ID ${editingUser.id}...`, 'system');
     try {
         const res = await fetch(`/api/nexus/test/db-employees/${editingUser.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(updatedData)
         });
-        const result = await res.json();
         
         if (res.ok) {
-            addLine(`SUCESSO: ${result.message}`, 'success');
-            toast({ title: "Funcionário Atualizado", description: "As alterações foram salvas no banco de dados SQLite." });
-            setIsEditDialogOpen(false);
+            addLine(`SUCESSO: Registro ID ${editingUser.id} atualizado.`, 'success');
+            toast({ title: "Banco Atualizado", description: "Alterações salvas com sucesso no SQLite." });
+            setTuiMode(null);
             setEditingUser(null);
         } else {
-            addLine(`ERRO: ${result.error}`, 'error');
+            addLine(`ERRO: Falha ao salvar no banco.`, 'error');
         }
     } catch (e) {
-        addLine('Falha ao salvar dados via diálogo.', 'error');
+        addLine('Erro de conexão ao tentar salvar.', 'error');
     }
   };
 
@@ -278,8 +259,8 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   if (!isOpen) return null;
 
   return (
-    <>
     <div className="fixed bottom-6 right-6 z-[100] w-full max-w-3xl h-[550px] bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl flex flex-col font-mono text-sm overflow-hidden animate-in slide-in-from-bottom-4">
+      {/* Terminal Header */}
       <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800">
         <div className="flex items-center gap-2 text-zinc-400">
           <TerminalIcon className="h-4 w-4" />
@@ -302,83 +283,147 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         </div>
         <div className="space-y-2">
             <div className="flex items-center justify-between text-[10px] uppercase font-bold text-zinc-500">
-                <span className="flex items-center gap-1"><HardDrive className="h-3 w-3" /> Memory</span>
+                <span className="flex items-center gap-1"><HardDrive className="h-3 w-3" /> RAM</span>
                 <span>{stats?.memory.percentage || '0'}%</span>
             </div>
             <Progress value={parseFloat(stats?.memory.percentage || '0')} className="h-1.5 bg-zinc-800" />
             <div className="text-[9px] text-zinc-600">{stats?.memory.used || '0 GB'} / {stats?.memory.total || '0 GB'}</div>
         </div>
-        <div className="space-y-2">
-             <div className="flex items-center justify-between text-[10px] uppercase font-bold text-zinc-500">
+        <div className="space-y-2 text-right">
+             <div className="flex items-center justify-end text-[10px] uppercase font-bold text-zinc-500">
                 <span className="flex items-center gap-1"><Activity className="h-3 w-3" /> Uptime</span>
             </div>
             <div className="text-lg font-bold text-emerald-500 mt-1">
                 {stats ? formatUptime(stats.uptime) : '00:00:00'}
             </div>
-            <div className="text-[9px] text-zinc-600">Platform: {stats?.platform || 'linux'} | Node: {stats?.nodeVersion || 'N/A'}</div>
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-4 bg-black/50">
-        <div className="space-y-1">
-          {history.map((line, i) => (
-            <div 
-              key={i} 
-              className={cn(
-                "whitespace-pre-wrap break-all",
-                line.type === 'input' && "text-blue-400",
-                line.type === 'error' && "text-red-400",
-                line.type === 'success' && "text-emerald-400",
-                line.type === 'system' && "text-amber-500 font-bold",
-                line.type === 'output' && "text-zinc-300"
-              )}
-            >
-              {line.content}
-            </div>
-          ))}
-          <div ref={bottomRef} className="h-1" />
-        </div>
-      </ScrollArea>
-
-      <form onSubmit={handleSubmit} className="p-3 bg-zinc-900 border-t border-zinc-800 flex items-center gap-2">
-        <ChevronRight className="h-4 w-4 text-zinc-500 shrink-0" />
-        <input
-          ref={inputRef}
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Digite um comando..."
-          className="bg-transparent border-none outline-none text-zinc-100 flex-1 placeholder:text-zinc-700"
-        />
-        <div className="text-[10px] text-zinc-600 flex items-center gap-1 bg-zinc-950 px-2 py-1 rounded">
-          <Command className="h-2 w-2" /> 
-          <span>Enter para enviar</span>
-        </div>
-      </form>
-    </div>
-
-    {/* Terminal Interactive Edit Dialog */}
-    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-3xl">
-            <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                    <UserCog className="h-5 w-5 text-primary" />
-                    Edição via Terminal: {editingUser?.name}
-                </DialogTitle>
-                <DialogDescription>
-                    Alterando registro ID {editingUser?.id} diretamente no banco de dados SQLite.
-                </DialogDescription>
-            </DialogHeader>
-            <ScrollArea className="max-h-[70vh] p-1">
-                {editingUser && (
-                    <RegisterEmployeeForm 
-                        existingEmployee={editingUser} 
-                        onFormSubmit={handleInteractiveSubmit} 
-                    />
+      {/* Main Terminal Viewport */}
+      <div className="relative flex-1 overflow-hidden flex flex-col">
+        <ScrollArea className="flex-1 p-4 bg-black/50">
+            <div className="space-y-1">
+            {history.map((line, i) => (
+                <div 
+                key={i} 
+                className={cn(
+                    "whitespace-pre-wrap break-all",
+                    line.type === 'input' && "text-blue-400",
+                    line.type === 'error' && "text-red-400",
+                    line.type === 'success' && "text-emerald-400",
+                    line.type === 'system' && "text-amber-500 font-bold",
+                    line.type === 'output' && "text-zinc-300"
                 )}
-            </ScrollArea>
-        </DialogContent>
-    </Dialog>
-    </>
+                >
+                {line.content}
+                </div>
+            ))}
+            <div ref={bottomRef} className="h-1" />
+            </div>
+        </ScrollArea>
+
+        {/* INTERACTIVE TUI OVERLAY (Retro Linux Dialog Style) */}
+        {tuiMode === 'edit' && editingUser && (
+            <div className="absolute inset-0 bg-black/70 flex items-center justify-center p-6 backdrop-blur-[1px]">
+                <form 
+                    onSubmit={handleTuiSave}
+                    className="w-full max-w-lg bg-zinc-200 border-4 border-double border-zinc-400 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] overflow-hidden"
+                >
+                    {/* TUI Header (BIOS/Dialog style) */}
+                    <div className="bg-[#0000AA] text-white px-3 py-1 font-bold flex justify-between items-center select-none">
+                        <span>Edit User: {editingUser.id}</span>
+                        <div className="flex gap-2">
+                             <button type="button" onClick={() => setTuiMode(null)} className="hover:bg-red-600 px-1">X</button>
+                        </div>
+                    </div>
+
+                    {/* TUI Body */}
+                    <div className="p-6 space-y-4 text-black">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold uppercase block">Full Name:</label>
+                            <input 
+                                name="name"
+                                defaultValue={editingUser.name}
+                                className="w-full bg-white border-2 border-zinc-500 px-2 py-1 focus:bg-[#FFFFAA] outline-none"
+                                required
+                                autoFocus
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase block">Cargo / Role:</label>
+                                <input 
+                                    name="role"
+                                    defaultValue={editingUser.role}
+                                    className="w-full bg-white border-2 border-zinc-500 px-2 py-1 focus:bg-[#FFFFAA] outline-none"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase block">Status:</label>
+                                <select 
+                                    name="status"
+                                    defaultValue={editingUser.status}
+                                    className="w-full bg-white border-2 border-zinc-500 px-2 py-1 focus:bg-[#FFFFAA] outline-none"
+                                >
+                                    <option value="Disponível">Disponível</option>
+                                    <option value="Em Serviço">Em Serviço</option>
+                                    <option value="Em Viagem">Em Viagem</option>
+                                    <option value="Afastado">Afastado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold uppercase block">Email Address:</label>
+                            <input 
+                                name="email"
+                                type="email"
+                                defaultValue={editingUser.email}
+                                className="w-full bg-white border-2 border-zinc-500 px-2 py-1 focus:bg-[#FFFFAA] outline-none"
+                                required
+                            />
+                        </div>
+
+                        {/* TUI Footer Buttons */}
+                        <div className="flex justify-center gap-6 pt-4">
+                            <button 
+                                type="submit"
+                                className="px-6 py-1 bg-zinc-300 border-2 border-zinc-500 active:translate-y-0.5 shadow-[2px_2px_0px_rgba(0,0,0,0.8)] hover:bg-zinc-400 font-bold flex items-center gap-2"
+                            >
+                                <Save className="h-4 w-4" /> [ OK ]
+                            </button>
+                            <button 
+                                type="button"
+                                onClick={() => setTuiMode(null)}
+                                className="px-6 py-1 bg-zinc-300 border-2 border-zinc-500 active:translate-y-0.5 shadow-[2px_2px_0px_rgba(0,0,0,0.8)] hover:bg-zinc-400 font-bold flex items-center gap-2"
+                            >
+                                <ArrowLeft className="h-4 w-4" /> [ CANCEL ]
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        )}
+      </div>
+
+      {/* Terminal Input Bar */}
+      {!tuiMode && (
+        <form onSubmit={handleSubmit} className="p-3 bg-zinc-900 border-t border-zinc-800 flex items-center gap-2">
+            <ChevronRight className="h-4 w-4 text-zinc-500 shrink-0" />
+            <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Digite um comando..."
+            className="bg-transparent border-none outline-none text-zinc-100 flex-1 placeholder:text-zinc-700"
+            />
+            <div className="text-[10px] text-zinc-600 flex items-center gap-1 bg-zinc-950 px-2 py-1 rounded">
+            <Command className="h-2 w-2" /> 
+            <span>Enter para enviar</span>
+            </div>
+        </form>
+      )}
+    </div>
   );
 }
