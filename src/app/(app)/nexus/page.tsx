@@ -18,10 +18,13 @@ export default function NexusControlPage() {
   const [isTesting, setIsTesting] = useState(false);
 
   const runTest = async () => {
+    // Garante que não existam espaços em branco acidentais
+    const cleanPath = testPath.trim().replace(/^\//, '');
+    
+    if (!cleanPath) return;
+
     setIsTesting(true);
     try {
-      // Remove leading slash if exists to avoid double slash
-      const cleanPath = testPath.startsWith('/') ? testPath.substring(1) : testPath;
       const response = await fetch(`/api/nexus/${cleanPath}`);
       const data = await response.json();
       setTestResult(data);
@@ -217,7 +220,7 @@ export default function NexusControlPage() {
                          </button>
                       )}
                     </div>
-                    <Button onClick={runTest} disabled={isTesting || !testPath}>
+                    <Button onClick={runTest} disabled={isTesting || !testPath.trim()}>
                       {isTesting ? "Executando..." : "Testar"}
                       <Play className="ml-2 h-4 w-4" />
                     </Button>

@@ -25,15 +25,21 @@ export class NexusBridge {
   }
 
   async handleRequest(request: NexusBridgeRequest) {
-    console.log(`[NexusBridge] Processing ${request.method} ${request.path}`);
+    // Sanitização do path: remove espaços e barras extras
+    const normalizedPath = request.path.trim().replace(/^\//, '').replace(/\/$/, '');
+    
+    console.log(`[NexusBridge] Processing ${request.method} "${normalizedPath}"`);
 
     // 1. Encontrar a rota correspondente
-    const route = config.routes.find(r => r.path === request.path && r.method === request.method);
+    const route = config.routes.find(r => r.path === normalizedPath && r.method === request.method);
 
     if (!route) {
       return {
         status: 404,
-        data: { message: `NexusBridge: Route not found for ${request.path}` }
+        data: { 
+            message: `NexusBridge: Route not found for "${normalizedPath}"`,
+            availableRoutes: config.routes.map(r => r.path)
+        }
       };
     }
 
