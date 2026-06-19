@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
@@ -48,6 +49,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const emailToIdMap: Record<string, string> = {
+    'dev@dev.com': '0',
     'admin@citymotion.com': '11', 
     'manager@citymotion.com': '12', 
     'driver@citymotion.com': '9', 
@@ -169,7 +171,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       let determinedRole: UserRole = 'employee';
       
-      const devKeywords = ['dev', 'developer', 'desenvolvedor', 'software engineer'];
+      const devKeywords = ['dev', 'developer', 'desenvolvedor', 'software engineer', 'root'];
       const tiKeywords = ['ti', 'suporte técnico', 'tecnologia da informação', 'sysadmin'];
       const adminKeywords = ['administrador', 'diretor', 'prefeito', 'ceo', 'dono', 'admin', 'gerente geral'];
       const managerKeywords = ['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico', 'lider', 'supervisor', 'engenheiro'];
@@ -186,7 +188,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       setUserRole(determinedRole);
       
-      // Só redireciona se for explicitamente solicitado (ex: vindo da página de login)
       if (shouldRedirect) {
           if (['dev', 'ti', 'admin'].includes(determinedRole)) {
               router.push('/dashboard');
@@ -217,7 +218,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const initializeApp = async () => {
       const storedEmail = localStorage.getItem('userEmailForSimulation');
       if (storedEmail) {
-        // Na inicialização, não redirecionamos automaticamente para não quebrar deep links (ex: crachá)
         await login(storedEmail, false);
       } else {
         fetchData();

@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useApp } from '@/contexts/app-provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -12,19 +13,29 @@ import { useToast } from '@/hooks/use-toast';
 import { UserCog, ShieldCheck, ShieldAlert } from 'lucide-react';
 import type { Employee } from '@/lib/types';
 
-// Perfis que podem ser atribuídos pelo gestor técnico ou admin
-const availableRoles = [
-  "Funcionário", 
-  "Motorista", 
-  "Gestor de Setor", 
-  "Administrador", 
-  "Técnico de TI",
-  "Desenvolvedor Global"
-];
-
 export default function ProfilesPage() {
   const { employees, setEmployees, userRole } = useApp();
   const { toast } = useToast();
+
+  // Cargos que podem ser atribuídos. 
+  // O cargo de Desenvolvedor Global é restrito apenas a quem já possui esse cargo.
+  const availableRoles = useMemo(() => {
+    const baseRoles = [
+        "Funcionário", 
+        "Motorista", 
+        "Gestor de Setor", 
+        "Administrador", 
+        "Técnico de TI",
+        "Técnico Mecânico"
+    ];
+    
+    // Trava de segurança: apenas DEV pode criar outro DEV
+    if (userRole === 'dev') {
+        return [...baseRoles, "Desenvolvedor Global"];
+    }
+    
+    return baseRoles;
+  }, [userRole]);
 
   const handleRoleChange = async (employeeId: string, newRole: string) => {
     
@@ -115,44 +126,52 @@ export default function ProfilesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {employees.map((employee) => (
-                <TableRow key={employee.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
-                            <AvatarImage src={`https://i.pravatar.cc/150?u=${employee.id}`} alt={employee.name} />
-                            <AvatarFallback>{employee.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="font-semibold">{employee.name}</p>
-                            <p className="text-xs text-muted-foreground font-mono">{employee.email}</p>
-                        </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                        {Array.isArray(employee.sector) ? employee.sector.map(s => (
-                            <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
-                        )) : <Badge variant="secondary" className="text-[10px]">{employee.sector}</Badge>}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      defaultValue={employee.role}
-                      onValueChange={(newRole) => handleRoleChange(employee.id, newRole)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um perfil" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableRoles.map((role) => (
-                          <SelectItem key={role} value={role}>{role}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {employees.map((employee) => {
+                // Se o funcionário na lista for DEV e o logado não for DEV, ele não pode ser editado.
+                const isTargetDev = employee.role === 'Desenvolvedor Global';
+                const canEdit = userRole === 'dev' || !isTargetDev;
+
+                return (
+                  <TableRow key={employee.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-3">
+                          <Avatar className="h-9 w-9">
+                              <AvatarImage src={`https://i.pravatar.cc/150?u=${employee.id}`} alt={employee.name} />
+                              <AvatarFallback>{employee.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                              <p className="font-semibold">{employee.name}</p>
+                              <p className="text-xs text-muted-foreground font-mono">{employee.email}</p>
+                          </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                          {Array.isArray(employee.sector) ? employee.sector.map(s => (
+                              <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
+                          )) : <Badge variant="secondary" className="text-[10px]">{employee.sector}</Badge>}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        defaultValue={employee.role}
+                        onValueChange={(newRole) => handleRoleChange(employee.id, newRole)}
+                        disabled={!canEdit}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione um perfil" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableRoles.map((role) => (
+                            <SelectItem key={role} value={role}>{role}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {!canEdit && <p className="text-[10px] text-destructive mt-1">Hierarquia Protegida</p>}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>

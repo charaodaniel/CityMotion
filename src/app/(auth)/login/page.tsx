@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useApp } from '@/contexts/app-provider';
-import { CarFront, LogIn, Users, Loader2 } from 'lucide-react';
+import { CarFront, LogIn, Users, Loader2, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -24,7 +25,6 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // O login passa explicitamente 'true' para permitir o redirecionamento baseado no cargo
       await login(email, true);
 
     } catch (error: any) {
@@ -38,9 +38,9 @@ export default function LoginPage() {
     }
   };
 
-  const handleSimulatedLogin = (simulatedEmail: string) => {
+  const handleSimulatedLogin = (simulatedEmail: string, simulatedPass: string = '123456') => {
     setEmail(simulatedEmail);
-    setPassword('123456'); 
+    setPassword(simulatedPass); 
   }
 
   return (
@@ -114,6 +114,11 @@ export default function LoginPage() {
               <CardDescription className="text-xs">Simule acessos de diferentes cargos em uma organização cliente.</CardDescription>
           </CardHeader>
           <CardContent className="text-xs space-y-1.5 pt-2">
+              <p className="flex items-center gap-1">
+                <ShieldCheck className="h-3 w-3 text-amber-500" />
+                <strong>Desenvolvedor Root:</strong> 
+                <button onClick={() => handleSimulatedLogin('dev@dev.com', '123456789')} className="text-primary hover:underline ml-1">dev@dev.com</button>
+              </p>
               <p><strong>Admin Geral:</strong> <button onClick={() => handleSimulatedLogin('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
               <p><strong>Gestor de Setor:</strong> <button onClick={() => handleSimulatedLogin('manager@citymotion.com')} className="text-primary hover:underline">manager@citymotion.com</button></p>
               <p><strong>Motorista:</strong> <button onClick={() => handleSimulatedLogin('driver@citymotion.com')} className="text-primary hover:underline">driver@citymotion.com</button></p>

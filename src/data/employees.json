@@ -1,6 +1,16 @@
 
 [
   {
+    "id": "0",
+    "name": "Desenvolvedor Root",
+    "role": "Desenvolvedor Global",
+    "email": "dev@dev.com",
+    "password": "123456789",
+    "status": "Disponível",
+    "sector": ["TI - Infraestrutura"],
+    "matricula": "DEV-001"
+  },
+  {
     "id": "1",
     "name": "João da Silva",
     "role": "Motorista",
