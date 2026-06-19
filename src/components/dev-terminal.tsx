@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity, Save, ArrowLeft, Coffee, ShieldAlert, Sparkles } from 'lucide-react';
+import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity, Save, ArrowLeft, Coffee, ShieldAlert, Sparkles, RefreshCw } from 'lucide-react';
 import { useApp } from '@/contexts/app-provider';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -34,7 +34,7 @@ const AVAILABLE_ROLES = [
 ];
 
 export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange: (open: boolean) => void; onClose: () => void }) {
-  const { currentUser } = useApp();
+  const { currentUser, refreshData } = useApp();
   const { toast } = useToast();
   const [history, setHistory] = useState<TerminalLine[]>([
     { type: 'system', content: 'CityMotion NexusOS v2.0.0 (Admin Console)' },
@@ -195,6 +195,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
             if (res.ok) {
                 addLine('REINICIALIZAÇÃO CONCLUÍDA.', 'success');
                 toast({ title: "Sistema Reiniciado", description: "O banco foi restaurado." });
+                await refreshData();
             } else addLine('ERRO NO RESET.', 'error');
         } catch (e) { addLine('Falha catastrófica.', 'error'); }
         break;
@@ -318,6 +319,10 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         if (res.ok) {
             addLine(`SUCESSO: Registro atualizado.`, 'success');
             toast({ title: "Banco Atualizado", description: "Alterações salvas no SQLite." });
+            
+            // Sincroniza o estado global da aplicação com o banco
+            await refreshData();
+            
             setTuiMode(null);
             setEditingUser(null);
         } else addLine('ERRO ao salvar no banco.', 'error');
