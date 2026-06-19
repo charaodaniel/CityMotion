@@ -14,9 +14,8 @@ export class HttpAdapter {
   async execute(options: HttpAdapterOptions) {
     const { url, method, body, headers } = options;
 
-    // Filtramos o header 'host' pois o Node fetch no servidor
-    // pode ter problemas ao passar o host do frontend para o backend local
-    const { host, ...safeHeaders } = headers || {};
+    // Filtramos headers problemáticos
+    const { host, connection, ...safeHeaders } = headers || {};
 
     const fetchOptions: RequestInit = {
       method,
@@ -24,6 +23,8 @@ export class HttpAdapter {
         'Content-Type': 'application/json',
         ...safeHeaders
       },
+      // Cache: 'no-store' para garantir dados frescos do backend
+      cache: 'no-store'
     };
 
     if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
@@ -31,7 +32,15 @@ export class HttpAdapter {
     }
 
     try {
+      console.log(`[NexusBridge Adapter] Fetching: ${method} ${url}`);
+      
       const response = await fetch(url, fetchOptions);
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'No error body');
+        console.error(`[NexusBridge Adapter] HTTP Error ${response.status}: ${errorText}`);
+      }
+
       const data = await response.json();
 
       return {
@@ -39,7 +48,20 @@ export class HttpAdapter {
         data
       };
     } catch (error: any) {
-      console.error(`[HttpAdapter] Fetch error for ${url}:`, error.message);
+      console.error(`[NexusBridge Adapter] Fetch error for ${url}:`, error.message);
+      
+      // Se falhar a conexão (ex: backend desligado), retornamos um erro amigável
+      if (error.message.includes('fetch failed')) {
+        return {
+          status: 503,
+          data: { 
+            error: "Backend indisponível", 
+            message: "Não foi possível conectar ao servidor em " + url,
+            hint: "Verifique se o backend Node está rodando na porta correta."
+          }
+        };
+      }
+      
       throw error;
     }
   }
