@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { useMemo } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Sidebar,
@@ -30,7 +29,8 @@ import {
   Network, 
   ShieldCheck, 
   DollarSign,
-  LogOut
+  LogOut,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/app-provider';
@@ -56,24 +56,37 @@ const operationalNavItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { userRole, logout, currentUser, isLoading } = useApp();
+  const router = useRouter();
+  const { userRole, logout, currentUser, isLoading, activeOrganization, setActiveOrganization } = useApp();
 
   const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
 
   const filteredPlatformItems = useMemo(() => platformNavItems.filter(item => item.roles.includes(userRole)), [userRole]);
+  
   const filteredOperationalItems = useMemo(() => operationalNavItems.filter(item => {
+    // Para DEV e TI, a seção de operação só aparece se houver uma organização ativa selecionada
+    if (['dev', 'ti'].includes(userRole) && !activeOrganization) {
+      return false;
+    }
+
     if (!item.roles.includes(userRole)) return false;
+    
     if (userRole === 'employee') {
       const restrictedRoutes = ['/veiculos', '/viagens', '/manutencao', '/relatorios'];
       if (restrictedRoutes.includes(item.href)) return isCurrentUserDriver;
     }
     return true;
-  }), [userRole, isCurrentUserDriver]);
+  }), [userRole, isCurrentUserDriver, activeOrganization]);
+
+  const handleExitOrganization = () => {
+    setActiveOrganization(null);
+    router.push('/dev-global');
+  };
 
   return (
     <Sidebar className="border-r border-border/50 bg-sidebar">
       <SidebarHeader className="h-16 flex items-center px-6 border-b border-border/50">
-        <Link href="/dashboard" className="flex items-center gap-3">
+        <Link href={userRole === 'dev' ? '/dev-global' : '/dashboard'} className="flex items-center gap-3">
           <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground">
             <Network className="h-5 w-5" />
           </div>
@@ -112,34 +125,47 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        <SidebarGroup className="mt-4">
-          <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-2">
-            Operação
-          </SidebarGroupLabel>
-          <SidebarMenu>
-            {isLoading ? (
-              <SidebarMenuSkeleton showIcon />
-            ) : (
-              filteredOperationalItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={pathname === item.href}
-                    className={cn(
-                      "rounded-sm transition-all duration-200",
-                      pathname === item.href && "border-r-2 border-primary bg-accent/50 text-primary font-bold"
-                    )}
-                  >
-                    <Link href={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))
-            )}
-          </SidebarMenu>
-        </SidebarGroup>
+        {filteredOperationalItems.length > 0 && (
+          <SidebarGroup className="mt-4">
+            <div className="flex items-center justify-between px-2 mb-2">
+                <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-0">
+                Operação {activeOrganization && `(${activeOrganization.name})`}
+                </SidebarGroupLabel>
+                {activeOrganization && ['dev', 'ti'].includes(userRole) && (
+                    <button 
+                        onClick={handleExitOrganization}
+                        className="text-[9px] font-bold text-primary hover:underline flex items-center gap-1"
+                        title="Sair da visão da empresa"
+                    >
+                        <ArrowLeft className="h-2 w-2" /> VOLTAR
+                    </button>
+                )}
+            </div>
+            <SidebarMenu>
+                {isLoading ? (
+                <SidebarMenuSkeleton showIcon />
+                ) : (
+                filteredOperationalItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton 
+                        asChild 
+                        isActive={pathname === item.href}
+                        className={cn(
+                        "rounded-sm transition-all duration-200",
+                        pathname === item.href && "border-r-2 border-primary bg-accent/50 text-primary font-bold"
+                        )}
+                    >
+                        <Link href={item.href}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                        </Link>
+                    </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))
+                )}
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className='mt-auto p-4 border-t border-border/50'>

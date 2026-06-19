@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useApp } from "@/contexts/app-provider";
@@ -12,10 +11,18 @@ import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import type { Organization } from "@/lib/types";
 
 export default function DevGlobalPage() {
-  const { userRole, organizations, isRefreshing, refreshData } = useApp();
+  const { userRole, organizations, isRefreshing, refreshData, setActiveOrganization } = useApp();
+  const router = useRouter();
+
+  const handleAccessCompany = (org: Organization) => {
+    setActiveOrganization(org);
+    router.push('/dashboard');
+  };
 
   if (userRole !== 'dev') {
     return (
@@ -156,10 +163,8 @@ export default function DevGlobalPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Acessar painel da empresa">
-                                <Link href="/dashboard">
-                                    <ArrowUpRight className="h-4 w-4" />
-                                </Link>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleAccessCompany(org)} title="Acessar painel da empresa">
+                                <ArrowUpRight className="h-4 w-4" />
                             </Button>
                         </div>
                       </TableCell>

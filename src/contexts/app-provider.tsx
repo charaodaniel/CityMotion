@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
@@ -12,6 +11,8 @@ interface AppContextType {
   isRefreshing: boolean;
   userRole: UserRole;
   currentUser: Employee | null;
+  activeOrganization: Organization | null;
+  setActiveOrganization: (org: Organization | null) => void;
   selectedSector: string | null;
   setSelectedSector: (sector: string | null) => void;
   login: (email: string, shouldRedirect?: boolean) => Promise<void>;
@@ -70,6 +71,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [userRole, setUserRole] = useState<UserRole>('employee');
   const [currentUser, setCurrentUser] = useState<Employee | null>(null);
+  const [activeOrganization, setActiveOrganizationState] = useState<Organization | null>(null);
   const [selectedSector, setSelectedSectorState] = useState<string | null>(null);
   
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -85,13 +87,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const prevRequestsLength = useRef<number>(0);
   const prevSchedulesLength = useRef<number>(0);
 
+  const setActiveOrganization = (org: Organization | null) => {
+    if (typeof window !== 'undefined') {
+      if (org) localStorage.setItem('activeOrganization', JSON.stringify(org));
+      else localStorage.removeItem('activeOrganization');
+    }
+    setActiveOrganizationState(org);
+  };
+
   const setSelectedSector = (sector: string | null) => {
     if (typeof window !== 'undefined') {
-      if (sector) {
-        localStorage.setItem('selectedSector', sector);
-      } else {
-        localStorage.removeItem('selectedSector');
-      }
+      if (sector) localStorage.setItem('selectedSector', sector);
+      else localStorage.removeItem('selectedSector');
     }
     setSelectedSectorState(sector);
   };
@@ -101,11 +108,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     else setIsRefreshing(true);
 
     try {
-      // Agora buscamos os dados através da ponte NexusBridge que aponta para o banco real
       const response = await fetch('/api/nexus/sync-all');
-      if (!response.ok) {
-        throw new Error('Falha ao sincronizar com o banco de dados central.');
-      }
+      if (!response.ok) throw new Error('Falha ao sincronizar com o banco.');
+      
       const data = await response.json();
       
       setSchedules(data.schedules || []);
@@ -116,20 +121,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setWorkSchedules(data.workSchedules || []);
       setMaintenanceRequests(data.maintenanceRequests || []);
       
-      // Organizações ainda são carregadas via arquivo JSON local por serem dados SaaS globais
       const orgRes = await fetch('/api/data?type=organizations');
       if (orgRes.ok) {
           const orgs = await orgRes.json();
           setOrganizations(orgs);
+          
+          // Restaurar organização ativa se salva
+          const savedOrg = localStorage.getItem('activeOrganization');
+          if (savedOrg) setActiveOrganizationState(JSON.parse(savedOrg));
       }
       
       prevRequestsLength.current = data.requests?.length || 0;
       prevSchedulesLength.current = data.schedules?.length || 0;
 
       const savedNotifications = localStorage.getItem('app_notifications');
-      if (savedNotifications) {
-        setNotifications(JSON.parse(savedNotifications));
-      }
+      if (savedNotifications) setNotifications(JSON.parse(savedNotifications));
 
       return data;
     } catch (error) {
@@ -161,10 +167,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return updated;
     });
 
-    toast({
-      title: newNotif.title,
-      description: newNotif.message,
-    });
+    toast({ title: newNotif.title, description: newNotif.message });
   }, [toast]);
 
   const markNotificationAsRead = (id: string) => {
@@ -199,37 +202,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       let determinedRole: UserRole = 'employee';
       
-      const devKeywords = ['dev', 'developer', 'desenvolvedor', 'software engineer', 'root'];
-      const tiKeywords = ['ti', 'suporte técnico', 'tecnologia da informação', 'sysadmin'];
-      const adminKeywords = ['administrador', 'diretor', 'prefeito', 'ceo', 'dono', 'admin', 'gerente geral'];
-      const managerKeywords = ['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico', 'lider', 'supervisor', 'engenheiro'];
+      const devKeywords = ['dev', 'developer', 'desenvolvedor', 'root'];
+      const tiKeywords = ['ti', 'suporte técnico', 'sysadmin'];
+      const adminKeywords = ['administrador', 'diretor', 'ceo', 'admin'];
+      const managerKeywords = ['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico'];
 
-      if (devKeywords.some(r => roleString.includes(r))) {
-          determinedRole = 'dev';
-      } else if (tiKeywords.some(r => roleString.includes(r))) {
-          determinedRole = 'ti';
-      } else if (adminKeywords.some(r => roleString.includes(r))) {
-          determinedRole = 'admin';
-      } else if (managerKeywords.some(r => roleString.includes(r))) {
-          determinedRole = 'manager';
-      }
+      if (devKeywords.some(r => roleString.includes(r))) determinedRole = 'dev';
+      else if (tiKeywords.some(r => roleString.includes(r))) determinedRole = 'ti';
+      else if (adminKeywords.some(r => roleString.includes(r))) determinedRole = 'admin';
+      else if (managerKeywords.some(r => roleString.includes(r))) determinedRole = 'manager';
       
       setUserRole(determinedRole);
       
       if (shouldRedirect) {
-          if (determinedRole === 'dev') {
-              router.push('/dev-global');
-          } else if (['ti', 'admin'].includes(determinedRole)) {
-              router.push('/dashboard');
-          } else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length > 1) {
-              router.push('/select-sector');
-          } else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length === 1) {
+          if (determinedRole === 'dev') router.push('/dev-global');
+          else if (['ti', 'admin'].includes(determinedRole)) router.push('/dashboard');
+          else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length > 1) router.push('/select-sector');
+          else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length === 1) {
               setSelectedSector(user.sector[0]);
               router.push('/dashboard');
-          }
-          else {
-              router.push('/dashboard');
-          }
+          } else router.push('/dashboard');
       }
     }
     setIsLoading(false);
@@ -238,7 +230,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem('userEmailForSimulation');
     localStorage.removeItem('selectedSector');
+    localStorage.removeItem('activeOrganization');
     setCurrentUser(null);
+    setActiveOrganizationState(null);
     setSelectedSectorState(null);
     setUserRole('employee'); 
     router.push('/login');
@@ -247,11 +241,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initializeApp = async () => {
       const storedEmail = localStorage.getItem('userEmailForSimulation');
-      if (storedEmail) {
-        await login(storedEmail, false);
-      } else {
-        fetchData();
-      }
+      if (storedEmail) await login(storedEmail, false);
+      else await fetchData();
     };
     initializeApp();
   }, []);
@@ -285,7 +276,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     prevSchedulesLength.current = schedules.length;
 
   }, [vehicleRequests, schedules, userRole, selectedSector, currentUser, isLoading, addNotification]);
-
 
   const addVehicleRequest = (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => {
     const newRequest: VehicleRequest = {
@@ -369,6 +359,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isRefreshing,
         userRole,
         currentUser,
+        activeOrganization,
+        setActiveOrganization,
         selectedSector,
         setSelectedSector,
         login,
@@ -391,8 +383,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
 export function useApp() {
   const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useApp deve ser usado dentro de um AppProvider');
-  }
+  if (context === undefined) throw new Error('useApp deve ser usado dentro de um AppProvider');
   return context;
 }
