@@ -5,16 +5,17 @@ import { useState, useMemo } from 'react';
 import { useApp } from '@/contexts/app-provider';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Zap } from 'lucide-react';
+import { PlusCircle, Zap, RefreshCw } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { QuickRequestForm } from '@/components/quick-request-form';
 import AdminDashboard from '@/components/dashboards/admin-dashboard';
 import ManagerDashboard from '@/components/dashboards/manager-dashboard';
 import DriverDashboard from '@/components/dashboards/driver-dashboard';
 import MechanicDashboard from '@/components/dashboards/mechanic-dashboard';
+import { cn } from '@/lib/utils';
 
 export default function DashboardPage() {
-    const { userRole, currentUser, addNotification, selectedSector } = useApp();
+    const { userRole, currentUser, addNotification, selectedSector, isRefreshing, refreshData } = useApp();
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
     
     const isCurrentUserDriver = useMemo(() => {
@@ -89,6 +90,17 @@ export default function DashboardPage() {
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => refreshData()} 
+                        disabled={isRefreshing}
+                        className="text-xs"
+                    >
+                        <RefreshCw className={cn("mr-2 h-3 w-3", isRefreshing && "animate-spin")} />
+                        Atualizar
+                    </Button>
+
                     {/* Botão de Simulação de Demo */}
                     <Button variant="outline" size="sm" onClick={simulateExternalAlert} className="text-xs bg-accent/10 border-accent/20 hover:bg-accent/20">
                         <Zap className="mr-2 h-3 w-3" /> Testar Alerta

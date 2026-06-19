@@ -7,14 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck, Building2, Server, Key, Activity, Globe, Trash2, Edit2, Plus, ArrowUpRight, Lock, Database, DollarSign } from "lucide-react";
+import { ShieldCheck, Building2, Server, Globe, Activity, Plus, ArrowUpRight, Lock, DollarSign, RefreshCw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function DevGlobalPage() {
-  const { userRole, organizations } = useApp();
+  const { userRole, organizations, isRefreshing, refreshData } = useApp();
 
   if (userRole !== 'dev') {
     return (
@@ -41,6 +42,10 @@ export default function DevGlobalPage() {
           <p className="text-muted-foreground">Controle de clientes, planos e infraestrutura do ecossistema CityMotion.</p>
         </div>
         <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => refreshData()} disabled={isRefreshing}>
+                <RefreshCw className={cn("mr-2 h-4 w-4", isRefreshing && "animate-spin")} />
+                Sincronizar
+            </Button>
             <Button variant="outline" size="sm" asChild>
                 <Link href="/faturamento">
                   <DollarSign className="mr-2 h-4 w-4" />

@@ -9,12 +9,14 @@ import { useToast } from '@/hooks/use-toast';
 
 interface AppContextType {
   isLoading: boolean;
+  isRefreshing: boolean;
   userRole: UserRole;
   currentUser: Employee | null;
   selectedSector: string | null;
   setSelectedSector: (sector: string | null) => void;
   login: (email: string, shouldRedirect?: boolean) => Promise<void>;
   logout: () => void;
+  refreshData: () => Promise<void>;
   
   schedules: Schedule[];
   setSchedules: React.Dispatch<React.SetStateAction<Schedule[]>>;
@@ -64,6 +66,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [userRole, setUserRole] = useState<UserRole>('employee');
   const [currentUser, setCurrentUser] = useState<Employee | null>(null);
   const [selectedSector, setSelectedSectorState] = useState<string | null>(null);
@@ -92,8 +95,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSelectedSectorState(sector);
   };
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
+  const fetchData = useCallback(async (isSilent = false) => {
+    if (!isSilent) setIsLoading(true);
+    else setIsRefreshing(true);
+
     try {
       const response = await fetch('/api/data?type=all');
       if (!response.ok) {
@@ -122,8 +127,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.error("Não foi possível carregar os dados:", error);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   }, []);
+
+  const refreshData = async () => {
+    await fetchData(true);
+    toast({
+        title: "Dados Atualizados",
+        description: "As informações foram sincronizadas com o servidor.",
+    });
+  };
 
   const addNotification = useCallback((notification: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
     const newNotif: AppNotification = {
@@ -343,12 +357,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider value={{ 
         isLoading,
+        isRefreshing,
         userRole,
         currentUser,
         selectedSector,
         setSelectedSector,
         login,
         logout,
+        refreshData,
         schedules, setSchedules, 
         vehicleRequests, addVehicleRequest, updateVehicleRequestStatus,
         employees, setEmployees,

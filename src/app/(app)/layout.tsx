@@ -18,7 +18,6 @@ import {
   SidebarMenuSkeleton,
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarGroupContent,
 } from '@/components/ui/sidebar';
 import {
   DropdownMenu,
@@ -39,19 +38,16 @@ import {
   Users, 
   ScrollText, 
   Building, 
-  LogOut, 
   UserCog, 
   Wrench, 
   BookOpen, 
   UserSquare, 
   Bell, 
-  Trash2, 
-  Info, 
   Network, 
   Terminal, 
   ShieldCheck, 
-  DollarSign, 
-  BarChart3 
+  DollarSign,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -60,8 +56,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { DevTerminal } from '@/components/dev-terminal';
 
 // 1. Itens de Administração da PLATAFORMA (Dev/TI)
@@ -93,12 +87,11 @@ const bottomNavItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { userRole, logout, currentUser, isLoading, selectedSector, setSelectedSector, notifications, markNotificationAsRead, clearNotifications } = useApp();
+  const { userRole, logout, currentUser, isLoading, isRefreshing, refreshData, selectedSector, setSelectedSector, notifications, markNotificationAsRead, clearNotifications } = useApp();
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
   const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
-  const isDocsPage = pathname.startsWith('/docs');
 
   // Filtragem inteligente por seção
   const filteredPlatformItems = useMemo(() => {
@@ -241,7 +234,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger asChild className='sm:hidden'>
                     <Button variant="outline" size="icon"><Menu /></Button>
                 </SidebarTrigger>
-                <div className="ml-auto flex items-center gap-4">
+                <div className="ml-auto flex items-center gap-2 sm:gap-4">
+                  
+                  {/* BOTAO REFRESH GLOBAL */}
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => refreshData()} 
+                    title="Sincronizar Dados"
+                    disabled={isRefreshing}
+                  >
+                    <RefreshCw className={cn("h-5 w-5 text-zinc-500", isRefreshing && "animate-spin text-primary")} />
+                  </Button>
+
                   {['dev', 'ti', 'admin'].includes(userRole) && (
                     <Button variant="ghost" size="icon" onClick={() => setIsTerminalOpen(true)} title="NexusOS Terminal">
                       <Terminal className="h-5 w-5 text-zinc-500 hover:text-primary" />
