@@ -225,6 +225,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         role: formData.get('role') as string,
         status: formData.get('status') as string,
         email: formData.get('email') as string,
+        password: formData.get('password') as string,
     };
 
     addLine(`Salvando alterações via TUI no SQLite para ID ${editingUser.id}...`, 'system');
@@ -246,14 +247,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         }
     } catch (e) {
         addLine('Erro de conexão ao tentar salvar.', 'error');
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (input.trim()) {
-      processCommand(input);
-      setInput('');
     }
   };
 
@@ -374,15 +367,28 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                                 </select>
                             </div>
                         </div>
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold uppercase block">Email Address:</label>
-                            <input 
-                                name="email"
-                                type="email"
-                                defaultValue={editingUser.email}
-                                className="w-full bg-white border-2 border-zinc-500 px-2 py-1 focus:bg-[#FFFFAA] outline-none"
-                                required
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase block">Email Address:</label>
+                                <input 
+                                    name="email"
+                                    type="email"
+                                    defaultValue={editingUser.email}
+                                    className="w-full bg-white border-2 border-zinc-500 px-2 py-1 focus:bg-[#FFFFAA] outline-none"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase block">Change Password:</label>
+                                <input 
+                                    name="password"
+                                    type="text"
+                                    placeholder="Nova senha ou atual"
+                                    defaultValue={editingUser.password}
+                                    className="w-full bg-white border-2 border-zinc-500 px-2 py-1 focus:bg-[#FFFFAA] outline-none"
+                                    required
+                                />
+                            </div>
                         </div>
 
                         {/* TUI Footer Buttons */}
@@ -428,4 +434,3 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
     </div>
   );
 }
-

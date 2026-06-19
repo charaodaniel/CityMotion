@@ -28,7 +28,7 @@ module.exports = function(db) {
                         // Tratamento de campos JSON
                         results[key] = rows.map(row => {
                             const newRow = { ...row };
-                            // Remover senhas por segurança
+                            // Remover senhas por segurança no carregamento geral (front-end público)
                             if (key === 'employees') delete newRow.password;
                             
                             // Parsear campos que são strings JSON no SQLite
@@ -112,7 +112,7 @@ module.exports = function(db) {
     });
 
     router.get('/employees/:id', (req, res) => {
-        db.get('SELECT id, name, email, role, status, sector, matricula, cnh FROM employees WHERE id = ?', [req.params.id], (err, row) => {
+        db.get('SELECT id, name, email, role, status, sector, matricula, cnh, password FROM employees WHERE id = ?', [req.params.id], (err, row) => {
             if (err) return res.status(500).json({ error: err.message });
             if (!row) return res.status(404).json({ error: 'Funcionário não encontrado.' });
             try { row.sector = JSON.parse(row.sector); } catch(e) { row.sector = [row.sector]; }
@@ -121,9 +121,9 @@ module.exports = function(db) {
     });
 
     router.post('/employees', (req, res) => {
-        const { name, email, role, sector, status } = req.body;
-        const sql = `INSERT INTO employees (name, email, role, sector, status) VALUES (?, ?, ?, ?, ?)`;
-        const params = [name, email, role, JSON.stringify(sector || []), status || 'Disponível'];
+        const { name, email, role, sector, status, password } = req.body;
+        const sql = `INSERT INTO employees (name, email, role, sector, status, password) VALUES (?, ?, ?, ?, ?, ?)`;
+        const params = [name, email, role, JSON.stringify(sector || []), status || 'Disponível', password || '123456'];
         
         db.run(sql, params, function(err) {
             if (err) return res.status(500).json({ error: err.message });
@@ -132,9 +132,8 @@ module.exports = function(db) {
     });
 
     router.put('/employees/:id', (req, res) => {
-        const { name, role, status, email, sector, matricula, cnh } = req.body;
+        const { name, role, status, email, sector, matricula, cnh, password } = req.body;
         
-        // Usamos null explícito para parâmetros undefined para evitar erros no driver sqlite3
         const sql = `UPDATE employees SET 
             name = COALESCE(?, name), 
             role = COALESCE(?, role), 
@@ -142,7 +141,8 @@ module.exports = function(db) {
             email = COALESCE(?, email),
             sector = COALESCE(?, sector),
             matricula = COALESCE(?, matricula),
-            cnh = COALESCE(?, cnh)
+            cnh = COALESCE(?, cnh),
+            password = COALESCE(?, password)
             WHERE id = ?`;
         
         const sectorStr = sector ? JSON.stringify(sector) : null;
@@ -155,6 +155,7 @@ module.exports = function(db) {
             sectorStr, 
             matricula || null, 
             cnh || null, 
+            password || null,
             req.params.id
         ], function(err) {
             if (err) {
