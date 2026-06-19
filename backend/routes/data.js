@@ -2,6 +2,7 @@
 const express = require('express');
 const { exec } = require('child_process');
 const path = require('path');
+const os = require('os');
 const router = express.Router();
 
 module.exports = function(db) {
@@ -57,23 +58,47 @@ module.exports = function(db) {
             });
     });
 
-    // Endpoint de Manutenção: Resetar Banco
+    // Endpoint de Recursos (btop style)
+    router.get('/system/resources', (req, res) => {
+        const totalMem = os.totalmem();
+        const freeMem = os.freemem();
+        const usedMem = totalMem - freeMem;
+        const memUsage = ((usedMem / totalMem) * 100).toFixed(1);
+        
+        const cpus = os.cpus();
+        const loadAvg = os.loadavg(); // [1, 5, 15] minute load averages
+
+        res.json({
+            uptime: process.uptime(),
+            memory: {
+                total: (totalMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+                used: (usedMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+                percentage: memUsage
+            },
+            cpu: {
+                model: cpus[0].model,
+                cores: cpus.length,
+                load: loadAvg[0].toFixed(2)
+            },
+            platform: process.platform,
+            nodeVersion: process.version
+        });
+    });
+
+    // Endpoint de Manutenção: Resetar Banco (Simula Reinicialização)
     router.post('/maintenance/reset', (req, res) => {
         console.log('[Maintenance] Reset de banco solicitado.');
         const initScriptPath = path.resolve(__dirname, '../database/init_db.js');
         
-        // Executa o script de inicialização como um processo separado
         exec(`node ${initScriptPath}`, (error, stdout, stderr) => {
             if (error) {
                 console.error(`Erro no reset: ${error.message}`);
                 return res.status(500).json({ success: false, message: error.message });
             }
-            console.log(`Reset concluído: ${stdout}`);
-            res.json({ success: true, message: 'Banco de dados restaurado com sucesso.' });
+            res.json({ success: true, message: 'Sistema reiniciado e banco restaurado.' });
         });
     });
 
-    // Endpoints específicos para cada recurso via GET (útil para o NexusBridge)
     router.get('/employees', (req, res) => {
         db.all('SELECT id, name, email, role, status, sector FROM employees', [], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });

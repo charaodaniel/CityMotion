@@ -2,31 +2,56 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, X, ChevronRight, Command } from 'lucide-react';
+import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity } from 'lucide-react';
 import { useApp } from '@/contexts/app-provider';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { Progress } from './ui/progress';
 
 interface TerminalLine {
   type: 'input' | 'output' | 'error' | 'system' | 'success';
   content: string;
 }
 
+interface SystemStats {
+  uptime: number;
+  memory: { total: string; used: string; percentage: string };
+  cpu: { model: string; cores: number; load: string };
+  platform: string;
+  nodeVersion: string;
+}
+
 export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange: (open: boolean) => void; onClose: () => void }) {
-  const { currentUser, userRole } = useApp();
+  const { currentUser } = useApp();
   const { toast } = useToast();
   const [history, setHistory] = useState<TerminalLine[]>([
-    { type: 'system', content: 'CityMotion OS v1.1.0 (NexusBridge Core)' },
-    { type: 'system', content: 'Digite "help" para ver os comandos de manutenção.' },
+    { type: 'system', content: 'CityMotion OS v1.2.0 (btop edition)' },
+    { type: 'system', content: 'Digite "help" para ver os comandos.' },
   ]);
   const [input, setInput] = useState('');
+  const [stats, setStats] = useState<SystemStats | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const fetchStats = async () => {
+    try {
+      const res = await fetch('/api/nexus/system/resources');
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch system stats");
+    }
+  };
+
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
+    if (isOpen) {
+      if (inputRef.current) inputRef.current.focus();
+      fetchStats();
+      const interval = setInterval(fetchStats, 5000);
+      return () => clearInterval(interval);
     }
   }, [isOpen]);
 
@@ -40,6 +65,13 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
     setHistory(prev => [...prev, { type, content }]);
   };
 
+  const formatUptime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    return `${h}h ${m}m ${s}s`;
+  };
+
   const processCommand = async (cmd: string) => {
     const parts = cmd.trim().split(' ');
     const command = parts[0].toLowerCase();
@@ -50,89 +82,66 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
     switch (command) {
       case 'help':
         addLine('Comandos Disponíveis:');
+        addLine('  top | btop      - Atualiza e mostra recursos do sistema');
         addLine('  status          - Saúde do sistema e conexões');
         addLine('  whoami          - Identidade do usuário atual');
         addLine('  nexus <path>    - Consulta GET via NexusBridge');
-        addLine('  nexus-post <p>  - Envia dados (JSON) via POST. Ex: nexus-post users {"id":99}');
-        addLine('  db-reset        - REINICIAR BANCO (Limpa e volta ao estado original)');
-        addLine('  cli-info        - Como usar o terminal da máquina (CLI)');
+        addLine('  nexus-post <p>  - Inserção de dados via POST');
+        addLine('  db-reset        - HARD RESET: Reinicia backend e restaura banco');
         addLine('  clear | cls     - Limpa este console');
         addLine('  exit            - Fecha o terminal');
+        break;
+
+      case 'btop':
+      case 'top':
+        await fetchStats();
+        addLine('Estatísticas de Recursos Atualizadas.', 'success');
+        if (stats) {
+            addLine(`CPU Load: ${stats.cpu.load}% | Memory: ${stats.memory.percentage}% used`);
+        }
         break;
 
       case 'status':
         addLine('NexusBridge: OPERACIONAL');
         try {
             const res = await fetch('/api/nexus/test/db-employees');
-            if (res.ok) addLine('Backend SQLite: CONECTADO', 'success');
-            else addLine('Backend SQLite: ERRO NA RESPOSTA', 'error');
+            if (res.ok) addLine('Backend Node/SQLite: CONECTADO', 'success');
+            else addLine('Backend Node/SQLite: ERRO NA RESPOSTA', 'error');
         } catch (e) {
-            addLine('Backend SQLite: INDISPONÍVEL', 'error');
+            addLine('Backend Node/SQLite: INDISPONÍVEL', 'error');
         }
         break;
 
       case 'db-reset':
-        addLine('Iniciando reinicialização do banco de dados...', 'system');
+        addLine('Solicitando Hard Reset ao Backend...', 'system');
         try {
             const res = await fetch('/api/nexus/maintenance/db-reset', { method: 'POST' });
             const data = await res.json();
             if (res.ok) {
-                addLine('SUCESSO: Banco de dados restaurado ao estado original.', 'success');
-                toast({ title: "Banco Resetado", description: "O sistema foi restaurado com sucesso." });
+                addLine('REINICIALIZAÇÃO CONCLUÍDA: Banco de dados restaurado.', 'success');
+                toast({ title: "Sistema Reiniciado", description: "O backend e o banco foram restaurados com sucesso." });
+                fetchStats();
             } else {
-                addLine('ERRO: ' + data.message, 'error');
+                addLine('ERRO NO RESET: ' + data.message, 'error');
             }
         } catch (e) {
-            addLine('Falha na comunicação para reset.', 'error');
+            addLine('Falha catastrófica ao tentar resetar.', 'error');
         }
         break;
 
       case 'nexus':
-        if (!args[0]) {
-          addLine('Erro: Especifique um path. Ex: nexus users', 'error');
-          break;
-        }
+        if (!args[0]) { addLine('Erro: Especifique um path.', 'error'); break; }
         try {
-          const response = await fetch(`/api/nexus/${args[0]}`);
-          const data = await response.json();
+          const res = await fetch(`/api/nexus/${args[0]}`);
+          const data = await res.json();
           addLine(JSON.stringify(data, null, 2));
-        } catch (error) {
-          addLine(`Falha na consulta: ${args[0]}`, 'error');
-        }
-        break;
-
-      case 'nexus-post':
-        if (!args[1]) {
-           addLine('Uso: nexus-post <path> <json_body>', 'error');
-           addLine('Ex: nexus-post test/db-employees {"name": "Admin Teste"}');
-           break;
-        }
-        const path = args[0];
-        const bodyStr = args.slice(1).join(' ');
-        try {
-            const body = JSON.parse(bodyStr);
-            const res = await fetch(`/api/nexus/${path}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            const data = await res.json();
-            addLine(JSON.stringify(data, null, 2), res.ok ? 'success' : 'error');
-        } catch (e: any) {
-            addLine('Erro no JSON ou na requisição: ' + e.message, 'error');
-        }
-        break;
-      
-      case 'cli-info':
-        addLine('Para usar o terminal da sua máquina:');
-        addLine('1. Abra o terminal do VS Code ou do Studio.');
-        addLine('2. Digite: node nexus-cli.js <path>');
-        addLine('Isso permite acessar a ponte mesmo se a UI bugar.', 'system');
+        } catch (error) { addLine(`Falha na consulta: ${args[0]}`, 'error'); }
         break;
 
       case 'whoami':
         addLine(`ID: ${currentUser?.id || 'N/A'}`);
         addLine(`Setor: ${currentUser?.sector.join(', ') || 'N/A'}`);
+        addLine(`Cargo: ${currentUser?.role || 'N/A'}`);
         break;
 
       case 'clear':
@@ -145,9 +154,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         break;
 
       default:
-        if (cmd.trim() !== '') {
-          addLine(`Comando não reconhecido: ${command}`, 'error');
-        }
+        if (cmd.trim() !== '') addLine(`Comando não reconhecido: ${command}`, 'error');
     }
   };
 
@@ -162,15 +169,44 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] w-full max-w-2xl h-[450px] bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl flex flex-col font-mono text-sm overflow-hidden animate-in slide-in-from-bottom-4">
+    <div className="fixed bottom-6 right-6 z-[100] w-full max-w-3xl h-[550px] bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl flex flex-col font-mono text-sm overflow-hidden animate-in slide-in-from-bottom-4">
       <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800">
         <div className="flex items-center gap-2 text-zinc-400">
           <TerminalIcon className="h-4 w-4" />
-          <span className="text-xs font-bold uppercase tracking-wider">CityMotion Dev Console</span>
+          <span className="text-xs font-bold uppercase tracking-wider">CityMotion Admin Console</span>
         </div>
         <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors">
           <X className="h-4 w-4" />
         </button>
+      </div>
+
+      {/* btop Resource Monitor Section */}
+      <div className="p-4 bg-zinc-900/50 border-b border-zinc-800 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-2">
+            <div className="flex items-center justify-between text-[10px] uppercase font-bold text-zinc-500">
+                <span className="flex items-center gap-1"><Cpu className="h-3 w-3" /> CPU Load</span>
+                <span>{stats?.cpu.load || '0'}%</span>
+            </div>
+            <Progress value={parseFloat(stats?.cpu.load || '0') * 10} className="h-1.5 bg-zinc-800" />
+            <div className="text-[9px] text-zinc-600 truncate">{stats?.cpu.model || 'Loading CPU...'}</div>
+        </div>
+        <div className="space-y-2">
+            <div className="flex items-center justify-between text-[10px] uppercase font-bold text-zinc-500">
+                <span className="flex items-center gap-1"><HardDrive className="h-3 w-3" /> Memory</span>
+                <span>{stats?.memory.percentage || '0'}%</span>
+            </div>
+            <Progress value={parseFloat(stats?.memory.percentage || '0')} className="h-1.5 bg-zinc-800" />
+            <div className="text-[9px] text-zinc-600">{stats?.memory.used || '0 GB'} / {stats?.memory.total || '0 GB'}</div>
+        </div>
+        <div className="space-y-2">
+             <div className="flex items-center justify-between text-[10px] uppercase font-bold text-zinc-500">
+                <span className="flex items-center gap-1"><Activity className="h-3 w-3" /> Uptime</span>
+            </div>
+            <div className="text-lg font-bold text-emerald-500 mt-1">
+                {stats ? formatUptime(stats.uptime) : '00:00:00'}
+            </div>
+            <div className="text-[9px] text-zinc-600">Platform: {stats?.platform || 'linux'} | Node: {stats?.nodeVersion || 'N/A'}</div>
+        </div>
       </div>
 
       <ScrollArea className="flex-1 p-4 bg-black/50" ref={scrollRef}>

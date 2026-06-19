@@ -59,6 +59,13 @@
       "backendId": "node-backend",
       "target": "/maintenance/reset",
       "transformer": "identity"
+    },
+    {
+      "path": "system/resources",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/system/resources",
+      "transformer": "identity"
     }
   ]
 }
