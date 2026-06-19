@@ -2,80 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 217.2 91.2% 59.8%;
-    --chart-1: 217.2 91.2% 59.8%;
-    --chart-2: 160.1 76.2% 44.5%;
-    --chart-3: 343.8 91.4% 49.8%;
-    --chart-4: 28.5 95.8% 50.8%;
-    --chart-5: 282.8 84.3% 59.8%;
-    --radius: 0.5rem;
-    --sidebar-background: 222.2 84% 4.9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217.2 91.2% 59.8%;
-    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 217.2 91.2% 59.8%;
-    --chart-1: 217.2 91.2% 59.8%;
-    --chart-2: 160.1 76.2% 44.5%;
-    --chart-3: 343.8 91.4% 49.8%;
-    --chart-4: 28.5 95.8% 50.8%;
-    --chart-5: 282.8 84.3% 59.8%;
-    --sidebar-background: 222.2 84% 4.9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217.2 91.2% 59.8%;
-    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 231 18% 9%;
+    --foreground: 245 22% 91%;
+    --card: 231 12% 13%;
+    --card-foreground: 245 22% 91%;
+    --popover: 231 18% 9%;
+    --popover-foreground: 245 22% 91%;
+    --primary: 221 100% 84%;
+    --primary-foreground: 214 100% 21%;
+    --secondary: 240 2% 78%;
+    --secondary-foreground: 240 3% 19%;
+    --muted: 224 12% 29%;
+    --muted-foreground: 228 12% 80%;
+    --accent: 224 12% 29%;
+    --accent-foreground: 245 22% 91%;
+    --destructive: 6 100% 83%;
+    --destructive-foreground: 0 100% 21%;
+    --border: 224 12% 29%;
+    --input: 224 12% 29%;
+    --ring: 221 100% 84%;
+    --radius: 0.25rem;
+    
+    --sidebar-background: 231 18% 7%;
+    --sidebar-foreground: 245 22% 91%;
+    --sidebar-primary: 221 100% 84%;
+    --sidebar-primary-foreground: 214 100% 21%;
+    --sidebar-accent: 231 12% 21%;
+    --sidebar-accent-foreground: 245 22% 91%;
+    --sidebar-border: 224 12% 29%;
+    --sidebar-ring: 221 100% 84%;
   }
 }
 
@@ -85,5 +42,46 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .scanlines {
+    position: relative;
+    overflow: hidden;
+  }
+  .scanlines::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
+    z-index: 10;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    opacity: 0.1;
+  }
+
+  .tui-scanline {
+    background: linear-gradient(to bottom, transparent 50%, rgba(255, 255, 255, 0.01) 51%);
+    background-size: 100% 4px;
+    pointer-events: none;
+  }
+  
+  .crt-flicker {
+    animation: flicker 0.15s infinite;
+  }
+
+  @keyframes flicker {
+    0% { opacity: 0.98; }
+    50% { opacity: 1; }
+    100% { opacity: 0.98; }
+  }
+
+  .terminal-glow {
+    text-shadow: 0 0 5px rgba(173, 198, 255, 0.3);
   }
 }

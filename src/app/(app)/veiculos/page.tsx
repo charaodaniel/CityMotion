@@ -4,7 +4,7 @@ import type { Vehicle, VehicleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { PlusCircle, Car, Gauge, Building, Edit, Wrench, Fuel } from 'lucide-react';
+import { Plus, Car, Gauge, Building, Edit, Wrench, Fuel, Search, Filter, Download, MoreVertical } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RegisterVehicleForm } from '@/components/register-vehicle-form';
 import { useState, useMemo } from 'react';
@@ -12,21 +12,22 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
 import { RequestMaintenanceForm } from '@/components/request-maintenance-form';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 type ModalState = 'register' | 'details' | 'edit' | 'maintenance' | null;
 
-function getStatusVariant(status: VehicleStatus) {
+function getStatusStyles(status: VehicleStatus) {
   switch (status) {
     case 'Em Serviço':
-      return 'default';
     case 'Em Viagem':
-      return 'outline';
+      return 'border-primary/30 bg-primary/10 text-primary';
     case 'Disponível':
-      return 'secondary';
+      return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400';
     case 'Manutenção':
-      return 'destructive';
+      return 'border-destructive/30 bg-destructive/10 text-destructive';
     default:
-      return 'outline';
+      return 'border-border bg-muted/50 text-muted-foreground';
   }
 }
 
@@ -34,22 +35,28 @@ export default function VehiclesPage() {
   const { vehicles, setVehicles, userRole, selectedSector } = useApp();
   const [activeModal, setActiveModal] = useState<ModalState>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const visibleVehicles = useMemo(() => {
+  const filteredVehicles = useMemo(() => {
+    let result = vehicles;
     if (userRole === 'manager' && selectedSector) {
-      return vehicles.filter(v => v.sector === selectedSector);
+      result = result.filter(v => v.sector === selectedSector);
     }
-    return vehicles;
-  }, [vehicles, userRole, selectedSector]);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(v => 
+        v.vehicleModel.toLowerCase().includes(q) || 
+        v.licensePlate.toLowerCase().includes(q) ||
+        v.sector.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [vehicles, userRole, selectedSector, searchQuery]);
 
   const openModal = (modal: ModalState, vehicle: Vehicle | null = null) => {
     setSelectedVehicle(vehicle);
     setActiveModal(modal);
   };
-
-  const closeModal = () => {
-    openModal(null);
-  }
 
   const handleFormSubmit = (newVehicleData: Partial<Vehicle>) => {
     if (activeModal === 'edit' && selectedVehicle) {
@@ -62,191 +69,195 @@ export default function VehiclesPage() {
       } as Vehicle;
       setVehicles([...vehicles, newVehicle]);
     }
-    closeModal();
+    openModal(null);
   };
 
-  const getModalContent = () => {
-    switch (activeModal) {
-      case 'register':
-        return {
-          title: 'Cadastro de Veículo',
-          description: 'Preencha o formulário para adicionar um novo veículo à frota municipal.',
-          content: <RegisterVehicleForm onFormSubmit={handleFormSubmit} />
-        };
-      case 'edit':
-         return {
-          title: 'Editar Veículo',
-          description: 'Altere as informações do veículo.',
-          content: <RegisterVehicleForm onFormSubmit={handleFormSubmit} existingVehicle={selectedVehicle} />
-        };
-       case 'maintenance':
-        return {
-          title: 'Solicitar Manutenção',
-          description: `Abra um chamado de manutenção para o veículo ${selectedVehicle?.vehicleModel} (${selectedVehicle?.licensePlate}).`,
-          content: <RequestMaintenanceForm vehicle={selectedVehicle} onFormSubmit={closeModal} />
-        };
-      case 'details':
-      default:
-        return {
-          title: `${selectedVehicle?.vehicleModel} - ${selectedVehicle?.licensePlate}`,
-          description: 'Detalhes do veículo.',
-          content: (
-             <div className="space-y-4 py-4 pr-4">
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Placa</span>
-                    <p className="text-lg">{selectedVehicle?.licensePlate}</p>
-                </div>
-                <Separator />
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Modelo</span>
-                    <p className="text-lg">{selectedVehicle?.vehicleModel}</p>
-                </div>
-                <Separator />
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Setor</span>
-                    <p className="text-lg">{selectedVehicle?.sector}</p>
-                </div>
-                <Separator />
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-                        <Gauge className="h-4 w-4" />
-                        Quilometragem Atual
-                    </span>
-                    <p className="text-lg">{selectedVehicle?.mileage.toLocaleString('pt-BR')} km</p>
-                </div>
-                <Separator />
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-                        <Fuel className="h-4 w-4" />
-                        Último Abastecimento Registrado
-                    </span>
-                    <p className="text-lg">{selectedVehicle?.lastRefuelingDate || 'Nenhum registro encontrado'}</p>
-                    <p className="text-[10px] text-muted-foreground italic mt-1">Este dado é usado como referência de autonomia na ausência de sensores de tanque.</p>
-                </div>
-                <Separator />
-                <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                    <div className="mt-1">
-                        {selectedVehicle && <Badge variant={getStatusVariant(selectedVehicle.status)}>{selectedVehicle.status}</Badge>}
-                    </div>
-                </div>
-                {selectedVehicle?.driverName && (
-                  <>
-                  <Separator />
-                  <div>
-                      <span className="text-sm font-semibold text-muted-foreground">Motorista Atual</span>
-                      <p className="text-lg">{selectedVehicle.driverName}</p>
-                  </div>
-                  </>
-                )}
-                {selectedVehicle?.destination && (
-                  <>
-                  <Separator />
-                  <div>
-                      <span className="text-sm font-semibold text-muted-foreground">Destino Atual</span>
-                      <p className="text-lg">{selectedVehicle.destination}</p>
-                  </div>
-                  </>
-                )}
-                 <div className="flex justify-end pt-4">
-                    <Button variant="outline" onClick={() => openModal('edit', selectedVehicle)}>
-                        <Edit className="mr-2 h-4 w-4"/>
-                        Editar
-                    </Button>
-                </div>
-              </div>
-          )
-        };
-    }
-  }
-  
-  const { title, description, content } = getModalContent();
-
   return (
-    <div className="container mx-auto p-4 sm:p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="container mx-auto p-4 sm:p-8 space-y-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight font-headline">
-                Gerenciamento da Frota Municipal
-            </h1>
-            <p className="text-muted-foreground">
-              {userRole === 'manager'
-                ? `Veja e gerencie os veículos do setor de ${selectedSector}.`
-                : 'Veja, gerencie e cadastre os veículos da prefeitura.'
-              }
-            </p>
+          <h1 className="text-5xl font-black tracking-tighter text-on-surface">Gestão de Frota</h1>
+          <p className="text-muted-foreground text-lg mt-1 font-medium">Real-time overview and control of NexusOS registered assets.</p>
         </div>
-        {(userRole === 'admin' || userRole === 'manager') && (
-          <Button onClick={() => openModal('register')} className="bg-primary hover:bg-primary/90">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Cadastrar Novo Veículo
-          </Button>
-        )}
+        <Button onClick={() => openModal('register')} className="bg-primary-container text-on-primary-container hover:bg-primary-container/90 h-12 px-6 rounded-lg font-bold uppercase tracking-widest text-xs">
+          <Plus className="mr-2 h-4 w-4" />
+          Add New Vehicle
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {visibleVehicles.map((vehicle) => (
-            <Card 
-              key={vehicle.id} 
-              className="cursor-pointer hover:shadow-md transition-shadow flex flex-col"
-            >
-              <div onClick={() => openModal('details', vehicle)}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <Car className="w-5 h-5 text-muted-foreground" />
-                    <span className="truncate">{vehicle.vehicleModel}</span>
-                  </CardTitle>
-                  <CardDescription>Placa: {vehicle.licensePlate}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-grow justify-between">
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <Building className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span>Setor: <strong>{vehicle.sector}</strong></span>
-                    </div>
-                    <div className="flex items-center">
-                      <Gauge className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span>{vehicle.mileage.toLocaleString('pt-BR')} km</span>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <Badge variant={getStatusVariant(vehicle.status)} className="w-full justify-center">
-                      {vehicle.status}
-                    </Badge>
-                  </div>
-                </CardContent>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: 'Ready for Dispatch', count: vehicles.filter(v => v.status === 'Disponível').length, icon: 'check_circle', color: 'emerald' },
+          { label: 'Active Routes', count: vehicles.filter(v => v.status === 'Em Viagem').length, icon: 'moving', color: 'primary' },
+          { label: 'Workshop / Repair', count: vehicles.filter(v => v.status === 'Manutenção').length, icon: 'build', color: 'destructive' }
+        ].map((stat, i) => (
+          <Card key={i} className="border-border/50 bg-sidebar/50 rounded-xl p-6 relative overflow-hidden group">
+            <div className={cn(
+              "absolute right-0 top-0 w-32 h-32 rounded-bl-full -z-0 transition-transform group-hover:scale-110",
+              stat.color === 'emerald' ? 'bg-emerald-500/10' : stat.color === 'primary' ? 'bg-primary/10' : 'bg-destructive/10'
+            )} />
+            <div className="flex justify-between items-start mb-6 relative z-10">
+              <div className={cn(
+                "p-3 rounded-lg border",
+                stat.color === 'emerald' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 
+                stat.color === 'primary' ? 'bg-primary/20 text-primary border-primary/30' : 
+                'bg-destructive/20 text-destructive border-destructive/30'
+              )}>
+                {stat.color === 'emerald' ? <Building className="h-5 w-5" /> : stat.color === 'primary' ? <Route className="h-5 w-5" /> : <Wrench className="h-5 w-5" />}
               </div>
-              <CardFooter className="p-2 border-t mt-auto">
-                 <Button variant="ghost" size="sm" className="w-full" onClick={() => openModal('maintenance', vehicle)}>
-                    <Wrench className="mr-2 h-4 w-4" />
-                    Solicitar Manutenção
-                  </Button>
-              </CardFooter>
-            </Card>
-          ))}
+              <Badge className={cn("rounded-full uppercase tracking-tighter text-[10px]", getStatusStyles(stat.color === 'emerald' ? 'Disponível' : stat.color === 'primary' ? 'Em Viagem' : 'Manutenção'))}>
+                {stat.label.split(' ')[0]}
+              </Badge>
+            </div>
+            <div className="relative z-10">
+              <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1">{stat.label}</p>
+              <p className="text-4xl font-black tracking-tighter">{stat.count}</p>
+            </div>
+          </Card>
+        ))}
       </div>
 
-      {visibleVehicles.length === 0 && (
-        <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg col-span-full">
-            <p>Nenhum veículo para exibir.</p>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
+          <Card className="border-border/50 bg-sidebar/50 rounded-xl overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-border/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-accent/20">
+              <CardTitle className="text-xl font-bold tracking-tight">Active Fleet</CardTitle>
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="relative flex-1 md:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Search vehicles, drivers..." 
+                    className="pl-10 h-10 border-border/50 bg-sidebar text-xs" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <Button variant="outline" size="icon" className="h-10 w-10"><Filter className="h-4 w-4" /></Button>
+                <Button variant="outline" size="icon" className="h-10 w-10"><Download className="h-4 w-4" /></Button>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-accent/30">
+                  <TableRow className="border-border/30 font-bold text-[10px] uppercase tracking-widest text-muted-foreground">
+                    <TableHead className="px-6 h-12">Vehicle ID</TableHead>
+                    <TableHead className="h-12">Model / Plate</TableHead>
+                    <TableHead className="h-12">Sector</TableHead>
+                    <TableHead className="h-12">Status</TableHead>
+                    <TableHead className="text-right px-6 h-12">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="font-mono text-xs text-foreground divide-y divide-border/30">
+                  {filteredVehicles.map((vehicle) => (
+                    <TableRow key={vehicle.id} className="border-border/30 hover:bg-accent/20 transition-all cursor-pointer group" onClick={() => openModal('details', vehicle)}>
+                      <TableCell className="px-6 py-4 font-bold text-primary">NEX-{vehicle.id.replace(/\D/g, '').padStart(3, '0')}</TableCell>
+                      <TableCell className="py-4">
+                        <div className="flex flex-col">
+                          <span className="font-sans font-bold text-sm">{vehicle.vehicleModel}</span>
+                          <span className="text-[10px] text-muted-foreground tracking-widest">{vehicle.licensePlate}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 text-[10px] font-sans font-medium text-muted-foreground">{vehicle.sector}</TableCell>
+                      <TableCell className="py-4">
+                        <span className={cn("inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[10px] font-bold uppercase tracking-tight", getStatusStyles(vehicle.status))}>
+                          <span className={cn("w-1.5 h-1.5 rounded-full", vehicle.status === 'Em Viagem' && "animate-pulse bg-primary", vehicle.status === 'Disponível' && "bg-emerald-400", vehicle.status === 'Manutenção' && "bg-destructive")} />
+                          {vehicle.status}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right px-6 py-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); openModal('edit', vehicle); }}><Edit className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-3.5 w-3.5" /></Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
         </div>
-      )}
 
-      {/* Modal */}
-       <Dialog open={!!activeModal} onOpenChange={closeModal}>
-        <DialogContent className={activeModal !== 'details' ? 'sm:max-w-3xl' : ''}>
-          <ScrollArea className="max-h-[80vh] p-4">
-              <DialogHeader>
-                <DialogTitle className="text-2xl">{title}</DialogTitle>
-                <DialogDescription>
-                  {description}
+        <div className="flex flex-col gap-6">
+          <Card className="border-border/50 bg-sidebar/50 rounded-xl p-6">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
+              <Zap className="h-3.5 w-3.5 text-primary" /> Top Performance Drivers
+            </h4>
+            <div className="space-y-4">
+              {['J. Pereira', 'M. Santos'].map((name, i) => (
+                <div key={i} className="flex items-center gap-4 p-3 rounded-lg border border-transparent hover:border-border/50 hover:bg-accent/30 transition-all cursor-pointer">
+                  <Avatar className="h-10 w-10 border-2 border-primary/20">
+                    <AvatarImage src={`https://i.pravatar.cc/100?u=${name}`} />
+                    <AvatarFallback>{name[0]}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 overflow-hidden">
+                    <p className="text-sm font-bold truncate leading-none mb-1">{name}</p>
+                    <p className="text-[9px] font-mono text-muted-foreground uppercase">{4.8 + i*0.1}/5.0 • {980 + i*220} Trips</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-primary opacity-50" />
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card className="bg-zinc-950 border-border/50 rounded-xl p-6 relative overflow-hidden flex-1 tui-scanline">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2">
+              <Activity className="h-3.5 w-3.5" /> Fleet Activity Log
+            </h4>
+            <div className="font-mono text-[10px] text-muted-foreground flex flex-col gap-3">
+              {[
+                { time: '10:42', id: 'NEX-108', msg: 'Entered Geofence Z-04', type: 'primary' },
+                { time: '10:38', id: 'NEX-015', msg: 'Maintenance Ticket #882 Open', type: 'destructive' },
+                { time: '10:15', id: 'NEX-042', msg: 'Completed Trip T-9912', type: 'emerald' },
+                { time: '09:55', id: 'SYS', msg: 'OTA Update v2.4 Pushed', type: 'primary' }
+              ].map((log, i) => (
+                <div key={i} className="flex gap-2 leading-tight">
+                  <span className="text-primary/40 shrink-0">[{log.time}]</span>
+                  <span className={cn("font-bold uppercase shrink-0", log.type === 'primary' ? 'text-primary' : log.type === 'destructive' ? 'text-destructive' : 'text-emerald-400')}>{log.id}</span>
+                  <span className="text-foreground/70">{log.msg}</span>
+                </div>
+              ))}
+            </div>
+            <div className="absolute bottom-6 right-6">
+              <span className="inline-block w-2 h-4 bg-primary animate-pulse" />
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* Modal Overhaul follows same design aesthetic */}
+       <Dialog open={!!activeModal} onOpenChange={() => openModal(null)}>
+        <DialogContent className="sm:max-w-2xl border-border/50 bg-sidebar overflow-hidden p-0">
+          <div className="h-1.5 w-full bg-primary" />
+          <ScrollArea className="max-h-[80vh] p-8">
+              <DialogHeader className="mb-6">
+                <DialogTitle className="text-2xl font-black tracking-tight">{activeModal === 'register' ? 'New Vehicle Protocol' : activeModal === 'edit' ? 'Update Unit Signature' : 'Telemetery Details'}</DialogTitle>
+                <DialogDescription className="text-xs font-mono uppercase tracking-widest text-primary/70">
+                  {activeModal === 'register' ? 'Executing unit registration FSP-v3' : 'Accessing unit core parameters'}
                 </DialogDescription>
               </DialogHeader>
-              {content}
+              <div className="scanlines rounded-lg border border-border/50 p-6 bg-accent/10">
+                {activeModal === 'maintenance' ? (
+                  <RequestMaintenanceForm vehicle={selectedVehicle} onFormSubmit={() => openModal(null)} />
+                ) : activeModal === 'register' || activeModal === 'edit' ? (
+                  <RegisterVehicleForm onFormSubmit={handleFormSubmit} existingVehicle={selectedVehicle} />
+                ) : (
+                  <div className="space-y-6">
+                     <div className="grid grid-cols-2 gap-8">
+                        <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Unit Model</p><p className="text-lg font-bold">{selectedVehicle?.vehicleModel}</p></div>
+                        <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">License Signature</p><p className="text-lg font-mono font-bold text-primary">{selectedVehicle?.licensePlate}</p></div>
+                        <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Assigned Sector</p><p className="text-sm font-bold">{selectedVehicle?.sector}</p></div>
+                        <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Total Distance</p><p className="text-sm font-mono">{selectedVehicle?.mileage.toLocaleString('pt-BR')} KM</p></div>
+                     </div>
+                     <Separator className="bg-border/30" />
+                     <div className="flex justify-end gap-3">
+                        <Button variant="outline" className="text-xs uppercase font-bold" onClick={() => openModal('maintenance', selectedVehicle)}>Open Ticket</Button>
+                        <Button variant="default" className="bg-primary text-primary-foreground text-xs uppercase font-bold" onClick={() => openModal('edit', selectedVehicle)}>Refactor Unit</Button>
+                     </div>
+                  </div>
+                )}
+              </div>
           </ScrollArea>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }

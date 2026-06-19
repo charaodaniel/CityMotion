@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -27,7 +26,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Logo } from '@/components/icons';
 import { 
   LayoutDashboard, 
   Car, 
@@ -47,7 +45,9 @@ import {
   Terminal, 
   ShieldCheck, 
   DollarSign,
-  RefreshCw
+  RefreshCw,
+  LogOut,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -58,7 +58,6 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { DevTerminal } from '@/components/dev-terminal';
 
-// 1. Itens de Administração da PLATAFORMA (Dev/TI)
 const platformNavItems = [
   { href: '/dev-global', label: 'Gestão Global', icon: ShieldCheck, roles: ['dev'] },
   { href: '/faturamento', label: 'Faturamento', icon: DollarSign, roles: ['dev', 'ti'] },
@@ -66,106 +65,85 @@ const platformNavItems = [
   { href: '/perfis', label: 'Gerenciar Perfis', icon: UserCog, roles: ['dev', 'ti', 'admin'] },
 ];
 
-// 2. Itens de Gestão OPERACIONAL (Empresa)
 const operationalNavItems = [
-  { href: '/dashboard', label: 'Painel Geral', icon: LayoutDashboard, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
   { href: '/setores', label: 'Setores', icon: Building, roles: ['dev', 'ti', 'admin'] },
   { href: '/funcionarios', label: 'Funcionários', icon: Users, roles: ['dev', 'ti', 'admin', 'manager'] },
-  { href: '/veiculos', label: 'Veículos', icon: Car, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
-  { href: '/viagens', label: 'Viagens', icon: Route, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/veiculos', label: 'Fleet', icon: Car, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/viagens', label: 'Trips', icon: Route, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
   { href: '/manutencao', label: 'Manutenção', icon: Wrench, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
   { href: '/escalas', label: 'Escalas', icon: CalendarClock, roles: ['dev', 'ti', 'admin', 'manager'] },
   { href: '/relatorios', label: 'Relatórios', icon: ScrollText, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
 ];
 
-const bottomNavItems = [
-    { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
-    { href: '/docs', label: 'Central de Ajuda', icon: BookOpen, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
-    { href: '/settings', label: 'Configurações', icon: Settings, roles: ['ti', 'admin'] },
-]
-
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { userRole, logout, currentUser, isLoading, isRefreshing, refreshData, selectedSector, setSelectedSector, notifications, markNotificationAsRead, clearNotifications } = useApp();
+  const { userRole, logout, currentUser, isLoading, isRefreshing, refreshData, selectedSector, notifications, markNotificationAsRead, clearNotifications } = useApp();
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
   const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
 
-  // Filtragem inteligente por seção
-  const filteredPlatformItems = useMemo(() => {
-    return platformNavItems.filter(item => item.roles.includes(userRole));
-  }, [userRole]);
-
-  const filteredOperationalItems = useMemo(() => {
-    return operationalNavItems.filter(item => {
-      if (!item.roles.includes(userRole)) return false;
-      if (userRole === 'employee') {
-        const restrictedRoutes = ['/veiculos', '/viagens', '/manutencao', '/relatorios'];
-        if (restrictedRoutes.includes(item.href)) return isCurrentUserDriver;
-      }
-      return true;
-    });
-  }, [userRole, isCurrentUserDriver]);
-
-  const filteredBottomNavItems = useMemo(() => {
-    return bottomNavItems.filter(item => item.roles.includes(userRole));
-  }, [userRole]);
+  const filteredPlatformItems = useMemo(() => platformNavItems.filter(item => item.roles.includes(userRole)), [userRole]);
+  const filteredOperationalItems = useMemo(() => operationalNavItems.filter(item => {
+    if (!item.roles.includes(userRole)) return false;
+    if (userRole === 'employee') {
+      const restrictedRoutes = ['/veiculos', '/viagens', '/manutencao', '/relatorios'];
+      if (restrictedRoutes.includes(item.href)) return isCurrentUserDriver;
+    }
+    return true;
+  }), [userRole, isCurrentUserDriver]);
 
   const getRoleName = (role: string) => {
     switch (role) {
-      case 'dev': return 'Desenvolvedor Global';
-      case 'ti': return 'Técnico de TI';
-      case 'admin': return 'Administrador';
-      case 'manager': return 'Gestor';
-      case 'employee': return currentUser?.role || 'Colaborador'; 
-      default: return 'Desconhecido'
+      case 'dev': return 'Developer';
+      case 'ti': return 'TI Expert';
+      case 'admin': return 'Administrator';
+      case 'manager': return 'Fleet Manager';
+      default: return currentUser?.role || 'User';
     }
   }
 
-  const getInitials = (name?: string) => {
-    return name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
-  }
-  
   const handleLogout = () => logout();
-
-  const handleChangeSector = () => {
-    setSelectedSector(null);
-    router.push('/select-sector');
-  }
-
-  if (userRole === 'manager' && !selectedSector && pathname !== '/select-sector') {
-      if (!isLoading) router.replace('/select-sector');
-      return <div className="flex items-center justify-center min-h-screen"><SidebarMenuSkeleton /></div>;
-  }
 
   if (pathname === '/select-sector') return <div className="min-h-screen bg-background">{children}</div>;
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
-        <Sidebar>
-          <SidebarHeader>
-            <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground hover:text-sidebar-foreground">
-              <Logo />
-              <span className="text-lg font-semibold tracking-tighter">CityMotion</span>
+      <div className="flex min-h-screen bg-background text-foreground selection:bg-primary/30">
+        <Sidebar className="border-r border-border/50 bg-sidebar">
+          <SidebarHeader className="h-16 flex items-center px-6 border-b border-border/50">
+            <Link href="/dashboard" className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground">
+                <Network className="h-5 w-5" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold tracking-tight leading-none">CityMotion</span>
+                <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mt-1">NexusOS Fleet</span>
+              </div>
             </Link>
           </SidebarHeader>
           
-          <SidebarContent>
-            {/* SEÇÃO DA PLATAFORMA (Somente Dev/TI/Admin) */}
-            {(userRole === 'dev' || userRole === 'ti') && (
+          <SidebarContent className="px-2 py-4">
+            {filteredPlatformItems.length > 0 && (
               <SidebarGroup>
-                <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-widest text-primary/70">
+                <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-widest text-primary/60 mb-2 px-2">
                   Plataforma
                 </SidebarGroupLabel>
                 <SidebarMenu>
                   {filteredPlatformItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={pathname.startsWith(item.href)} tooltip={item.label}>
+                      <SidebarMenuButton 
+                        asChild 
+                        isActive={pathname.startsWith(item.href)} 
+                        className={cn(
+                          "rounded-sm transition-all duration-200",
+                          pathname.startsWith(item.href) && "border-r-2 border-primary bg-accent/50 text-primary font-bold"
+                        )}
+                      >
                         <Link href={item.href}>
-                          <item.icon />
+                          <item.icon className="h-4 w-4" />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -175,33 +153,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarGroup>
             )}
 
-            {/* SEÇÃO OPERACIONAL DA EMPRESA */}
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <SidebarGroup className="mt-4">
+              <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-2">
                 Operação
               </SidebarGroupLabel>
-              {userRole === 'manager' && selectedSector && (
-                <div className="px-2 mb-2">
-                  <Button variant="outline" size="sm" className="w-full justify-start text-left h-auto" onClick={handleChangeSector}>
-                    <div className="flex items-center gap-2">
-                      <UserSquare className="h-4 w-4 shrink-0 text-primary" />
-                      <div className="flex flex-col">
-                        <span className="text-[10px] text-muted-foreground leading-none">Unidade</span>
-                        <span className="text-xs font-semibold whitespace-normal break-words">{selectedSector}</span>
-                      </div>
-                    </div>
-                  </Button>
-                </div>
-              )}
               <SidebarMenu>
                 {isLoading ? (
                   <SidebarMenuSkeleton showIcon />
                 ) : (
                   filteredOperationalItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.label}>
+                      <SidebarMenuButton 
+                        asChild 
+                        isActive={pathname === item.href}
+                        className={cn(
+                          "rounded-sm transition-all duration-200",
+                          pathname === item.href && "border-r-2 border-primary bg-accent/50 text-primary font-bold"
+                        )}
+                      >
                         <Link href={item.href}>
-                          <item.icon />
+                          <item.icon className="h-4 w-4" />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -212,104 +183,101 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className='mt-auto'>
-            <Separator className='mb-2' />
-             <SidebarMenu>
-                {filteredBottomNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={pathname.startsWith(item.href)} tooltip={item.label}>
-                        <Link href={item.href}>
-                            <item.icon />
-                            <span>{item.label}</span>
-                        </Link>
-                    </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
-            </SidebarMenu>
+          <SidebarFooter className='mt-auto p-4 border-t border-border/50'>
+             <div className="flex items-center gap-2 p-2 bg-accent/30 rounded border border-border/50">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-mono text-emerald-500 font-bold uppercase tracking-tight">System Status: Active</span>
+             </div>
+             <div className="flex flex-col gap-1 mt-4">
+                <Button variant="ghost" size="sm" className="justify-start h-8 px-2 text-muted-foreground hover:text-foreground text-xs" asChild>
+                    <Link href="/docs"><BookOpen className="mr-2 h-3.5 w-3.5" /> Docs</Link>
+                </Button>
+                <Button variant="ghost" size="sm" className="justify-start h-8 px-2 text-muted-foreground hover:text-foreground text-xs" onClick={handleLogout}>
+                    <LogOut className="mr-2 h-3.5 w-3.5" /> Logout
+                </Button>
+             </div>
           </SidebarFooter>
         </Sidebar>
 
-        <SidebarInset>
-            <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:px-6">
-                <SidebarTrigger asChild className='sm:hidden'>
-                    <Button variant="outline" size="icon"><Menu /></Button>
-                </SidebarTrigger>
-                <div className="ml-auto flex items-center gap-2 sm:gap-4">
-                  
-                  {/* BOTAO REFRESH GLOBAL */}
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => refreshData()} 
-                    title="Sincronizar Dados"
-                    disabled={isRefreshing}
-                  >
-                    <RefreshCw className={cn("h-5 w-5 text-zinc-500", isRefreshing && "animate-spin text-primary")} />
+        <SidebarInset className="bg-background">
+            <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/50 bg-background/95 backdrop-blur-md px-6">
+                <div className="flex items-center gap-6">
+                  <SidebarTrigger className="h-8 w-8" />
+                  <nav className="hidden lg:flex items-center gap-6">
+                    {['Dashboard', 'Fleet', 'Network'].map((label) => (
+                      <Link 
+                        key={label} 
+                        href={label === 'Dashboard' ? '/dashboard' : label === 'Fleet' ? '/veiculos' : '/nexus'}
+                        className={cn(
+                          "text-[10px] font-bold uppercase tracking-widest transition-colors pb-1 border-b-2",
+                          pathname.includes(label.toLowerCase()) ? "text-primary border-primary" : "text-muted-foreground border-transparent hover:text-primary"
+                        )}
+                      >
+                        {label}
+                      </Link>
+                    ))}
+                  </nav>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <Button variant="ghost" size="icon" onClick={() => refreshData()} disabled={isRefreshing} className="h-8 w-8 text-muted-foreground hover:text-primary">
+                    <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin text-primary")} />
                   </Button>
 
                   {['dev', 'ti', 'admin'].includes(userRole) && (
-                    <Button variant="ghost" size="icon" onClick={() => setIsTerminalOpen(true)} title="NexusOS Terminal">
-                      <Terminal className="h-5 w-5 text-zinc-500 hover:text-primary" />
+                    <Button variant="ghost" size="icon" onClick={() => setIsTerminalOpen(true)} className="h-8 w-8 text-muted-foreground hover:text-primary">
+                      <Terminal className="h-4 w-4" />
                     </Button>
                   )}
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="relative">
-                        <Bell className="h-5 w-5" />
-                        {unreadCount > 0 && (
-                          <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 rounded-full text-[10px]">
-                            {unreadCount}
-                          </Badge>
-                        )}
+                      <Button variant="ghost" size="icon" className="relative h-8 w-8 text-muted-foreground hover:text-primary">
+                        <Bell className="h-4 w-4" />
+                        {unreadCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-80">
-                      <DropdownMenuLabel className="flex items-center justify-between">
-                        <span>Notificações</span>
-                        <Button variant="ghost" size="sm" onClick={clearNotifications} className="h-auto p-0 text-xs">Limpar</Button>
+                    <DropdownMenuContent align="end" className="w-80 p-0 border-border/50 bg-sidebar">
+                      <DropdownMenuLabel className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
+                        <span className="text-xs uppercase font-bold tracking-widest">Notificações</span>
+                        <Button variant="ghost" size="sm" onClick={clearNotifications} className="h-auto p-0 text-[10px] text-muted-foreground hover:text-primary">LIMPAR</Button>
                       </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
                       <ScrollArea className="h-80">
                         {notifications.length > 0 ? notifications.map((n) => (
-                          <DropdownMenuItem key={n.id} className={cn("flex flex-col items-start p-4 gap-1 border-b", !n.read && "bg-muted/40")} onClick={() => markNotificationAsRead(n.id)}>
-                            <div className="flex w-full items-center justify-between">
-                              <span className={cn("text-sm font-semibold", !n.read && "text-primary")}>{n.title}</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground line-clamp-2">{n.message}</p>
-                          </DropdownMenuItem>
+                          <div key={n.id} className={cn("p-4 border-b border-border/30 hover:bg-accent/30 cursor-pointer transition-colors", !n.read && "bg-primary/5")} onClick={() => markNotificationAsRead(n.id)}>
+                            <div className="text-xs font-bold text-primary mb-1">{n.title}</div>
+                            <p className="text-[11px] text-muted-foreground leading-tight line-clamp-2">{n.message}</p>
+                          </div>
                         )) : (
-                          <div className="p-8 text-center text-sm text-muted-foreground">Silêncio por aqui...</div>
+                          <div className="p-8 text-center text-xs text-muted-foreground italic">Nenhum alerta recente.</div>
                         )}
                       </ScrollArea>
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  {isLoading || !currentUser ? (
-                    <SidebarMenuSkeleton />
-                  ) : (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                          <Avatar className='h-9 w-9'>
-                            <AvatarImage src={`https://i.pravatar.cc/150?u=${currentUser.id}`} />
-                            <AvatarFallback>{getInitials(currentUser?.name)}</AvatarFallback>
-                          </Avatar>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel className='font-normal'>
-                          <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-medium leading-none">{currentUser?.name}</p>
-                            <p className="text-xs leading-none text-muted-foreground">{getRoleName(userRole)}</p>
-                          </div>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild><Link href="/perfil">Meu Perfil</Link></DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleLogout}>Sair</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                  <Separator orientation="vertical" className="h-6 mx-2" />
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-9 w-9 p-0 rounded-full border border-border/50 hover:border-primary transition-all">
+                        <Avatar className='h-8 w-8'>
+                          <AvatarImage src={`https://i.pravatar.cc/150?u=${currentUser?.id}`} />
+                          <AvatarFallback className="bg-primary/10 text-primary">{currentUser?.name?.[0]}</AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 border-border/50 bg-sidebar">
+                      <DropdownMenuLabel className='font-normal p-4'>
+                        <div className="flex flex-col gap-1">
+                          <p className="text-sm font-bold tracking-tight">{currentUser?.name}</p>
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">{getRoleName(userRole)}</p>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator className="bg-border/50" />
+                      <DropdownMenuItem asChild className="focus:bg-primary/10 focus:text-primary cursor-pointer"><Link href="/perfil">Meu Perfil</Link></DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">Sair do Sistema</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
             </header>
             <main className="flex-1 overflow-auto">
