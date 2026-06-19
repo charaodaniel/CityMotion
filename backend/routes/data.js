@@ -85,6 +85,30 @@ module.exports = function(db) {
         });
     });
 
+    // Endpoint de Estatísticas de Banco
+    router.get('/system/db-info', (req, res) => {
+        const tables = ['employees', 'vehicles', 'trips', 'sectors', 'vehicle_requests', 'maintenance_requests'];
+        const stats = {};
+        
+        const promises = tables.map(table => {
+            return new Promise((resolve) => {
+                db.get(`SELECT COUNT(*) as count FROM ${table}`, (err, row) => {
+                    stats[table] = err ? 0 : row.count;
+                    resolve();
+                });
+            });
+        });
+
+        Promise.all(promises).then(() => {
+            res.json({
+                tables: tables,
+                counts: stats,
+                database: 'SQLite3',
+                status: 'Healthy'
+            });
+        });
+    });
+
     // Endpoint de Manutenção: Resetar Banco
     router.post('/maintenance/reset', (req, res) => {
         console.log('[Maintenance] Reset de banco solicitado.');

@@ -80,6 +80,13 @@
       "backendId": "node-backend",
       "target": "/system/resources",
       "transformer": "identity"
+    },
+    {
+      "path": "system/db-info",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/system/db-info",
+      "transformer": "identity"
     }
   ]
 }
