@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { UserCog, ShieldCheck, ShieldAlert } from 'lucide-react';
 import type { Employee } from '@/lib/types';
@@ -67,7 +68,7 @@ export default function ProfilesPage() {
           <div className="container mx-auto p-4 sm:p-8">
                 <Card className="text-center">
                     <CardHeader>
-                        <CardTitle className="flex justify-center mb-2 text-destructive"><ShieldAlert className="h-10 w-10" /></CardTitle>
+                        <div className="flex justify-center mb-2 text-destructive"><ShieldAlert className="h-10 w-10" /></div>
                         <CardTitle>Acesso Negado</CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -80,7 +81,7 @@ export default function ProfilesPage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-8">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-3">
                 <UserCog />
@@ -91,7 +92,7 @@ export default function ProfilesPage() {
             </p>
         </div>
         {userRole === 'dev' && (
-            <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
+            <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 w-fit">
                 Acesso Root Ativo
             </Badge>
         )}
