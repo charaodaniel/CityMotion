@@ -2,11 +2,11 @@
 {
   "backends": {
     "local-sim": {
-      "baseUrl": "http://localhost:9002/api",
+      "baseUrl": "http://127.0.0.1:9002/api",
       "description": "API de Simulação Interna (JSON Files)"
     },
     "node-backend": {
-      "baseUrl": "http://localhost:3001/api",
+      "baseUrl": "http://127.0.0.1:3001/api",
       "description": "Servidor Backend Principal (Node/SQLite)"
     }
   },
@@ -42,6 +42,20 @@
     {
       "path": "test/db-employees",
       "method": "POST",
+      "backendId": "node-backend",
+      "target": "/employees",
+      "transformer": "identity"
+    },
+    {
+      "path": "test/db-employees",
+      "method": "PUT",
+      "backendId": "node-backend",
+      "target": "/employees",
+      "transformer": "identity"
+    },
+    {
+      "path": "test/db-employees",
+      "method": "DELETE",
       "backendId": "node-backend",
       "target": "/employees",
       "transformer": "identity"

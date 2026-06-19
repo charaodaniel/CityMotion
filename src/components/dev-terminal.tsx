@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -25,7 +26,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   const { currentUser } = useApp();
   const { toast } = useToast();
   const [history, setHistory] = useState<TerminalLine[]>([
-    { type: 'system', content: 'CityMotion OS v1.2.0 (btop edition)' },
+    { type: 'system', content: 'CityMotion OS v1.2.5 (btop edition)' },
     { type: 'system', content: 'Digite "help" para ver a lista de comandos e descrições.' },
   ]);
   const [input, setInput] = useState('');
@@ -87,6 +88,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
       case 'help':
         addLine('--- Comandos Disponíveis ---', 'system');
         addLine('users           - Lista todos os funcionários do banco de dados (SQLite).');
+        addLine('user-edit <id> <body> - Edita um funcionário existente (Ex: user-edit 1 {"name":"Novo"}).');
         addLine('top | btop      - Mostra uso de CPU, RAM e Uptime em tempo real.');
         addLine('status          - Testa conectividade com NexusBridge e Banco SQLite.');
         addLine('whoami          - Exibe detalhes do seu perfil e permissões atuais.');
@@ -117,6 +119,35 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
             }
         } catch (e) {
             addLine('Falha catastrófica ao conectar com o banco.', 'error');
+        }
+        break;
+
+      case 'user-edit':
+        if (!args[0] || !args[1]) {
+            addLine('Erro: Use user-edit <id> <json_body>.', 'error');
+            addLine('Exemplo: user-edit 1 {"name": "Admin Atualizado", "role": "Administrador"}', 'system');
+            break;
+        }
+        try {
+            const userId = args[0];
+            const body = JSON.parse(args.slice(1).join(' '));
+            addLine(`Enviando atualização para ID ${userId}...`, 'system');
+            
+            const res = await fetch(`/api/nexus/test/db-employees/${userId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                addLine(`SUCESSO: ${data.message || 'Registro atualizado.'}`, 'success');
+                toast({ title: "Registro Atualizado", description: `O funcionário ID ${userId} foi modificado no banco SQLite.` });
+            } else {
+                addLine(`ERRO: ${data.error || 'Falha na atualização.'}`, 'error');
+            }
+        } catch (e) {
+            addLine('Erro: Payload JSON inválido ou falha na ponte.', 'error');
         }
         break;
 

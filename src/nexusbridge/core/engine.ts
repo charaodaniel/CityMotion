@@ -31,7 +31,24 @@ export class NexusBridge {
     console.log(`[NexusBridge] Processing ${request.method} "${normalizedPath}"`);
 
     // 1. Encontrar a rota correspondente
-    const route = config.routes.find(r => r.path === normalizedPath && r.method === request.method);
+    // Primeiro tenta o match exato
+    let route = config.routes.find(r => r.path === normalizedPath && r.method === request.method);
+    let dynamicId = null;
+
+    // Se não encontrou exato, tenta detectar ID no final (ex: path/123)
+    if (!route) {
+        const parts = normalizedPath.split('/');
+        if (parts.length > 1) {
+            const idCandidate = parts.pop();
+            const parentPath = parts.join('/');
+            
+            const potentialRoute = config.routes.find(r => r.path === parentPath && r.method === request.method);
+            if (potentialRoute) {
+                route = potentialRoute;
+                dynamicId = idCandidate;
+            }
+        }
+    }
 
     if (!route) {
       return {
@@ -49,7 +66,11 @@ export class NexusBridge {
       throw new Error(`NexusBridge: Backend ${route.backendId} not configured.`);
     }
 
-    const targetUrl = `${backend.baseUrl}${route.target}`;
+    // Monta a URL alvo, anexando o ID dinâmico se houver
+    let targetUrl = `${backend.baseUrl}${route.target}`;
+    if (dynamicId) {
+        targetUrl = `${targetUrl}/${dynamicId}`;
+    }
 
     try {
       // 3. Executar a requisição via Adaptador
