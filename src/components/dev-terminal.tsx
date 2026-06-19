@@ -6,17 +6,19 @@ import { Terminal as TerminalIcon, X, ChevronRight, Command } from 'lucide-react
 import { useApp } from '@/contexts/app-provider';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface TerminalLine {
-  type: 'input' | 'output' | 'error' | 'system';
+  type: 'input' | 'output' | 'error' | 'system' | 'success';
   content: string;
 }
 
 export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange: (open: boolean) => void; onClose: () => void }) {
   const { currentUser, userRole } = useApp();
+  const { toast } = useToast();
   const [history, setHistory] = useState<TerminalLine[]>([
-    { type: 'system', content: 'CityMotion OS v1.0.0 (NexusBridge Core)' },
-    { type: 'system', content: 'Digite "help" para ver os comandos disponíveis.' },
+    { type: 'system', content: 'CityMotion OS v1.1.0 (NexusBridge Core)' },
+    { type: 'system', content: 'Digite "help" para ver os comandos de manutenção.' },
   ]);
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -47,13 +49,90 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
 
     switch (command) {
       case 'help':
-        addLine('Comandos disponíveis:');
-        addLine('  help           - Mostra esta lista');
-        addLine('  nexus <path>   - Consulta endpoint via NexusBridge');
-        addLine('  whoami         - Detalhes do usuário atual');
-        addLine('  status         - Verifica saúde do sistema');
-        addLine('  clear | cls    - Limpa o terminal');
-        addLine('  exit           - Fecha o terminal');
+        addLine('Comandos Disponíveis:');
+        addLine('  status          - Saúde do sistema e conexões');
+        addLine('  whoami          - Identidade do usuário atual');
+        addLine('  nexus <path>    - Consulta GET via NexusBridge');
+        addLine('  nexus-post <p>  - Envia dados (JSON) via POST. Ex: nexus-post users {"id":99}');
+        addLine('  db-reset        - REINICIAR BANCO (Limpa e volta ao estado original)');
+        addLine('  cli-info        - Como usar o terminal da máquina (CLI)');
+        addLine('  clear | cls     - Limpa este console');
+        addLine('  exit            - Fecha o terminal');
+        break;
+
+      case 'status':
+        addLine('NexusBridge: OPERACIONAL');
+        try {
+            const res = await fetch('/api/nexus/test/db-employees');
+            if (res.ok) addLine('Backend SQLite: CONECTADO', 'success');
+            else addLine('Backend SQLite: ERRO NA RESPOSTA', 'error');
+        } catch (e) {
+            addLine('Backend SQLite: INDISPONÍVEL', 'error');
+        }
+        break;
+
+      case 'db-reset':
+        addLine('Iniciando reinicialização do banco de dados...', 'system');
+        try {
+            const res = await fetch('/api/nexus/maintenance/db-reset', { method: 'POST' });
+            const data = await res.json();
+            if (res.ok) {
+                addLine('SUCESSO: Banco de dados restaurado ao estado original.', 'success');
+                toast({ title: "Banco Resetado", description: "O sistema foi restaurado com sucesso." });
+            } else {
+                addLine('ERRO: ' + data.message, 'error');
+            }
+        } catch (e) {
+            addLine('Falha na comunicação para reset.', 'error');
+        }
+        break;
+
+      case 'nexus':
+        if (!args[0]) {
+          addLine('Erro: Especifique um path. Ex: nexus users', 'error');
+          break;
+        }
+        try {
+          const response = await fetch(`/api/nexus/${args[0]}`);
+          const data = await response.json();
+          addLine(JSON.stringify(data, null, 2));
+        } catch (error) {
+          addLine(`Falha na consulta: ${args[0]}`, 'error');
+        }
+        break;
+
+      case 'nexus-post':
+        if (!args[1]) {
+           addLine('Uso: nexus-post <path> <json_body>', 'error');
+           addLine('Ex: nexus-post test/db-employees {"name": "Admin Teste"}');
+           break;
+        }
+        const path = args[0];
+        const bodyStr = args.slice(1).join(' ');
+        try {
+            const body = JSON.parse(bodyStr);
+            const res = await fetch(`/api/nexus/${path}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            addLine(JSON.stringify(data, null, 2), res.ok ? 'success' : 'error');
+        } catch (e: any) {
+            addLine('Erro no JSON ou na requisição: ' + e.message, 'error');
+        }
+        break;
+      
+      case 'cli-info':
+        addLine('Para usar o terminal da sua máquina:');
+        addLine('1. Abra o terminal do VS Code ou do Studio.');
+        addLine('2. Digite: node nexus-cli.js <path>');
+        addLine('Isso permite acessar a ponte mesmo se a UI bugar.', 'system');
+        break;
+
+      case 'whoami':
+        addLine(`ID: ${currentUser?.id || 'N/A'}`);
+        addLine(`Setor: ${currentUser?.sector.join(', ') || 'N/A'}`);
         break;
 
       case 'clear':
@@ -63,41 +142,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
 
       case 'exit':
         onClose();
-        break;
-
-      case 'whoami':
-        addLine(`Usuário: ${currentUser?.name || 'N/A'}`);
-        addLine(`Cargo: ${currentUser?.role || 'N/A'}`);
-        addLine(`Permissão: ${userRole}`);
-        addLine(`Setor: ${currentUser?.sector.join(', ') || 'N/A'}`);
-        break;
-
-      case 'status':
-        addLine('NexusBridge Engine: OPERACIONAL');
-        addLine('Local Simulation: ONLINE');
-        addLine('Node Backend (SQLite): VERIFICANDO...');
-        try {
-            const res = await fetch('/api/nexus/test/db-employees');
-            if (res.ok) addLine('Node Backend (SQLite): CONECTADO', 'system');
-            else addLine('Node Backend (SQLite): ERRO NA RESPOSTA', 'error');
-        } catch (e) {
-            addLine('Node Backend (SQLite): INDISPONÍVEL', 'error');
-        }
-        break;
-
-      case 'nexus':
-        if (!args[0]) {
-          addLine('Erro: Especifique um path. Ex: nexus users', 'error');
-          break;
-        }
-        addLine(`Consultando /api/nexus/${args[0]}...`, 'system');
-        try {
-          const response = await fetch(`/api/nexus/${args[0]}`);
-          const data = await response.json();
-          addLine(JSON.stringify(data, null, 2));
-        } catch (error) {
-          addLine(`Falha na consulta: ${args[0]}`, 'error');
-        }
         break;
 
       default:
@@ -118,8 +162,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] w-full max-w-2xl h-[400px] bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl flex flex-col font-mono text-sm overflow-hidden animate-in slide-in-from-bottom-4">
-      {/* Header */}
+    <div className="fixed bottom-6 right-6 z-[100] w-full max-w-2xl h-[450px] bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl flex flex-col font-mono text-sm overflow-hidden animate-in slide-in-from-bottom-4">
       <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800">
         <div className="flex items-center gap-2 text-zinc-400">
           <TerminalIcon className="h-4 w-4" />
@@ -130,7 +173,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         </button>
       </div>
 
-      {/* Body */}
       <ScrollArea className="flex-1 p-4 bg-black/50" ref={scrollRef}>
         <div className="space-y-1">
           {history.map((line, i) => (
@@ -140,7 +182,8 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                 "whitespace-pre-wrap break-all",
                 line.type === 'input' && "text-blue-400",
                 line.type === 'error' && "text-red-400",
-                line.type === 'system' && "text-green-500 font-bold",
+                line.type === 'success' && "text-emerald-400",
+                line.type === 'system' && "text-amber-500 font-bold",
                 line.type === 'output' && "text-zinc-300"
               )}
             >
@@ -150,7 +193,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         </div>
       </ScrollArea>
 
-      {/* Input */}
       <form onSubmit={handleSubmit} className="p-3 bg-zinc-900 border-t border-zinc-800 flex items-center gap-2">
         <ChevronRight className="h-4 w-4 text-zinc-500 shrink-0" />
         <input

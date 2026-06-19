@@ -40,10 +40,24 @@
       "transformer": "identity"
     },
     {
+      "path": "test/db-employees",
+      "method": "POST",
+      "backendId": "node-backend",
+      "target": "/employees",
+      "transformer": "identity"
+    },
+    {
       "path": "test/db-vehicles",
       "method": "GET",
       "backendId": "node-backend",
       "target": "/vehicles",
+      "transformer": "identity"
+    },
+    {
+      "path": "maintenance/db-reset",
+      "method": "POST",
+      "backendId": "node-backend",
+      "target": "/maintenance/reset",
       "transformer": "identity"
     }
   ]

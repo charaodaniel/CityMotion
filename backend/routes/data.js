@@ -1,6 +1,7 @@
 
 const express = require('express');
-const authMiddleware = require('../middleware/authMiddleware');
+const { exec } = require('child_process');
+const path = require('path');
 const router = express.Router();
 
 module.exports = function(db) {
@@ -56,11 +57,38 @@ module.exports = function(db) {
             });
     });
 
+    // Endpoint de Manutenção: Resetar Banco
+    router.post('/maintenance/reset', (req, res) => {
+        console.log('[Maintenance] Reset de banco solicitado.');
+        const initScriptPath = path.resolve(__dirname, '../database/init_db.js');
+        
+        // Executa o script de inicialização como um processo separado
+        exec(`node ${initScriptPath}`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Erro no reset: ${error.message}`);
+                return res.status(500).json({ success: false, message: error.message });
+            }
+            console.log(`Reset concluído: ${stdout}`);
+            res.json({ success: true, message: 'Banco de dados restaurado com sucesso.' });
+        });
+    });
+
     // Endpoints específicos para cada recurso via GET (útil para o NexusBridge)
     router.get('/employees', (req, res) => {
         db.all('SELECT id, name, email, role, status, sector FROM employees', [], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json(rows.map(r => ({ ...r, sector: JSON.parse(r.sector) })));
+        });
+    });
+
+    router.post('/employees', (req, res) => {
+        const { name, email, role, sector } = req.body;
+        const sql = `INSERT INTO employees (name, email, role, sector, status) VALUES (?, ?, ?, ?, ?)`;
+        const params = [name, email, role, JSON.stringify(sector || []), 'Disponível'];
+        
+        db.run(sql, params, function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ id: this.lastID, message: 'Funcionário criado com sucesso no SQLite.' });
         });
     });
 
