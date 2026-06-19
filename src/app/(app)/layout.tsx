@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, Menu, Settings, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen, UserSquare, Bell, Check, Trash2, Info, Network } from 'lucide-react';
+import { LayoutDashboard, Car, Menu, Settings, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen, UserSquare, Bell, Check, Trash2, Info, Network, Terminal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
@@ -37,6 +37,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { DevTerminal } from '@/components/dev-terminal';
 
 
 const navItems = [
@@ -82,6 +83,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { userRole, logout, currentUser, isLoading, selectedSector, setSelectedSector, notifications, markNotificationAsRead, clearNotifications } = useApp();
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
 
@@ -282,6 +284,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </Button>
                 </SidebarTrigger>
                 <div className="ml-auto flex items-center gap-4">
+                  
+                  {/* Developer Terminal Trigger (Only for Admins) */}
+                  {userRole === 'admin' && (
+                    <Button variant="ghost" size="icon" onClick={() => setIsTerminalOpen(true)} title="Terminal de Desenvolvedor">
+                      <Terminal className="h-5 w-5 text-zinc-500 hover:text-primary transition-colors" />
+                    </Button>
+                  )}
+
                   {/* Notification Center */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -389,6 +399,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </main>
         </SidebarInset>
       </div>
+
+      {/* Dev Terminal Overlay */}
+      <DevTerminal 
+        isOpen={isTerminalOpen} 
+        onClose={() => setIsTerminalOpen(false)} 
+        onOpenChange={setIsTerminalOpen}
+      />
     </SidebarProvider>
   );
 }
