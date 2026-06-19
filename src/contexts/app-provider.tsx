@@ -12,7 +12,7 @@ interface AppContextType {
   currentUser: Employee | null;
   selectedSector: string | null;
   setSelectedSector: (sector: string | null) => void;
-  login: (email: string) => Promise<void>;
+  login: (email: string, shouldRedirect?: boolean) => Promise<void>;
   logout: () => void;
   
   schedules: Schedule[];
@@ -150,7 +150,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('app_notifications');
   };
 
-  const login = useCallback(async (email: string) => {
+  const login = useCallback(async (email: string, shouldRedirect = false) => {
     setIsLoading(true);
     localStorage.setItem('userEmailForSimulation', email);
     
@@ -169,11 +169,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       let determinedRole: UserRole = 'employee';
       
-      // Keywords for technical roles (DEV / TI)
       const devKeywords = ['dev', 'developer', 'desenvolvedor', 'software engineer'];
       const tiKeywords = ['ti', 'suporte técnico', 'tecnologia da informação', 'sysadmin'];
-      
-      // Keywords for business roles
       const adminKeywords = ['administrador', 'diretor', 'prefeito', 'ceo', 'dono', 'admin', 'gerente geral'];
       const managerKeywords = ['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico', 'lider', 'supervisor', 'engenheiro'];
 
@@ -189,16 +186,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       setUserRole(determinedRole);
       
-      if (['dev', 'ti', 'admin'].includes(determinedRole)) {
-          router.push('/dashboard');
-      } else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length > 1) {
-          router.push('/select-sector');
-      } else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length === 1) {
-          setSelectedSector(user.sector[0]);
-          router.push('/dashboard');
-      }
-      else {
-          router.push('/dashboard');
+      // Só redireciona se for explicitamente solicitado (ex: vindo da página de login)
+      if (shouldRedirect) {
+          if (['dev', 'ti', 'admin'].includes(determinedRole)) {
+              router.push('/dashboard');
+          } else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length > 1) {
+              router.push('/select-sector');
+          } else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length === 1) {
+              setSelectedSector(user.sector[0]);
+              router.push('/dashboard');
+          }
+          else {
+              router.push('/dashboard');
+          }
       }
     }
     setIsLoading(false);
@@ -217,7 +217,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const initializeApp = async () => {
       const storedEmail = localStorage.getItem('userEmailForSimulation');
       if (storedEmail) {
-        await login(storedEmail);
+        // Na inicialização, não redirecionamos automaticamente para não quebrar deep links (ex: crachá)
+        await login(storedEmail, false);
       } else {
         fetchData();
       }

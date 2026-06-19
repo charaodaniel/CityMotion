@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -25,9 +24,8 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // O login continua simulado por enquanto para facilitar a demonstração
-      await login(email);
-      router.push('/dashboard');
+      // O login passa explicitamente 'true' para permitir o redirecionamento baseado no cargo
+      await login(email, true);
 
     } catch (error: any) {
         toast({
