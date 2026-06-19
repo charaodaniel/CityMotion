@@ -30,8 +30,10 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   ]);
   const [input, setInput] = useState('');
   const [stats, setStats] = useState<SystemStats | null>(null);
+  
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   const fetchStats = async () => {
     try {
@@ -47,18 +49,21 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
 
   useEffect(() => {
     if (isOpen) {
-      if (inputRef.current) inputRef.current.focus();
+      setTimeout(() => {
+        if (inputRef.current) inputRef.current.focus();
+      }, 100);
       fetchStats();
       const interval = setInterval(fetchStats, 5000);
       return () => clearInterval(interval);
     }
   }, [isOpen]);
 
+  // Auto-scroll logic like Linux Terminal
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (isOpen) {
+      bottomRef.current?.scrollIntoView({ behavior: 'auto' });
     }
-  }, [history]);
+  }, [history, isOpen]);
 
   const addLine = (content: string, type: TerminalLine['type'] = 'output') => {
     setHistory(prev => [...prev, { type, content }]);
@@ -250,7 +255,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-4 bg-black/50" ref={scrollRef}>
+      <ScrollArea className="flex-1 p-4 bg-black/50">
         <div className="space-y-1">
           {history.map((line, i) => (
             <div 
@@ -267,6 +272,8 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
               {line.content}
             </div>
           ))}
+          {/* Scroll Anchor */}
+          <div ref={bottomRef} className="h-1" />
         </div>
       </ScrollArea>
 
