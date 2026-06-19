@@ -111,6 +111,15 @@ module.exports = function(db) {
         });
     });
 
+    router.get('/employees/:id', (req, res) => {
+        db.get('SELECT id, name, email, role, status, sector, matricula, cnh FROM employees WHERE id = ?', [req.params.id], (err, row) => {
+            if (err) return res.status(500).json({ error: err.message });
+            if (!row) return res.status(404).json({ error: 'Funcionário não encontrado.' });
+            try { row.sector = JSON.parse(row.sector); } catch(e) { row.sector = [row.sector]; }
+            res.json(row);
+        });
+    });
+
     router.post('/employees', (req, res) => {
         const { name, email, role, sector, status } = req.body;
         const sql = `INSERT INTO employees (name, email, role, sector, status) VALUES (?, ?, ?, ?, ?)`;
@@ -123,12 +132,22 @@ module.exports = function(db) {
     });
 
     router.put('/employees/:id', (req, res) => {
-        const { name, role, status } = req.body;
-        const sql = `UPDATE employees SET name = COALESCE(?, name), role = COALESCE(?, role), status = COALESCE(?, status) WHERE id = ?`;
+        const { name, role, status, email, sector, matricula, cnh } = req.body;
+        const sql = `UPDATE employees SET 
+            name = COALESCE(?, name), 
+            role = COALESCE(?, role), 
+            status = COALESCE(?, status),
+            email = COALESCE(?, email),
+            sector = COALESCE(?, sector),
+            matricula = COALESCE(?, matricula),
+            cnh = COALESCE(?, cnh)
+            WHERE id = ?`;
         
-        db.run(sql, [name, role, status, req.params.id], function(err) {
+        const sectorStr = sector ? JSON.stringify(sector) : null;
+
+        db.run(sql, [name, role, status, email, sectorStr, matricula, cnh, req.params.id], function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            res.json({ updated: this.changes, message: 'Registro atualizado.' });
+            res.json({ updated: this.changes, message: 'Registro atualizado no SQLite.' });
         });
     });
 
