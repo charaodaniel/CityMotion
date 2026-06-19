@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -40,15 +41,15 @@ import { DevTerminal } from '@/components/dev-terminal';
 
 
 const navItems = [
-  { href: '/dashboard', label: 'Painel', icon: LayoutDashboard, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/dashboard', label: 'Painel', icon: LayoutDashboard, roles: ['ti', 'admin', 'manager', 'employee'] },
   { href: '/dev-global', label: 'Gestão Global', icon: ShieldCheck, roles: ['dev'] },
-  { href: '/setores', label: 'Setores', icon: Building, roles: ['dev', 'ti', 'admin'] },
-  { href: '/funcionarios', label: 'Funcionários', icon: Users, roles: ['dev', 'ti', 'admin', 'manager'] },
-  { href: '/veiculos', label: 'Veículos', icon: Car, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
-  { href: '/viagens', label: 'Viagens', icon: Route, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
-  { href: '/manutencao', label: 'Manutenção', icon: Wrench, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
-  { href: '/escalas', label: 'Escalas', icon: CalendarClock, roles: ['dev', 'ti', 'admin', 'manager'] },
-  { href: '/relatorios', label: 'Relatórios', icon: ScrollText, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/setores', label: 'Setores', icon: Building, roles: ['ti', 'admin'] },
+  { href: '/funcionarios', label: 'Funcionários', icon: Users, roles: ['ti', 'admin', 'manager'] },
+  { href: '/veiculos', label: 'Veículos', icon: Car, roles: ['ti', 'admin', 'manager', 'employee'] },
+  { href: '/viagens', label: 'Viagens', icon: Route, roles: ['ti', 'admin', 'manager', 'employee'] },
+  { href: '/manutencao', label: 'Manutenção', icon: Wrench, roles: ['ti', 'admin', 'manager', 'employee'] },
+  { href: '/escalas', label: 'Escalas', icon: CalendarClock, roles: ['ti', 'admin', 'manager'] },
+  { href: '/relatorios', label: 'Relatórios', icon: ScrollText, roles: ['ti', 'admin', 'manager', 'employee'] },
 ];
 
 const bottomNavItems = [
@@ -56,7 +57,7 @@ const bottomNavItems = [
     { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
     { href: '/perfis', label: 'Gerenciar Perfis', icon: UserCog, roles: ['dev', 'ti', 'admin'] },
     { href: '/docs', label: 'Central de Ajuda', icon: BookOpen, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
-    { href: '/settings', label: 'Configurações', icon: Settings, roles: ['dev', 'ti', 'admin'] },
+    { href: '/settings', label: 'Configurações', icon: Settings, roles: ['ti', 'admin'] },
 ]
 
 const docsSidebarNavItems = [
@@ -96,7 +97,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       // 1. Check if the general role has access
       if (!item.roles.includes(userRole)) return false;
       
-      // 2. High priviledged roles see everything within their context
+      // 2. Roles see what's in their list
       if (['dev', 'ti', 'admin', 'manager'].includes(userRole)) return true;
 
       // 3. For Employees, we only show certain tools if they are Drivers
@@ -140,7 +141,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="container mx-auto p-4 sm:p-8">
        <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-3">
-          <BookOpen className="w-8 h-8 text-primary"/>
+          < BookOpen className="w-8 h-8 text-primary"/>
           Central de Ajuda
         </h1>
         <p className="text-muted-foreground mt-2">

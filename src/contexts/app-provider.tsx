@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
@@ -193,7 +194,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setUserRole(determinedRole);
       
       if (shouldRedirect) {
-          if (['dev', 'ti', 'admin'].includes(determinedRole)) {
+          if (determinedRole === 'dev') {
+              router.push('/dev-global');
+          } else if (['ti', 'admin'].includes(determinedRole)) {
               router.push('/dashboard');
           } else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length > 1) {
               router.push('/select-sector');
