@@ -1,12 +1,10 @@
-
-
 "use client";
 
 import type { Vehicle, VehicleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { PlusCircle, Car, Gauge, Building, Edit, Wrench } from 'lucide-react';
+import { PlusCircle, Car, Gauge, Building, Edit, Wrench, Fuel } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RegisterVehicleForm } from '@/components/register-vehicle-form';
 import { useState, useMemo } from 'react';
@@ -110,8 +108,20 @@ export default function VehiclesPage() {
                 </div>
                 <Separator />
                 <div>
-                    <span className="text-sm font-semibold text-muted-foreground">Quilometragem</span>
+                    <span className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                        <Gauge className="h-4 w-4" />
+                        Quilometragem Atual
+                    </span>
                     <p className="text-lg">{selectedVehicle?.mileage.toLocaleString('pt-BR')} km</p>
+                </div>
+                <Separator />
+                <div>
+                    <span className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                        <Fuel className="h-4 w-4" />
+                        Último Abastecimento Registrado
+                    </span>
+                    <p className="text-lg">{selectedVehicle?.lastRefuelingDate || 'Nenhum registro encontrado'}</p>
+                    <p className="text-[10px] text-muted-foreground italic mt-1">Este dado é usado como referência de autonomia na ausência de sensores de tanque.</p>
                 </div>
                 <Separator />
                 <div>

@@ -1,11 +1,9 @@
-
-
 "use client";
 
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText, Check, Fuel, AlertTriangle } from 'lucide-react';
+import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText, Check, Fuel, AlertTriangle, FileImage } from 'lucide-react';
 import type { Schedule, ScheduleStatus, Employee, Vehicle } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -141,6 +139,12 @@ export default function ViagensPage() {
   const [checkedItems, setCheckedItems] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   
+  // States for Refueling Form
+  const [refuelMileage, setRefuelMileage] = useState<string>('');
+  const [refuelLiters, setRefuelLiters] = useState<string>('');
+  const [refuelPrice, setRefuelPrice] = useState<string>('');
+  const [refuelReceipt, setRefuelReceipt] = useState<File | null>(null);
+
   const { toast } = useToast();
   
   const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
@@ -160,6 +164,10 @@ export default function ViagensPage() {
   const openModal = (modal: ModalState, schedule: Schedule | null = null) => {
     setSelectedSchedule(schedule);
     setActiveModal(modal);
+    if (modal === 'refueling' && schedule) {
+        const vehicle = vehicles.find(v => schedule.vehicle.includes(v.licensePlate));
+        setRefuelMileage(String(vehicle?.mileage || ''));
+    }
   };
   
   const closeModal = () => {
@@ -169,6 +177,10 @@ export default function ViagensPage() {
       setFinalMileage('');
       setCheckedItems([]);
       setNotes('');
+      setRefuelMileage('');
+      setRefuelLiters('');
+      setRefuelPrice('');
+      setRefuelReceipt(null);
   }
 
   const updateScheduleStatus = (scheduleId: string, newStatus: ScheduleStatus, details?: { startNotes?: string, endNotes?: string, startMileage?: number, endMileage?: number, startChecklist?: string[], endChecklist?: string[] }) => {
@@ -248,11 +260,24 @@ export default function ViagensPage() {
 
   const handleRefuelingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would handle the form data submission, e.g., send to a server.
-    toast({
-        title: "Abastecimento Registrado",
-        description: "As informações de abastecimento foram salvas com sucesso."
-    });
+    if (!selectedSchedule) return;
+
+    const vehicle = vehicles.find(v => selectedSchedule.vehicle.includes(v.licensePlate));
+    if (vehicle) {
+        // Atualiza a data de último abastecimento no veículo
+        const now = new Date().toLocaleString('pt-BR');
+        setVehicles(prev => prev.map(v => v.id === vehicle.id ? { 
+            ...v, 
+            lastRefuelingDate: now,
+            mileage: Number(refuelMileage) || v.mileage 
+        } : v));
+        
+        toast({
+            title: "Abastecimento Registrado",
+            description: `Comprovante de R$ ${refuelPrice} anexado. O sistema atualizou a data do último abastecimento do veículo.`
+        });
+    }
+
     closeModal();
   }
 
@@ -583,35 +608,73 @@ export default function ViagensPage() {
               Registrar Abastecimento
             </DialogTitle>
             <DialogDescription>
-              Preencha os dados do abastecimento realizado durante a viagem.
+              Informe os dados do abastecimento. A data será registrada para fins de controle de autonomia.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleRefuelingSubmit} className="py-4 space-y-4">
              <div className="space-y-2">
-                <Label htmlFor="refuel-mileage">Quilometragem</Label>
-                <Input id="refuel-mileage" type="number" placeholder="KM no momento do abastecimento" required />
+                <Label htmlFor="refuel-mileage">Quilometragem Atual</Label>
+                <Input 
+                    id="refuel-mileage" 
+                    type="number" 
+                    placeholder="KM no momento do abastecimento" 
+                    value={refuelMileage}
+                    onChange={(e) => setRefuelMileage(e.target.value)}
+                    required 
+                />
             </div>
              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="refuel-liters">Litros</Label>
-                    <Input id="refuel-liters" type="number" step="0.01" placeholder="0.00" required />
+                    <Input 
+                        id="refuel-liters" 
+                        type="number" 
+                        step="0.01" 
+                        placeholder="0.00" 
+                        value={refuelLiters}
+                        onChange={(e) => setRefuelLiters(e.target.value)}
+                        required 
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="refuel-price">Valor Total (R$)</Label>
-                    <Input id="refuel-price" type="number" step="0.01" placeholder="0.00" required />
+                    <Input 
+                        id="refuel-price" 
+                        type="number" 
+                        step="0.01" 
+                        placeholder="0.00" 
+                        value={refuelPrice}
+                        onChange={(e) => setRefuelPrice(e.target.value)}
+                        required 
+                    />
                 </div>
             </div>
              <div className="space-y-2">
-                <Label htmlFor="refuel-receipt">Foto do Recibo (Opcional)</Label>
-                <Input id="refuel-receipt" type="file" accept="image/*" />
+                <Label htmlFor="refuel-receipt" className="flex items-center gap-2">
+                    <FileImage className="h-4 w-4" />
+                    Foto do Recibo / Nota Fiscal (Obrigatorio)
+                </Label>
+                <Input 
+                    id="refuel-receipt" 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => setRefuelReceipt(e.target.files?.[0] || null)}
+                    required 
+                />
+                <p className="text-[10px] text-muted-foreground italic">Como não há sensores automáticos, o comprovante é essencial para auditoria.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="refuel-notes">Observações (Opcional)</Label>
-              <Textarea id="refuel-notes" placeholder="Ex: Posto Shell da Av. Principal" />
+              <Textarea 
+                id="refuel-notes" 
+                placeholder="Ex: Posto Shell da Av. Principal. Problema na bomba 2." 
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
             </div>
             <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={closeModal}>Cancelar</Button>
-                <Button type="submit">Salvar Registro</Button>
+                <Button type="submit" disabled={!refuelReceipt}>Confirmar Registro</Button>
             </div>
           </form>
         </DialogContent>

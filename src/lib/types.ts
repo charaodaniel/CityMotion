@@ -27,6 +27,7 @@ export type Vehicle = {
   destination?: string;
   mileage: number;
   sector: string;
+  lastRefuelingDate?: string;
 };
 
 export type ScheduleStatus = 'Agendada' | 'Em Andamento' | 'Concluída' | 'Cancelada';
@@ -37,10 +38,15 @@ export type Passenger = {
 };
 
 export type Refueling = {
+  id: string;
+  vehicleId: string;
+  tripId: string;
+  date: string;
   mileage: number;
   liters: number;
   price: number;
   receiptPhoto?: string;
+  notes?: string;
 };
 
 export type Schedule = {
