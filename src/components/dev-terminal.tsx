@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -27,7 +26,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   const { toast } = useToast();
   const [history, setHistory] = useState<TerminalLine[]>([
     { type: 'system', content: 'CityMotion OS v1.2.0 (btop edition)' },
-    { type: 'system', content: 'Digite "help" para ver os comandos.' },
+    { type: 'system', content: 'Digite "help" para ver a lista de comandos e descrições.' },
   ]);
   const [input, setInput] = useState('');
   const [stats, setStats] = useState<SystemStats | null>(null);
@@ -81,15 +80,16 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
 
     switch (command) {
       case 'help':
-        addLine('Comandos Disponíveis:');
-        addLine('  top | btop      - Atualiza e mostra recursos do sistema');
-        addLine('  status          - Saúde do sistema e conexões');
-        addLine('  whoami          - Identidade do usuário atual');
-        addLine('  nexus <path>    - Consulta GET via NexusBridge');
-        addLine('  nexus-post <p>  - Inserção de dados via POST');
-        addLine('  db-reset        - HARD RESET: Reinicia backend e restaura banco');
-        addLine('  clear | cls     - Limpa este console');
-        addLine('  exit            - Fecha o terminal');
+        addLine('--- Comandos Disponíveis ---', 'system');
+        addLine('top | btop      - Mostra uso de CPU, RAM e Uptime em tempo real.');
+        addLine('status          - Testa conectividade com NexusBridge e Banco SQLite.');
+        addLine('whoami          - Exibe detalhes do seu perfil e permissões atuais.');
+        addLine('nexus <path>    - Executa consulta GET na ponte (Ex: nexus users).');
+        addLine('nexus-post <p>  - Envia dados via POST para a ponte (Ex: nexus-post test/db-employees {"name":"Teste"}).');
+        addLine('db-reset        - HARD RESET: Reinicia o backend e restaura o banco original.');
+        addLine('clear | cls     - Limpa o histórico de mensagens deste console.');
+        addLine('exit            - Fecha a janela do terminal de desenvolvedor.');
+        addLine('----------------------------', 'system');
         break;
 
       case 'btop':
@@ -97,18 +97,19 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         await fetchStats();
         addLine('Estatísticas de Recursos Atualizadas.', 'success');
         if (stats) {
-            addLine(`CPU Load: ${stats.cpu.load}% | Memory: ${stats.memory.percentage}% used`);
+            addLine(`CPU: ${stats.cpu.model} (${stats.cpu.cores} cores)`);
+            addLine(`Load: ${stats.cpu.load}% | RAM: ${stats.memory.percentage}% (${stats.memory.used} / ${stats.memory.total})`);
         }
         break;
 
       case 'status':
-        addLine('NexusBridge: OPERACIONAL');
+        addLine('NexusBridge Engine: OPERACIONAL', 'success');
         try {
             const res = await fetch('/api/nexus/test/db-employees');
-            if (res.ok) addLine('Backend Node/SQLite: CONECTADO', 'success');
-            else addLine('Backend Node/SQLite: ERRO NA RESPOSTA', 'error');
+            if (res.ok) addLine('Backend Express/SQLite: CONECTADO', 'success');
+            else addLine('Backend Express/SQLite: ERRO (Response ' + res.status + ')', 'error');
         } catch (e) {
-            addLine('Backend Node/SQLite: INDISPONÍVEL', 'error');
+            addLine('Backend Express/SQLite: INDISPONÍVEL (Offline)', 'error');
         }
         break;
 
@@ -130,18 +131,35 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         break;
 
       case 'nexus':
-        if (!args[0]) { addLine('Erro: Especifique um path.', 'error'); break; }
+        if (!args[0]) { addLine('Erro: Especifique um path (Ex: nexus users).', 'error'); break; }
         try {
           const res = await fetch(`/api/nexus/${args[0]}`);
           const data = await res.json();
           addLine(JSON.stringify(data, null, 2));
         } catch (error) { addLine(`Falha na consulta: ${args[0]}`, 'error'); }
         break;
+      
+      case 'nexus-post':
+         if (!args[0] || !args[1]) { addLine('Erro: Use nexus-post <path> <json_body>.', 'error'); break; }
+         try {
+             const body = JSON.parse(args.slice(1).join(' '));
+             const res = await fetch(`/api/nexus/${args[0]}`, {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify(body)
+             });
+             const data = await res.json();
+             addLine(JSON.stringify(data, null, 2), res.ok ? 'success' : 'error');
+         } catch (e) {
+             addLine('Erro: Payload JSON inválido.', 'error');
+         }
+         break;
 
       case 'whoami':
+        addLine(`NOME: ${currentUser?.name || 'N/A'}`);
         addLine(`ID: ${currentUser?.id || 'N/A'}`);
-        addLine(`Setor: ${currentUser?.sector.join(', ') || 'N/A'}`);
-        addLine(`Cargo: ${currentUser?.role || 'N/A'}`);
+        addLine(`SETOR: ${Array.isArray(currentUser?.sector) ? currentUser?.sector.join(', ') : currentUser?.sector}`);
+        addLine(`CARGO: ${currentUser?.role || 'N/A'}`);
         break;
 
       case 'clear':
@@ -154,7 +172,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         break;
 
       default:
-        if (cmd.trim() !== '') addLine(`Comando não reconhecido: ${command}`, 'error');
+        if (cmd.trim() !== '') addLine(`Comando não reconhecido: "${command}". Digite "help" para ajuda.`, 'error');
     }
   };
 

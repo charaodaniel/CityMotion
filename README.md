@@ -12,8 +12,9 @@ Desenvolvido com uma arquitetura desacoplada e modular, o sistema centraliza o c
 - **Next.js 15 (App Router):** Performance de ponta e experiência de usuário fluida.
 - **NexusBridge Architecture:** Camada intermediária de adaptação que permite conectar o frontend a múltiplos backends (Node.js, Legados, APIs externas) sem alterar o código do cliente.
 - **Multi-Empresa e Multi-Setor:** Suporte a hierarquias complexas de departamentos e unidades de negócio.
-- **Design System Profissional:** Construído com Tailwind CSS e componentes ShadCN UI para uma interface moderna e responsiva.
-- **Desktop Ready:** Estrutura integrada com Electron para funcionamento como aplicativo desktop.
+- **Admin Console (btop style):** Terminal integrado para manutenção e monitoramento de hardware em tempo real.
+- **Design System Profissional:** Construído com Tailwind CSS e componentes ShadCN UI.
+- **Desktop Ready:** Estrutura integrada com Electron.
 
 ---
 
@@ -24,34 +25,15 @@ O CityMotion utiliza o conceito de **NexusBridge** para garantir flexibilidade t
 1. **Frontend:** React + Next.js rodando na Vercel ou em ambiente local.
 2. **NexusBridge:** Motor de roteamento que resolve chamadas para diferentes fontes de dados via JSON de configuração.
 3. **Backend Principal:** Servidor Express.js rodando em Node.js.
-4. **Banco de Dados:** SQLite3 (baseado em arquivo), ideal para implementações rápidas em intranets e servidores locais.
+4. **Banco de Dados:** SQLite3 (baseado em arquivo), ideal para implementações rápidas e Build Desktop.
 
 ---
 
-## ✅ Funcionalidades Principais
+## ✅ Documentação Adicional
 
-### **1. Painel de Controle Dinâmico**
-Interface personalizada para Administradores, Gestores de Unidade, Motoristas e Mecânicos.
-
-### **2. Fluxo de Viagens e Operações**
-- Solicitação e aprovação de transportes.
-- Painel Kanban visual para acompanhamento de viagens em tempo real.
-- Checklists digitais obrigatórios (pré e pós-viagem).
-- Registro de abastecimentos e relatórios de sinistros.
-
-### **3. Gestão de Recursos (ERP de Frota)**
-- Gestão completa de veículos (quilometragem, status, documentação).
-- Cadastro de colaboradores e controle de CNH.
-- Escalas de trabalho e plantões com suporte a recorrência.
-
-### **4. Módulo de Mecânica Especializado**
-- Dashboard exclusivo para técnicos.
-- Abertura e controle de ordens de serviço.
-- Solicitação de compra de peças integrada ao fluxo de manutenção.
-
-### **5. Conformidade e Segurança (LGPD)**
-- Banner de consentimento e política de privacidade integrada.
-- Crachá virtual individual com QR Code dinâmico para identificação funcional.
+- [🚀 Guia do Backend e API](./docs/BACKEND_GUIDE.md)
+- [🛠️ Ferramentas de Administração e Terminal](./docs/ADMIN_TOOLS.md)
+- [🛡️ Política de Privacidade e LGPD](./src/app/(app)/privacy/page.tsx)
 
 ---
 
@@ -60,28 +42,18 @@ Interface personalizada para Administradores, Gestores de Unidade, Motoristas e 
 ### Pré-requisitos
 - Node.js instalado.
 
-### Passo 1: Configurar o Backend e Banco de Dados
+### Passo 1: Iniciar Tudo (Frontend + Backend)
+```bash
+npm install
+npm run dev
+```
+O sistema iniciará automaticamente o frontend na porta `9002` e o backend na porta `3001`.
+
+### Passo 2: Inicializar o Banco de Dados (Primeira Execução)
+Caso os dados não apareçam, abra um terminal e rode:
 ```bash
 cd backend
-npm install
-# Inicialize o banco de dados SQLite com os dados de teste
 npm run db:init
-# Inicie o servidor backend (rodando em http://localhost:3001)
-npm run dev
-```
-
-### Passo 2: Iniciar o Frontend (Next.js)
-Abra um novo terminal na raiz do projeto:
-```bash
-npm install
-npm run dev
-```
-Acesse: `http://localhost:9002`
-
-### Passo 3: Versão Desktop (Opcional)
-Para rodar como aplicativo desktop via Electron:
-```bash
-npm run electron:dev
 ```
 
 ---
