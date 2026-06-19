@@ -31,8 +31,9 @@ O CityMotion utiliza o conceito de **NexusBridge** para garantir flexibilidade t
 
 ## ✅ Documentação Adicional
 
-- [🚀 Guia do Backend e API](./docs/BACKEND_GUIDE.md)
+- [🚀 Referência da API Backend](./backend/API_REFERENCE.md)
 - [🛠️ Ferramentas de Administração e Terminal](./docs/ADMIN_TOOLS.md)
+- [🏗️ Guia de Implementação do Backend](./docs/BACKEND_GUIDE.md)
 - [🛡️ Política de Privacidade e LGPD](./src/app/(app)/privacy/page.tsx)
 
 ---
