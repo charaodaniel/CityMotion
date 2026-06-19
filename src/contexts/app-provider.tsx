@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
@@ -170,11 +169,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       let determinedRole: UserRole = 'employee';
       
-      // Keywords more broad for SaaS generalization
-      const adminKeywords = ['administrador', 'ti', 'diretor', 'prefeito', 'ceo', 'dono', 'admin', 'gerente geral'];
+      // Keywords for technical roles (DEV / TI)
+      const devKeywords = ['dev', 'developer', 'desenvolvedor', 'software engineer'];
+      const tiKeywords = ['ti', 'suporte técnico', 'tecnologia da informação', 'sysadmin'];
+      
+      // Keywords for business roles
+      const adminKeywords = ['administrador', 'diretor', 'prefeito', 'ceo', 'dono', 'admin', 'gerente geral'];
       const managerKeywords = ['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico', 'lider', 'supervisor', 'engenheiro'];
 
-      if (adminKeywords.some(r => roleString.includes(r))) {
+      if (devKeywords.some(r => roleString.includes(r))) {
+          determinedRole = 'dev';
+      } else if (tiKeywords.some(r => roleString.includes(r))) {
+          determinedRole = 'ti';
+      } else if (adminKeywords.some(r => roleString.includes(r))) {
           determinedRole = 'admin';
       } else if (managerKeywords.some(r => roleString.includes(r))) {
           determinedRole = 'manager';
@@ -182,7 +189,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       setUserRole(determinedRole);
       
-      if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length > 1) {
+      if (['dev', 'ti', 'admin'].includes(determinedRole)) {
+          router.push('/dashboard');
+      } else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length > 1) {
           router.push('/select-sector');
       } else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length === 1) {
           setSelectedSector(user.sector[0]);

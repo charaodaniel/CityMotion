@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'manager' | 'employee';
+export type UserRole = 'dev' | 'ti' | 'admin' | 'manager' | 'employee';
 
 export type EmployeeStatus = 'Disponível' | 'Em Viagem' | 'Afastado' | 'Em Serviço';
 

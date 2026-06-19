@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -9,11 +8,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { UserCog } from 'lucide-react';
+import { UserCog, ShieldCheck, ShieldAlert } from 'lucide-react';
 import type { Employee } from '@/lib/types';
 
-// Simula os perfis que podem ser atribuídos
-const availableRoles = ["Funcionário", "Motorista", "Gestor de Setor", "Administrador"];
+// Perfis que podem ser atribuídos pelo gestor técnico ou admin
+const availableRoles = [
+  "Funcionário", 
+  "Motorista", 
+  "Gestor de Setor", 
+  "Administrador", 
+  "Técnico de TI",
+  "Desenvolvedor Global"
+];
 
 export default function ProfilesPage() {
   const { employees, setEmployees, userRole } = useApp();
@@ -29,25 +35,20 @@ export default function ProfilesPage() {
     setEmployees(updatedEmployees);
 
     try {
-      // API Call
-      const response = await fetch('/api/profiles', {
-        method: 'POST',
+      // API Call via NexusBridge
+      const response = await fetch(`/api/nexus/test/db-employees/${employeeId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ employeeId, newRole }),
+        body: JSON.stringify({ role: newRole }),
       });
 
       if (!response.ok) {
         throw new Error('Falha ao atualizar o perfil.');
       }
 
-      const result = await response.json();
-      
-      // Update state with the confirmed data from the server
-      setEmployees(result.employees);
-
       toast({
         title: "Perfil Atualizado!",
-        description: `O perfil de ${result.updatedEmployee.name} foi alterado para ${result.updatedEmployee.role}.`,
+        description: `O perfil do colaborador foi alterado para ${newRole}.`,
       });
 
     } catch (error) {
@@ -55,21 +56,22 @@ export default function ProfilesPage() {
       setEmployees(originalEmployees);
       toast({
         title: "Erro!",
-        description: "Não foi possível salvar a alteração. Tente novamente.",
+        description: "Não foi possível salvar a alteração no banco de dados.",
         variant: "destructive",
       });
     }
   };
   
-  if (userRole !== 'admin') {
+  if (!['dev', 'ti', 'admin'].includes(userRole)) {
       return (
           <div className="container mx-auto p-4 sm:p-8">
                 <Card className="text-center">
                     <CardHeader>
+                        <CardTitle className="flex justify-center mb-2 text-destructive"><ShieldAlert className="h-10 w-10" /></CardTitle>
                         <CardTitle>Acesso Negado</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground">Esta página está disponível apenas para administradores.</p>
+                        <p className="text-muted-foreground">Esta página está disponível apenas para desenvolvedores, técnicos de TI e administradores.</p>
                     </CardContent>
                 </Card>
             </div>
@@ -78,21 +80,28 @@ export default function ProfilesPage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-3">
-            <UserCog />
-            Gerenciamento de Perfis
-        </h1>
-        <p className="text-muted-foreground">
-          Atribua perfis de acesso e permissões para os funcionários do sistema.
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+            <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-3">
+                <UserCog />
+                Gerenciamento de Perfis e Permissões
+            </h1>
+            <p className="text-muted-foreground">
+              {userRole === 'dev' ? 'Modo Global: Visualizando todos os usuários do ecossistema.' : 'Controle de acesso técnico para a organização.'}
+            </p>
+        </div>
+        {userRole === 'dev' && (
+            <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
+                Acesso Root Ativo
+            </Badge>
+        )}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Tabela de Funcionários e Perfis</CardTitle>
+          <CardTitle>Tabela de Funcionários e Credenciais</CardTitle>
           <CardDescription>
-            Selecione um novo perfil para um funcionário para atualizar suas permissões.
+            Alterar o cargo de um usuário modifica instantaneamente o que ele pode visualizar e executar no sistema.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -100,7 +109,7 @@ export default function ProfilesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Funcionário</TableHead>
-                <TableHead>Setor</TableHead>
+                <TableHead>Setor Principal</TableHead>
                 <TableHead className="w-[250px]">Perfil de Acesso</TableHead>
               </TableRow>
             </TableHeader>
@@ -115,11 +124,17 @@ export default function ProfilesPage() {
                         </Avatar>
                         <div>
                             <p className="font-semibold">{employee.name}</p>
-                            <p className="text-sm text-muted-foreground">{employee.matricula}</p>
+                            <p className="text-xs text-muted-foreground font-mono">{employee.email}</p>
                         </div>
                     </div>
                   </TableCell>
-                  <TableCell>{employee.sector}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                        {Array.isArray(employee.sector) ? employee.sector.map(s => (
+                            <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
+                        )) : <Badge variant="secondary" className="text-[10px]">{employee.sector}</Badge>}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <Select
                       defaultValue={employee.role}

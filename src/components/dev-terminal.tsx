@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -28,6 +27,8 @@ const AVAILABLE_ROLES = [
   "Motorista",
   "Gestor de Setor",
   "Administrador",
+  "Técnico de TI",
+  "Desenvolvedor Global",
   "Técnico Mecânico"
 ];
 
@@ -242,7 +243,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
       case 'whoami':
         addLine(`NOME: ${currentUser?.name || 'N/A'}`);
         addLine(`ID: ${currentUser?.id || 'N/A'}`);
-        addLine(`CARGO: ${currentUser?.role || 'N/A'}`);
+        addLine(`PERFIL: ${currentUser?.role || 'N/A'}`);
         break;
 
       case 'clear':

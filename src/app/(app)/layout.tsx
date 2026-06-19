@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -41,22 +40,22 @@ import { DevTerminal } from '@/components/dev-terminal';
 
 
 const navItems = [
-  { href: '/dashboard', label: 'Painel', icon: LayoutDashboard, roles: ['admin', 'manager', 'employee'] },
-  { href: '/setores', label: 'Setores', icon: Building, roles: ['admin'] },
-  { href: '/funcionarios', label: 'Funcionários', icon: Users, roles: ['admin', 'manager'] },
-  { href: '/veiculos', label: 'Veículos', icon: Car, roles: ['admin', 'manager', 'employee'] },
-  { href: '/viagens', label: 'Viagens', icon: Route, roles: ['admin', 'manager', 'employee'] },
-  { href: '/manutencao', label: 'Manutenção', icon: Wrench, roles: ['admin', 'manager', 'employee'] },
-  { href: '/escalas', label: 'Escalas', icon: CalendarClock, roles: ['admin', 'manager'] },
-  { href: '/relatorios', label: 'Relatórios', icon: ScrollText, roles: ['admin', 'manager', 'employee'] },
+  { href: '/dashboard', label: 'Painel', icon: LayoutDashboard, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/setores', label: 'Setores', icon: Building, roles: ['dev', 'ti', 'admin'] },
+  { href: '/funcionarios', label: 'Funcionários', icon: Users, roles: ['dev', 'ti', 'admin', 'manager'] },
+  { href: '/veiculos', label: 'Veículos', icon: Car, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/viagens', label: 'Viagens', icon: Route, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/manutencao', label: 'Manutenção', icon: Wrench, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/escalas', label: 'Escalas', icon: CalendarClock, roles: ['dev', 'ti', 'admin', 'manager'] },
+  { href: '/relatorios', label: 'Relatórios', icon: ScrollText, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
 ];
 
 const bottomNavItems = [
-    { href: '/nexus', label: 'NexusBridge', icon: Network, roles: ['admin'] },
-    { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['admin', 'manager', 'employee'] },
-    { href: '/perfis', label: 'Gerenciar Perfis', icon: UserCog, roles: ['admin'] },
-    { href: '/docs', label: 'Central de Ajuda', icon: BookOpen, roles: ['admin', 'manager', 'employee'] },
-    { href: '/settings', label: 'Configurações', icon: Settings, roles: ['admin'] },
+    { href: '/nexus', label: 'NexusBridge', icon: Network, roles: ['dev', 'ti'] },
+    { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+    { href: '/perfis', label: 'Gerenciar Perfis', icon: UserCog, roles: ['dev', 'ti', 'admin'] },
+    { href: '/docs', label: 'Central de Ajuda', icon: BookOpen, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+    { href: '/settings', label: 'Configurações', icon: Settings, roles: ['dev', 'ti', 'admin'] },
 ]
 
 const docsSidebarNavItems = [
@@ -96,8 +95,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       // 1. Check if the general role has access
       if (!item.roles.includes(userRole)) return false;
       
-      // 2. Admins and Managers see everything within their roles
-      if (userRole === 'admin' || userRole === 'manager') return true;
+      // 2. High priviledged roles see everything within their context
+      if (['dev', 'ti', 'admin', 'manager'].includes(userRole)) return true;
 
       // 3. For Employees, we only show certain tools if they are Drivers
       const restrictedRoutes = ['/veiculos', '/viagens', '/manutencao', '/relatorios'];
@@ -115,6 +114,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const getRoleName = (role: string) => {
     switch (role) {
+      case 'dev': return 'Desenvolvedor Global';
+      case 'ti': return 'Técnico de TI';
       case 'admin': return 'Administrador';
       case 'manager': return 'Gestor';
       case 'employee': return currentUser?.role || 'Colaborador'; 
@@ -285,8 +286,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarTrigger>
                 <div className="ml-auto flex items-center gap-4">
                   
-                  {/* Developer Terminal Trigger (Only for Admins) */}
-                  {userRole === 'admin' && (
+                  {/* Developer Terminal Trigger (Visível para DEV, TI e ADMIN) */}
+                  {['dev', 'ti', 'admin'].includes(userRole) && (
                     <Button variant="ghost" size="icon" onClick={() => setIsTerminalOpen(true)} title="Terminal de Desenvolvedor">
                       <Terminal className="h-5 w-5 text-zinc-500 hover:text-primary transition-colors" />
                     </Button>
@@ -370,7 +371,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             <span>Meu Perfil</span>
                           </Link>
                         </DropdownMenuItem>
-                        {userRole === 'admin' && (
+                        {['dev', 'ti', 'admin'].includes(userRole) && (
                         <DropdownMenuItem asChild>
                           <Link href="/settings">
                             <Settings className="mr-2 h-4 w-4" />
