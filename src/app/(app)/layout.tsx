@@ -57,7 +57,7 @@ const bottomNavItems = [
     { href: '/perfil', label: 'Meu Perfil', icon: UserCog, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
     { href: '/perfis', label: 'Gerenciar Perfis', icon: UserCog, roles: ['dev', 'ti', 'admin'] },
     { href: '/docs', label: 'Central de Ajuda', icon: BookOpen, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
-    { href: '/settings', label: 'Configurações', icon: ti, roles: ['ti', 'admin'] },
+    { href: '/settings', label: 'Configurações', icon: Settings, roles: ['ti', 'admin'] },
 ]
 
 const docsSidebarNavItems = [
