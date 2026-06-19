@@ -12,17 +12,24 @@
   },
   "routes": [
     {
+      "path": "sync-all",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/data",
+      "transformer": "identity"
+    },
+    {
       "path": "users",
       "method": "GET",
-      "backendId": "local-sim",
-      "target": "/data?type=employees",
+      "backendId": "node-backend",
+      "target": "/employees",
       "transformer": "identity"
     },
     {
       "path": "fleet",
       "method": "GET",
-      "backendId": "local-sim",
-      "target": "/data?type=vehicles",
+      "backendId": "node-backend",
+      "target": "/vehicles",
       "transformer": "identity"
     },
     {

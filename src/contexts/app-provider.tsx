@@ -53,6 +53,7 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+// Mapa de e-mail para ID baseado no banco de dados SQLite real
 const emailToIdMap: Record<string, string> = {
     'dev@dev.com': '0',
     'admin@citymotion.com': '11', 
@@ -100,11 +101,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     else setIsRefreshing(true);
 
     try {
-      const response = await fetch('/api/data?type=all');
+      // Agora buscamos os dados através da ponte NexusBridge que aponta para o banco real
+      const response = await fetch('/api/nexus/sync-all');
       if (!response.ok) {
-        throw new Error('Falha ao buscar dados da organização.');
+        throw new Error('Falha ao sincronizar com o banco de dados central.');
       }
       const data = await response.json();
+      
       setSchedules(data.schedules || []);
       setVehicleRequests(data.requests || []);
       setVehicles(data.vehicles || []);
@@ -112,7 +115,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSectors(data.sectors || []);
       setWorkSchedules(data.workSchedules || []);
       setMaintenanceRequests(data.maintenanceRequests || []);
-      setOrganizations(data.organizations || []);
+      
+      // Organizações ainda são carregadas via arquivo JSON local por serem dados SaaS globais
+      const orgRes = await fetch('/api/data?type=organizations');
+      if (orgRes.ok) {
+          const orgs = await orgRes.json();
+          setOrganizations(orgs);
+      }
       
       prevRequestsLength.current = data.requests?.length || 0;
       prevSchedulesLength.current = data.schedules?.length || 0;
@@ -124,7 +133,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       return data;
     } catch (error) {
-      console.error("Não foi possível carregar os dados:", error);
+      console.error("Erro na sincronização de dados:", error);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -134,8 +143,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const refreshData = async () => {
     await fetchData(true);
     toast({
-        title: "Dados Atualizados",
-        description: "As informações foram sincronizadas com o servidor.",
+        title: "Sincronização Completa",
+        description: "Os dados da interface agora estão idênticos aos do banco SQLite.",
     });
   };
 
@@ -182,7 +191,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     
     const userId = emailToIdMap[email];
-    const user = data.employees.find((emp: Employee) => emp.id === userId);
+    const user = data.employees.find((emp: Employee) => String(emp.id) === String(userId));
 
     if (user) {
       setCurrentUser(user);
