@@ -52,6 +52,8 @@ export default function DashboardPage() {
 
     const renderDashboard = () => {
         switch (userRole) {
+            case 'dev':
+            case 'ti':
             case 'admin':
                 return <AdminDashboard />;
             case 'manager':
@@ -86,7 +88,7 @@ export default function DashboardPage() {
                         Painel de Controle
                     </h1>
                     <p className="text-muted-foreground">
-                        {userRole === 'admin' ? 'Visão geral da frota e operações.' : 'Acompanhe suas tarefas e solicitações de transporte.'}
+                        {userRole === 'admin' || userRole === 'dev' ? 'Visão geral da frota e operações.' : 'Acompanhe suas tarefas e solicitações de transporte.'}
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
