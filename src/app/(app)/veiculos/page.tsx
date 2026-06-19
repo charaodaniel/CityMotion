@@ -1,10 +1,11 @@
+
 "use client";
 
 import type { Vehicle, VehicleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Plus, Car, Gauge, Building, Edit, Wrench, Fuel, Search, Filter, Download, MoreVertical } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Plus, Car, Building, Edit, Wrench, Search, Filter, Download, MoreVertical, Zap, Route, Activity, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RegisterVehicleForm } from '@/components/register-vehicle-form';
 import { useState, useMemo } from 'react';
@@ -14,6 +15,8 @@ import { useApp } from '@/contexts/app-provider';
 import { RequestMaintenanceForm } from '@/components/request-maintenance-form';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 type ModalState = 'register' | 'details' | 'edit' | 'maintenance' | null;
 
@@ -223,7 +226,6 @@ export default function VehiclesPage() {
         </div>
       </div>
 
-      {/* Modal Overhaul follows same design aesthetic */}
        <Dialog open={!!activeModal} onOpenChange={() => openModal(null)}>
         <DialogContent className="sm:max-w-2xl border-border/50 bg-sidebar overflow-hidden p-0">
           <div className="h-1.5 w-full bg-primary" />

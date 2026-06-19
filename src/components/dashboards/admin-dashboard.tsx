@@ -1,10 +1,12 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Route, DollarSign, AlertTriangle, Clock, Activity, TrendingUp, Hub } from 'lucide-react';
+import { Zap, Route, DollarSign, AlertTriangle, Clock, Activity, TrendingUp, Network } from 'lucide-react';
 import { useApp } from '@/contexts/app-provider';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 export default function AdminDashboard() {
   const { vehicleRequests, schedules, employees, vehicles } = useApp();
@@ -28,7 +30,7 @@ export default function AdminDashboard() {
     { 
       label: 'Fleet Utilization', 
       value: '84%', 
-      icon: Hub,
+      icon: Network,
       trend: 'Stable',
       color: 'text-emerald-400'
     },
@@ -111,7 +113,6 @@ export default function AdminDashboard() {
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </CardHeader>
             <CardContent className="p-0 flex-1 relative bg-zinc-900 grayscale opacity-70 flex items-center justify-center">
-                {/* Simulated Radar Grid */}
                 <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(to right, #444 1px, transparent 1px), linear-gradient(to bottom, #444 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                 <div className="w-48 h-48 rounded-full border border-primary/20 flex items-center justify-center relative">
                    <div className="w-32 h-32 rounded-full border border-primary/10" />

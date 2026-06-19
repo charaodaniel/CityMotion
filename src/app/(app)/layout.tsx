@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -29,7 +30,6 @@ import {
 import { 
   LayoutDashboard, 
   Car, 
-  Menu, 
   Settings, 
   Route, 
   CalendarClock, 
@@ -39,7 +39,7 @@ import {
   UserCog, 
   Wrench, 
   BookOpen, 
-  UserSquare, 
+  SquareUser, 
   Bell, 
   Network, 
   Terminal, 
@@ -55,7 +55,6 @@ import { useApp } from '@/contexts/app-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { DevTerminal } from '@/components/dev-terminal';
 
 const platformNavItems = [
@@ -79,7 +78,7 @@ const operationalNavItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { userRole, logout, currentUser, isLoading, isRefreshing, refreshData, selectedSector, notifications, markNotificationAsRead, clearNotifications } = useApp();
+  const { userRole, logout, currentUser, isLoading, isRefreshing, refreshData, notifications, markNotificationAsRead, clearNotifications } = useApp();
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
