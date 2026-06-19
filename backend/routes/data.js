@@ -66,7 +66,7 @@ module.exports = function(db) {
         const memUsage = ((usedMem / totalMem) * 100).toFixed(1);
         
         const cpus = os.cpus();
-        const loadAvg = os.loadavg(); // [1, 5, 15] minute load averages
+        const loadAvg = os.loadavg();
 
         res.json({
             uptime: process.uptime(),
@@ -85,7 +85,7 @@ module.exports = function(db) {
         });
     });
 
-    // Endpoint de Manutenção: Resetar Banco (Simula Reinicialização)
+    // Endpoint de Manutenção: Resetar Banco
     router.post('/maintenance/reset', (req, res) => {
         console.log('[Maintenance] Reset de banco solicitado.');
         const initScriptPath = path.resolve(__dirname, '../database/init_db.js');
@@ -99,21 +99,43 @@ module.exports = function(db) {
         });
     });
 
+    // --- CRUD TEST ENDPOINTS ---
+
     router.get('/employees', (req, res) => {
         db.all('SELECT id, name, email, role, status, sector FROM employees', [], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
-            res.json(rows.map(r => ({ ...r, sector: JSON.parse(r.sector) })));
+            res.json(rows.map(r => {
+                try { return { ...r, sector: JSON.parse(r.sector) }; } 
+                catch(e) { return { ...r, sector: [r.sector] }; }
+            }));
         });
     });
 
     router.post('/employees', (req, res) => {
-        const { name, email, role, sector } = req.body;
+        const { name, email, role, sector, status } = req.body;
         const sql = `INSERT INTO employees (name, email, role, sector, status) VALUES (?, ?, ?, ?, ?)`;
-        const params = [name, email, role, JSON.stringify(sector || []), 'Disponível'];
+        const params = [name, email, role, JSON.stringify(sector || []), status || 'Disponível'];
         
         db.run(sql, params, function(err) {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ id: this.lastID, message: 'Funcionário criado com sucesso no SQLite.' });
+        });
+    });
+
+    router.put('/employees/:id', (req, res) => {
+        const { name, role, status } = req.body;
+        const sql = `UPDATE employees SET name = COALESCE(?, name), role = COALESCE(?, role), status = COALESCE(?, status) WHERE id = ?`;
+        
+        db.run(sql, [name, role, status, req.params.id], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ updated: this.changes, message: 'Registro atualizado.' });
+        });
+    });
+
+    router.delete('/employees/:id', (req, res) => {
+        db.run('DELETE FROM employees WHERE id = ?', req.params.id, function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ deleted: this.changes, message: 'Registro removido.' });
         });
     });
 

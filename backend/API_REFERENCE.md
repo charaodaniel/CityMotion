@@ -1,7 +1,7 @@
 
-# 🚀 CityMotion Backend - Referência da API
+# 🚀 CityMotion Backend - Referência da API Completa
 
-Este documento descreve os endpoints, a estrutura de dados e os mecanismos de funcionamento do servidor Express que sustenta o ecossistema CityMotion.
+Este documento detalha todos os endpoints disponíveis no servidor Express do CityMotion, descrevendo como eles alimentam o frontend, o Terminal de Desenvolvedor e a arquitetura NexusBridge.
 
 ---
 
@@ -9,86 +9,75 @@ Este documento descreve os endpoints, a estrutura de dados e os mecanismos de fu
 
 - **Runtime:** Node.js
 - **Framework:** Express.js
-- **Banco de Dados:** SQLite3 (baseado em arquivo: `/database/citymotion.db`)
-- **Autenticação:** JWT (JSON Web Tokens)
-- **Integração:** Servido via **NexusBridge** no frontend.
+- **Banco de Dados:** SQLite3 (Persistência em arquivo `/database/citymotion.db`)
+- **Ponte de Integração:** NexusBridge (Roteamento virtual e transformação)
 
 ---
 
-## 🔐 Autenticação
+## 🔐 Autenticação (JWT)
 
-O sistema utiliza tokens JWT para proteger rotas sensíveis.
+O sistema utiliza tokens JWT para proteger rotas sensíveis e identificar permissões.
 
 ### Login
 - **Endpoint:** `POST /api/login`
-- **Payload:**
-  ```json
-  {
-    "email": "admin@citymotion.com",
-    "password": "..."
-  }
-  ```
-- **Resposta:** Retorna um `token` e o objeto `user` com permissões decodificadas.
+- **Payload:** `{ "email": "...", "password": "..." }`
+- **Retorno:** Token de acesso e objeto do usuário com permissões (Admin, Gestor, etc).
 
 ---
 
-## 📊 Endpoints de Dados
+## 📊 Endpoints de Dados (Core)
 
 ### Busca Consolidada (Initial Load)
 - **Endpoint:** `GET /api/data`
-- **Descrição:** Retorna todos os dados necessários para o dashboard (viagens, solicitações, veículos, funcionários, escalas).
-- **Nota:** Faz o parse automático de campos JSON armazenados como string no SQLite (ex: setores, passageiros, checklists).
+- **Descrição:** Retorna todos os dados para o carregamento inicial (viagens, veículos, funcionários, setores).
+- **Processamento:** Realiza o parse automático de campos JSON no SQLite (ex: arrays de setores).
 
-### Funcionários
-- **GET /api/employees:** Lista todos os colaboradores.
-- **POST /api/employees:** Cadastra um novo colaborador.
-  - Campos: `name`, `email`, `role`, `sector` (JSON), `status`.
+### Funcionários (Employees)
+- **GET /api/employees:** Lista todos os funcionários.
+- **POST /api/employees:** Cria um novo registro.
+- **PUT /api/employees/:id:** Atualiza dados de um colaborador existente.
+- **DELETE /api/employees/:id:** Remove um colaborador do banco.
 
-### Veículos
-- **GET /api/vehicles:** Lista toda a frota municipal.
-- **Campos Especiais:** `lastRefuelingDate` (armazena a data do último abastecimento registrado).
+### Veículos (Fleet)
+- **GET /api/vehicles:** Lista toda a frota.
+- **Campos Especiais:** `lastRefuelingDate` (data do último abastecimento registrado).
 
 ---
 
-## 🖥️ Endpoints de Sistema (Admin Console)
+## 🖥️ Endpoints de Sistema e Testes (Admin Console)
 
-Estes endpoints são consumidos principalmente pelo **Terminal de Desenvolvedor** do frontend.
+Estes endpoints são projetados para serem consumidos pelo **Terminal de Desenvolvedor** e pelo **NexusBridge Control**.
 
-### Monitor de Recursos (btop style)
+### Monitor de Recursos (estilo btop)
 - **Endpoint:** `GET /api/system/resources`
-- **Retorno:**
+- **Descrição:** Extrai métricas reais de hardware do servidor.
+- **Métricas:** 
   - `uptime`: Tempo de atividade do processo.
-  - `memory`: Uso de RAM (Total, Usada, Porcentagem).
-  - `cpu`: Modelo do processador e carga (load avg).
-  - `platform`: Sistema operacional do servidor.
+  - `memory`: Uso de RAM (Total, Usado, Porcentagem).
+  - `cpu`: Modelo e carga atual (load avg).
 
-### Reset de Fábrica (Hard Reset)
+### Manutenção e Reset
 - **Endpoint:** `POST /api/maintenance/reset`
-- **Descrição:** Executa o script `init_db.js`, apagando o arquivo `.db` atual e recriando todas as tabelas com os dados originais do arquivo `database.sql`.
+- **Descrição:** Executa o script de reinicialização "Hard Reset", apagando o banco atual e restaurando os dados originais do `database.sql`.
 
 ---
 
-## 🗄️ Estrutura do Banco de Dados (SQLite)
+## 🌉 Integração com NexusBridge
 
-As principais tabelas são:
-1. `employees`: Dados funcionais e credenciais.
-2. `vehicles`: Cadastro da frota e status.
-3. `sectors`: Organização departamental.
-4. `trips`: Registro histórico e em tempo real de viagens.
-5. `vehicle_requests`: Solicitações pendentes de aprovação.
-6. `work_schedules`: Escalas e plantões.
-7. `maintenance_requests`: Chamados para oficina.
+A API está mapeada no arquivo `nexus-settings.json` do frontend, permitindo chamadas virtuais:
+
+| Path Virtual | Método | Alvo Real (Backend) | Função |
+| :--- | :--- | :--- | :--- |
+| `test/db-employees` | GET | `/api/employees` | Listar funcionários via SQLite |
+| `test/db-employees` | POST | `/api/employees` | Criar funcionário via Terminal |
+| `system/resources` | GET | `/api/system/resources` | Monitorar hardware no Terminal |
+| `maintenance/db-reset` | POST | `/api/maintenance/reset` | Restaurar estado de fábrica |
 
 ---
 
-## 🚀 Como testar localmente
+## 🚀 Teste de Emergência (CLI)
 
-Se o servidor estiver rodando na porta 3001, você pode testar via cURL ou Postman:
-
+Se a interface web estiver indisponível, utilize o CLI de máquina:
 ```bash
-# Testar saúde do sistema
-curl http://localhost:3001/api/system/resources
-
-# Listar veículos diretamente
-curl http://localhost:3001/api/vehicles
+node nexus-cli.js test/db-employees
 ```
