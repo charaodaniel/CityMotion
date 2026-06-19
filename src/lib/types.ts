@@ -132,3 +132,15 @@ export type AppNotification = {
   date: string;
   read: boolean;
 };
+
+export type Organization = {
+  id: string;
+  name: string;
+  slug: string;
+  status: 'Ativa' | 'Suspensa' | 'Demonstração';
+  plan: 'Basic' | 'Pro' | 'Enterprise';
+  createdAt: string;
+  adminEmail: string;
+  activeVehicles: number;
+  activeUsers: number;
+};

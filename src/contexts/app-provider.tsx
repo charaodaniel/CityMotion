@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
-import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus, UserRole, AppNotification } from '@/lib/types';
+import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus, UserRole, AppNotification, Organization } from '@/lib/types';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -40,6 +39,9 @@ interface AppContextType {
   addMaintenanceRequest: (request: Omit<MaintenanceRequest, 'id' | 'status' | 'requestDate' | 'requesterName'>) => void;
   updateMaintenanceRequestStatus: (id: string, status: MaintenanceRequestStatus) => void;
 
+  organizations: Organization[];
+  setOrganizations: React.Dispatch<React.SetStateAction<Organization[]>>;
+
   notifications: AppNotification[];
   addNotification: (notification: Omit<AppNotification, 'id' | 'date' | 'read'>) => void;
   markNotificationAsRead: (id: string) => void;
@@ -72,6 +74,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([]);
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   const prevRequestsLength = useRef<number>(0);
@@ -103,6 +106,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSectors(data.sectors || []);
       setWorkSchedules(data.workSchedules || []);
       setMaintenanceRequests(data.maintenanceRequests || []);
+      setOrganizations(data.organizations || []);
       
       prevRequestsLength.current = data.requests?.length || 0;
       prevSchedulesLength.current = data.schedules?.length || 0;
@@ -349,6 +353,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         sectors, setSectors,
         workSchedules, setWorkSchedules,
         maintenanceRequests, setMaintenanceRequests, addMaintenanceRequest, updateMaintenanceRequestStatus,
+        organizations, setOrganizations,
         notifications, addNotification, markNotificationAsRead, clearNotifications
     }}>
       {children}

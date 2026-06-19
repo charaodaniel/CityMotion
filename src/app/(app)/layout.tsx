@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Logo } from '@/components/icons';
-import { LayoutDashboard, Car, Menu, Settings, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen, UserSquare, Bell, Check, Trash2, Info, Network, Terminal } from 'lucide-react';
+import { LayoutDashboard, Car, Menu, Settings, Route, CalendarClock, Users, ScrollText, Building, LogOut, UserCog, Wrench, BookOpen, UserSquare, Bell, Check, Trash2, Info, Network, Terminal, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
@@ -41,6 +41,7 @@ import { DevTerminal } from '@/components/dev-terminal';
 
 const navItems = [
   { href: '/dashboard', label: 'Painel', icon: LayoutDashboard, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/dev-global', label: 'Gestão Global', icon: ShieldCheck, roles: ['dev'] },
   { href: '/setores', label: 'Setores', icon: Building, roles: ['dev', 'ti', 'admin'] },
   { href: '/funcionarios', label: 'Funcionários', icon: Users, roles: ['dev', 'ti', 'admin', 'manager'] },
   { href: '/veiculos', label: 'Veículos', icon: Car, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },

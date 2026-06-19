@@ -1,4 +1,3 @@
-
 import { NextResponse, NextRequest } from 'next/server';
 import path from 'path';
 import { promises as fs } from 'fs';
@@ -47,8 +46,11 @@ export async function GET(request: NextRequest) {
       case 'maintenance-requests':
         data = await readJsonFile('maintenance-requests.json');
         break;
+      case 'organizations':
+        data = await readJsonFile('organizations.json');
+        break;
       case 'all':
-        const [schedules, requests, vehicles, employees, sectors, workSchedules, maintenanceRequests] = await Promise.all([
+        const [schedules, requests, vehicles, employees, sectors, workSchedules, maintenanceRequests, organizations] = await Promise.all([
           readJsonFile('schedules.json'),
           readJsonFile('vehicle-requests.json'),
           readJsonFile('vehicles.json'),
@@ -56,8 +58,9 @@ export async function GET(request: NextRequest) {
           readJsonFile('sectors.json'),
           readJsonFile('work-schedules.json'),
           readJsonFile('maintenance-requests.json'),
+          readJsonFile('organizations.json'),
         ]);
-        data = { schedules, requests, vehicles, employees, sectors, workSchedules, maintenanceRequests };
+        data = { schedules, requests, vehicles, employees, sectors, workSchedules, maintenanceRequests, organizations };
         break;
       default:
          return new NextResponse('Please specify a data type to fetch.', { status: 400 });

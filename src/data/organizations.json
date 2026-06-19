@@ -1,0 +1,46 @@
+[
+  { 
+    "id": "ORG001", 
+    "name": "Prefeitura de CityMotion", 
+    "slug": "citymotion-gov", 
+    "status": "Ativa", 
+    "plan": "Enterprise", 
+    "createdAt": "2024-01-10", 
+    "adminEmail": "admin@citymotion.com", 
+    "activeVehicles": 25,
+    "activeUsers": 120
+  },
+  { 
+    "id": "ORG002", 
+    "name": "Logística TransRápido", 
+    "slug": "transrapido", 
+    "status": "Ativa", 
+    "plan": "Pro", 
+    "createdAt": "2024-02-15", 
+    "adminEmail": "ceo@transrapido.com.br", 
+    "activeVehicles": 12,
+    "activeUsers": 45
+  },
+  { 
+    "id": "ORG003", 
+    "name": "Saúde em Movimento", 
+    "slug": "saude-mov", 
+    "status": "Demonstração", 
+    "plan": "Basic", 
+    "createdAt": "2024-03-01", 
+    "adminEmail": "contato@saudemov.org", 
+    "activeVehicles": 3,
+    "activeUsers": 8
+  },
+  { 
+    "id": "ORG004", 
+    "name": "Construtora Horizonte", 
+    "slug": "horizonte-const", 
+    "status": "Suspensa", 
+    "plan": "Pro", 
+    "createdAt": "2023-11-20", 
+    "adminEmail": "financeiro@horizonte.com", 
+    "activeVehicles": 0,
+    "activeUsers": 15
+  }
+]
