@@ -22,7 +22,7 @@ Desenvolvido com uma arquitetura desacoplada e modular, o sistema centraliza o c
 O CityMotion utiliza o conceito de **NexusBridge** para garantir flexibilidade total:
 
 1. **Frontend:** React + Next.js rodando na Vercel ou em ambiente local.
-2. **NexusBridge:** Motor de roteamento que resolve chamadas para diferentes fontes de dados.
+2. **NexusBridge:** Motor de roteamento que resolve chamadas para diferentes fontes de dados via JSON de configuração.
 3. **Backend Principal:** Servidor Express.js rodando em Node.js.
 4. **Banco de Dados:** SQLite3 (baseado em arquivo), ideal para implementações rápidas em intranets e servidores locais.
 
