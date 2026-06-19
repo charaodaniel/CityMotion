@@ -10,6 +10,7 @@ Este arquivo organiza as funcionalidades construídas e os próximos passos do p
 - [x] **SQLite3 Integration:** Banco de dados real configurado para persistência de dados.
 - [x] **Backend Node.js:** Servidor Express robusto servindo dados e autenticação.
 - [x] **Script SQL:** Gerador de banco de dados automático (`db:init`).
+- [x] **Auto-Start:** Configuração para iniciar Frontend e Backend simultaneamente com `npm run dev`.
 
 ### **Gestão e Operações**
 - [x] **Módulo de Mecânica:** Fluxo completo de manutenção e compra de peças.
