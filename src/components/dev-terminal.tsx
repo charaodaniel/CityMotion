@@ -23,6 +23,14 @@ interface SystemStats {
   nodeVersion: string;
 }
 
+const AVAILABLE_ROLES = [
+  "Funcionário",
+  "Motorista",
+  "Gestor de Setor",
+  "Administrador",
+  "Técnico Mecânico"
+];
+
 export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange: (open: boolean) => void; onClose: () => void }) {
   const { currentUser } = useApp();
   const { toast } = useToast();
@@ -390,12 +398,16 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold uppercase block">Cargo / Role:</label>
-                                <input 
+                                <select 
                                     name="role"
                                     defaultValue={editingUser.role}
                                     className="w-full bg-white border-2 border-zinc-500 px-2 py-1 focus:bg-[#FFFFAA] outline-none"
                                     required
-                                />
+                                >
+                                  {AVAILABLE_ROLES.map(role => (
+                                    <option key={role} value={role}>{role}</option>
+                                  ))}
+                                </select>
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold uppercase block">Status:</label>
