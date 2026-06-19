@@ -38,4 +38,37 @@ export async function POST(
   return NextResponse.json(result.data, { status: result.status });
 }
 
-// Suporte a outros métodos podem ser adicionados conforme a necessidade (PUT, DELETE, etc)
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ nexusPath: string[] }> }
+) {
+  const { nexusPath } = await params;
+  const path = nexusPath.join('/');
+  const body = await request.json().catch(() => ({}));
+  
+  const result = await bridge.handleRequest({
+    path,
+    method: 'PUT',
+    body,
+    headers: Object.fromEntries(request.headers)
+  });
+
+  return NextResponse.json(result.data, { status: result.status });
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ nexusPath: string[] }> }
+) {
+  const { nexusPath } = await params;
+  const path = nexusPath.join('/');
+  
+  const result = await bridge.handleRequest({
+    path,
+    method: 'DELETE',
+    headers: Object.fromEntries(request.headers)
+  });
+
+  return NextResponse.json(result.data, { status: result.status });
+}
+

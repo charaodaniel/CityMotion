@@ -241,7 +241,8 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
             setTuiMode(null);
             setEditingUser(null);
         } else {
-            addLine(`ERRO: Falha ao salvar no banco.`, 'error');
+            const errorData = await res.json().catch(() => ({ error: 'Desconhecido' }));
+            addLine(`ERRO (${res.status}): Falha ao salvar no banco. ${errorData.error || ''}`, 'error');
         }
     } catch (e) {
         addLine('Erro de conexão ao tentar salvar.', 'error');
@@ -427,3 +428,4 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
     </div>
   );
 }
+

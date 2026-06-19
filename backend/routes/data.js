@@ -133,6 +133,8 @@ module.exports = function(db) {
 
     router.put('/employees/:id', (req, res) => {
         const { name, role, status, email, sector, matricula, cnh } = req.body;
+        
+        // Usamos null explícito para parâmetros undefined para evitar erros no driver sqlite3
         const sql = `UPDATE employees SET 
             name = COALESCE(?, name), 
             role = COALESCE(?, role), 
@@ -145,8 +147,20 @@ module.exports = function(db) {
         
         const sectorStr = sector ? JSON.stringify(sector) : null;
 
-        db.run(sql, [name, role, status, email, sectorStr, matricula, cnh, req.params.id], function(err) {
-            if (err) return res.status(500).json({ error: err.message });
+        db.run(sql, [
+            name || null, 
+            role || null, 
+            status || null, 
+            email || null, 
+            sectorStr, 
+            matricula || null, 
+            cnh || null, 
+            req.params.id
+        ], function(err) {
+            if (err) {
+                console.error('Erro no UPDATE SQLite:', err.message);
+                return res.status(500).json({ error: err.message });
+            }
             res.json({ updated: this.changes, message: 'Registro atualizado no SQLite.' });
         });
     });
