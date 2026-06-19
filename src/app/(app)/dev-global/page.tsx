@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useApp } from "@/contexts/app-provider";
@@ -11,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import Link from "next/link";
 
 export default function DevGlobalPage() {
   const { userRole, organizations, isLoading } = useApp();
@@ -163,8 +165,10 @@ export default function DevGlobalPage() {
                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
                                 <Trash2 className="h-4 w-4" />
                             </Button>
-                             <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <ArrowUpRight className="h-4 w-4" />
+                             <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Acessar painel da empresa">
+                                <Link href="/dashboard">
+                                    <ArrowUpRight className="h-4 w-4" />
+                                </Link>
                             </Button>
                         </div>
                       </TableCell>
