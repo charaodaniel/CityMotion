@@ -8,9 +8,6 @@ import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from './ui/progress';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
-import { Label } from './ui/label';
 import type { Employee } from '@/lib/types';
 
 interface TerminalLine {
@@ -93,6 +90,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
     switch (command) {
       case 'help':
         addLine('--- Comandos Disponíveis ---', 'system');
+        addLine('test-all        - Executa teste de stress em todas as conexões e gera logs.');
         addLine('users           - Lista todos os funcionários do banco de dados (SQLite).');
         addLine('user-edit <id>  - Abre a interface TUI para editar um funcionário.');
         addLine('top | btop      - Mostra uso de CPU, RAM e Uptime em tempo real.');
@@ -103,6 +101,44 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         addLine('clear | cls     - Limpa o histórico de mensagens deste console.');
         addLine('exit            - Fecha a janela do terminal de desenvolvedor.');
         addLine('----------------------------', 'system');
+        break;
+
+      case 'test-all':
+        addLine('Iniciando Teste Geral de Conectividade...', 'system');
+        
+        // 1. Teste de API Local (JSON)
+        addLine('[1/4] Testando Local API (/api/data)...');
+        try {
+            const res = await fetch('/api/data?type=employees');
+            if (res.ok) addLine(`SUCCESS: Local API responded with status ${res.status}`, 'success');
+            else addLine(`FAILURE: Local API returned status ${res.status}`, 'error');
+        } catch (e) { addLine('FAILURE: Local API is unreachable.', 'error'); }
+
+        // 2. Teste de Ponte Nexus (Local Bridge)
+        addLine('[2/4] Testando NexusBridge (Path: users)...');
+        try {
+            const res = await fetch('/api/nexus/users');
+            if (res.ok) addLine(`SUCCESS: NexusBridge resolved LocalSim with status ${res.status}`, 'success');
+            else addLine(`FAILURE: NexusBridge returned status ${res.status}`, 'error');
+        } catch (e) { addLine('FAILURE: NexusBridge internal error.', 'error'); }
+
+        // 3. Teste de Backend Express
+        addLine('[3/4] Testando Node Backend (/api/system/resources)...');
+        try {
+            const res = await fetch('/api/nexus/system/resources');
+            if (res.ok) addLine(`SUCCESS: Node Backend is ALIVE (Status ${res.status})`, 'success');
+            else addLine(`FAILURE: Node Backend responded with error ${res.status}`, 'error');
+        } catch (e) { addLine('FAILURE: Node Backend is OFFLINE (503/Connection Refused)', 'error'); }
+
+        // 4. Teste de Banco SQLite
+        addLine('[4/4] Testando Query no Banco SQLite...');
+        try {
+            const res = await fetch('/api/nexus/test/db-employees');
+            if (res.ok) addLine(`SUCCESS: SQLite DB returned data records correctly.`, 'success');
+            else addLine(`FAILURE: Database query failed (Status ${res.status})`, 'error');
+        } catch (e) { addLine('FAILURE: Could not communicate with database engine.', 'error'); }
+        
+        addLine('--- Fim do Relatório de Teste ---', 'system');
         break;
 
       case 'users':
@@ -247,6 +283,14 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         }
     } catch (e) {
         addLine('Erro de conexão ao tentar salvar.', 'error');
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim()) {
+      processCommand(input);
+      setInput('');
     }
   };
 
