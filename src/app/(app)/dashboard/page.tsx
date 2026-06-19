@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Zap, RefreshCw } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { QuickRequestForm } from '@/components/quick-request-form';
+import { QuickRequestForm } from '@/components/forms/quick-request-form';
 import AdminDashboard from '@/components/dashboards/admin-dashboard';
 import ManagerDashboard from '@/components/dashboards/manager-dashboard';
 import DriverDashboard from '@/components/dashboards/driver-dashboard';
@@ -103,7 +103,6 @@ export default function DashboardPage() {
                         Atualizar
                     </Button>
 
-                    {/* Botão de Simulação de Demo */}
                     <Button variant="outline" size="sm" onClick={simulateExternalAlert} className="text-xs bg-accent/10 border-accent/20 hover:bg-accent/20">
                         <Zap className="mr-2 h-3 w-3" /> Testar Alerta
                     </Button>
@@ -131,7 +130,6 @@ export default function DashboardPage() {
                     )}
                 </div>
             </div>
-            
             {renderDashboard()}
         </div>
     );

@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CreateScheduleForm } from '@/components/create-schedule-form';
+import { CreateScheduleForm } from '@/components/forms/create-schedule-form';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
 
@@ -36,10 +35,6 @@ export default function SchedulesPage() {
     setSelectedSchedule(schedule);
   };
 
-  const closeDetailsModal = () => {
-    setSelectedSchedule(null);
-  };
-
   return (
     <div className="container mx-auto p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
@@ -48,7 +43,7 @@ export default function SchedulesPage() {
             Escalas de Funcionários
           </h1>
           <p className="text-muted-foreground">
-            Gerencie as escalas de trabalho, plantões e jornadas dos funcionários.
+            Gestão de plantões e jornadas.
           </p>
         </div>
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -60,10 +55,7 @@ export default function SchedulesPage() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-3xl">
             <DialogHeader>
-                <DialogTitle className="text-2xl">Criar Nova Escala</DialogTitle>
-                <DialogDescription>
-                    Preencha o formulário para agendar uma nova escala de trabalho.
-                </DialogDescription>
+                <DialogTitle className="text-2xl">Agendamento de Escala</DialogTitle>
             </DialogHeader>
             <ScrollArea className="max-h-[70vh] p-4">
                 <CreateScheduleForm onFormSubmit={() => setIsModalOpen(false)} />
@@ -109,23 +101,17 @@ export default function SchedulesPage() {
         </div>
       ) : (
         <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
-            <p className="text-lg">Nenhuma escala agendada no momento.</p>
-            <p className="text-sm mt-2">Clique em "Criar Nova Escala" para começar.</p>
+            <p className="text-lg">Nenhuma escala agendada.</p>
         </div>
       )}
 
-
-      {/* Details Modal */}
-      <Dialog open={!!selectedSchedule} onOpenChange={closeDetailsModal}>
+      <Dialog open={!!selectedSchedule} onOpenChange={() => setSelectedSchedule(null)}>
         <DialogContent>
             <ScrollArea className="max-h-[80vh] p-4">
               {selectedSchedule && (
                 <>
                   <DialogHeader>
                     <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
-                    <DialogDescription>
-                      Detalhes da escala agendada.
-                    </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4 pr-4">
                      <div>
@@ -133,25 +119,6 @@ export default function SchedulesPage() {
                         <p className="text-lg">{selectedSchedule.type}</p>
                     </div>
                     <Separator />
-                    <div>
-                        <span className="text-sm font-semibold text-muted-foreground">Funcionário</span>
-                        <p className="text-lg">{selectedSchedule.employee}</p>
-                    </div>
-                    <Separator />
-                     <div>
-                        <span className="text-sm font-semibold text-muted-foreground">Período</span>
-                        <p className="text-lg">{selectedSchedule.startDate} até {selectedSchedule.endDate}</p>
-                    </div>
-                    <Separator />
-                    {selectedSchedule.description && (
-                      <>
-                        <div>
-                          <span className="text-sm font-semibold text-muted-foreground">Observações</span>
-                          <p className="text-base mt-1">{selectedSchedule.description}</p>
-                        </div>
-                        <Separator />
-                      </>
-                    )}
                     <div>
                         <span className="text-sm font-semibold text-muted-foreground">Status</span>
                         <div>

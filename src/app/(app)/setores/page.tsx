@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState } from 'react';
@@ -9,7 +8,7 @@ import { Building, Car, PlusCircle, User, Edit } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Sector } from '@/lib/types';
-import { RegisterSectorForm } from '@/components/register-sector-form';
+import { RegisterSectorForm } from '@/components/forms/register-sector-form';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useApp } from '@/contexts/app-provider';
@@ -58,7 +57,7 @@ export default function SectorsPage() {
     closeModal();
   };
 
-  const sectorEmployees = selectedSector ? employees.filter(d => d.sector === selectedSector.name) : [];
+  const sectorEmployees = selectedSector ? employees.filter(d => d.sector.includes(selectedSector.name)) : [];
   const sectorVehicles = selectedSector ? vehicles.filter(v => v.sector === selectedSector.name) : [];
 
   const getModalContent = () => {
@@ -159,7 +158,7 @@ export default function SectorsPage() {
             Gestão de Setores
           </h1>
           <p className="text-muted-foreground">
-            Gerencie os setores e departamentos da prefeitura.
+            Configuração de unidades e departamentos.
           </p>
         </div>
         <Button onClick={handleOpenRegisterModal} className="bg-primary hover:bg-primary/90">
@@ -186,11 +185,7 @@ export default function SectorsPage() {
               <CardContent className="flex flex-col flex-grow justify-end text-sm space-y-2">
                 <div className="flex items-center text-muted-foreground">
                   <Car className="mr-2 h-4 w-4" />
-                  <span>{vehicles.filter(v => v.sector === sector.name).length} {vehicles.filter(v => v.sector === sector.name).length === 1 ? 'veículo' : 'veículos'}</span>
-                </div>
-                <div className="flex items-center text-muted-foreground">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>{employees.filter(d => d.sector === sector.name).length} {employees.filter(d => d.sector === sector.name).length === 1 ? 'funcionário' : 'funcionários'}</span>
+                  <span>{vehicles.filter(v => v.sector === sector.name).length} veículos</span>
                 </div>
               </CardContent>
             </Card>
@@ -199,11 +194,9 @@ export default function SectorsPage() {
       ) : (
         <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
           <p className="text-lg">Nenhum setor cadastrado no momento.</p>
-          <p className="text-sm mt-2">Clique em "Adicionar Novo Setor" para começar.</p>
         </div>
       )}
 
-      {/* Details Modal */}
       <Dialog open={isModalOpen} onOpenChange={closeModal}>
         <DialogContent className={modalMode === 'details' ? "sm:max-w-3xl" : "sm:max-w-xl"}>
           <ScrollArea className="max-h-[80vh] p-4">

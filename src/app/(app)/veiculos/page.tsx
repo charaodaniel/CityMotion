@@ -4,15 +4,15 @@
 import type { Vehicle, VehicleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Car, Building, Edit, Wrench, Search, Filter, Download, MoreVertical, Zap, Route, Activity, ChevronRight } from 'lucide-react';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Plus, Building, Edit, Wrench, Search, Filter, Download, MoreVertical, Zap, Route, Activity, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { RegisterVehicleForm } from '@/components/register-vehicle-form';
+import { RegisterVehicleForm } from '@/components/forms/register-vehicle-form';
 import { useState, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useApp } from '@/contexts/app-provider';
-import { RequestMaintenanceForm } from '@/components/request-maintenance-form';
+import { RequestMaintenanceForm } from '@/components/forms/request-maintenance-form';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -80,19 +80,19 @@ export default function VehiclesPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h1 className="text-5xl font-black tracking-tighter text-on-surface">Gestão de Frota</h1>
-          <p className="text-muted-foreground text-lg mt-1 font-medium">Real-time overview and control of NexusOS registered assets.</p>
+          <p className="text-muted-foreground text-lg mt-1 font-medium">Controle de ativos e telemetria NexusOS.</p>
         </div>
-        <Button onClick={() => openModal('register')} className="bg-primary-container text-on-primary-container hover:bg-primary-container/90 h-12 px-6 rounded-lg font-bold uppercase tracking-widest text-xs">
+        <Button onClick={() => openModal('register')} className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-6 rounded-lg font-bold uppercase tracking-widest text-xs">
           <Plus className="mr-2 h-4 w-4" />
-          Add New Vehicle
+          Novo Veículo
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Ready for Dispatch', count: vehicles.filter(v => v.status === 'Disponível').length, icon: 'check_circle', color: 'emerald' },
-          { label: 'Active Routes', count: vehicles.filter(v => v.status === 'Em Viagem').length, icon: 'moving', color: 'primary' },
-          { label: 'Workshop / Repair', count: vehicles.filter(v => v.status === 'Manutenção').length, icon: 'build', color: 'destructive' }
+          { label: 'Prontos para Saída', count: vehicles.filter(v => v.status === 'Disponível').length, color: 'emerald' },
+          { label: 'Rotas Ativas', count: vehicles.filter(v => v.status === 'Em Viagem').length, color: 'primary' },
+          { label: 'Oficina / Manutenção', count: vehicles.filter(v => v.status === 'Manutenção').length, color: 'destructive' }
         ].map((stat, i) => (
           <Card key={i} className="border-border/50 bg-sidebar/50 rounded-xl p-6 relative overflow-hidden group">
             <div className={cn(
@@ -108,9 +108,6 @@ export default function VehiclesPage() {
               )}>
                 {stat.color === 'emerald' ? <Building className="h-5 w-5" /> : stat.color === 'primary' ? <Route className="h-5 w-5" /> : <Wrench className="h-5 w-5" />}
               </div>
-              <Badge className={cn("rounded-full uppercase tracking-tighter text-[10px]", getStatusStyles(stat.color === 'emerald' ? 'Disponível' : stat.color === 'primary' ? 'Em Viagem' : 'Manutenção'))}>
-                {stat.label.split(' ')[0]}
-              </Badge>
             </div>
             <div className="relative z-10">
               <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1">{stat.label}</p>
@@ -124,12 +121,12 @@ export default function VehiclesPage() {
         <div className="lg:col-span-3">
           <Card className="border-border/50 bg-sidebar/50 rounded-xl overflow-hidden flex flex-col">
             <div className="p-6 border-b border-border/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-accent/20">
-              <CardTitle className="text-xl font-bold tracking-tight">Active Fleet</CardTitle>
+              <CardTitle className="text-xl font-bold tracking-tight">Frota Ativa</CardTitle>
               <div className="flex items-center gap-3 w-full md:w-auto">
                 <div className="relative flex-1 md:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input 
-                    placeholder="Search vehicles, drivers..." 
+                    placeholder="Buscar veículos, placas..." 
                     className="pl-10 h-10 border-border/50 bg-sidebar text-xs" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -143,11 +140,11 @@ export default function VehiclesPage() {
               <Table>
                 <TableHeader className="bg-accent/30">
                   <TableRow className="border-border/30 font-bold text-[10px] uppercase tracking-widest text-muted-foreground">
-                    <TableHead className="px-6 h-12">Vehicle ID</TableHead>
-                    <TableHead className="h-12">Model / Plate</TableHead>
-                    <TableHead className="h-12">Sector</TableHead>
+                    <TableHead className="px-6 h-12">ID Veículo</TableHead>
+                    <TableHead className="h-12">Modelo / Placa</TableHead>
+                    <TableHead className="h-12">Setor</TableHead>
                     <TableHead className="h-12">Status</TableHead>
-                    <TableHead className="text-right px-6 h-12">Actions</TableHead>
+                    <TableHead className="text-right px-6 h-12">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="font-mono text-xs text-foreground divide-y divide-border/30">
@@ -182,7 +179,7 @@ export default function VehiclesPage() {
         <div className="flex flex-col gap-6">
           <Card className="border-border/50 bg-sidebar/50 rounded-xl p-6">
             <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
-              <Zap className="h-3.5 w-3.5 text-primary" /> Top Performance Drivers
+              <Zap className="h-3.5 w-3.5 text-primary" /> Motoristas Destaque
             </h4>
             <div className="space-y-4">
               {['J. Pereira', 'M. Santos'].map((name, i) => (
@@ -193,7 +190,7 @@ export default function VehiclesPage() {
                   </Avatar>
                   <div className="flex-1 overflow-hidden">
                     <p className="text-sm font-bold truncate leading-none mb-1">{name}</p>
-                    <p className="text-[9px] font-mono text-muted-foreground uppercase">{4.8 + i*0.1}/5.0 • {980 + i*220} Trips</p>
+                    <p className="text-[9px] font-mono text-muted-foreground uppercase">{4.8 + i*0.1}/5.0 • {980 + i*220} Viagens</p>
                   </div>
                   <ChevronRight className="h-4 w-4 text-primary opacity-50" />
                 </div>
@@ -203,14 +200,14 @@ export default function VehiclesPage() {
 
           <Card className="bg-zinc-950 border-border/50 rounded-xl p-6 relative overflow-hidden flex-1 tui-scanline">
             <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2">
-              <Activity className="h-3.5 w-3.5" /> Fleet Activity Log
+              <Activity className="h-3.5 w-3.5" /> Log de Atividade
             </h4>
             <div className="font-mono text-[10px] text-muted-foreground flex flex-col gap-3">
               {[
-                { time: '10:42', id: 'NEX-108', msg: 'Entered Geofence Z-04', type: 'primary' },
-                { time: '10:38', id: 'NEX-015', msg: 'Maintenance Ticket #882 Open', type: 'destructive' },
-                { time: '10:15', id: 'NEX-042', msg: 'Completed Trip T-9912', type: 'emerald' },
-                { time: '09:55', id: 'SYS', msg: 'OTA Update v2.4 Pushed', type: 'primary' }
+                { time: '10:42', id: 'NEX-108', msg: 'Geofence Z-04 detectado', type: 'primary' },
+                { time: '10:38', id: 'NEX-015', msg: 'Manutenção #882 aberta', type: 'destructive' },
+                { time: '10:15', id: 'NEX-042', msg: 'Viagem T-9912 concluída', type: 'emerald' },
+                { time: '09:55', id: 'SYS', msg: 'Update OTA v2.4 aplicado', type: 'primary' }
               ].map((log, i) => (
                 <div key={i} className="flex gap-2 leading-tight">
                   <span className="text-primary/40 shrink-0">[{log.time}]</span>
@@ -231,9 +228,11 @@ export default function VehiclesPage() {
           <div className="h-1.5 w-full bg-primary" />
           <ScrollArea className="max-h-[80vh] p-8">
               <DialogHeader className="mb-6">
-                <DialogTitle className="text-2xl font-black tracking-tight">{activeModal === 'register' ? 'New Vehicle Protocol' : activeModal === 'edit' ? 'Update Unit Signature' : 'Telemetery Details'}</DialogTitle>
+                <DialogTitle className="text-2xl font-black tracking-tight">
+                    {activeModal === 'register' ? 'Novo Protocolo Veicular' : activeModal === 'edit' ? 'Atualizar Unidade' : 'Detalhes de Telemetria'}
+                </DialogTitle>
                 <DialogDescription className="text-xs font-mono uppercase tracking-widest text-primary/70">
-                  {activeModal === 'register' ? 'Executing unit registration FSP-v3' : 'Accessing unit core parameters'}
+                  {activeModal === 'register' ? 'Executando registro FSP-v3' : 'Acessando parâmetros centrais'}
                 </DialogDescription>
               </DialogHeader>
               <div className="scanlines rounded-lg border border-border/50 p-6 bg-accent/10">
@@ -244,15 +243,15 @@ export default function VehiclesPage() {
                 ) : (
                   <div className="space-y-6">
                      <div className="grid grid-cols-2 gap-8">
-                        <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Unit Model</p><p className="text-lg font-bold">{selectedVehicle?.vehicleModel}</p></div>
-                        <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">License Signature</p><p className="text-lg font-mono font-bold text-primary">{selectedVehicle?.licensePlate}</p></div>
-                        <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Assigned Sector</p><p className="text-sm font-bold">{selectedVehicle?.sector}</p></div>
-                        <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Total Distance</p><p className="text-sm font-mono">{selectedVehicle?.mileage.toLocaleString('pt-BR')} KM</p></div>
+                        <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Modelo</p><p className="text-lg font-bold">{selectedVehicle?.vehicleModel}</p></div>
+                        <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Placa</p><p className="text-lg font-mono font-bold text-primary">{selectedVehicle?.licensePlate}</p></div>
+                        <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Setor Alocado</p><p className="text-sm font-bold">{selectedVehicle?.sector}</p></div>
+                        <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Distância Total</p><p className="text-sm font-mono">{selectedVehicle?.mileage.toLocaleString('pt-BR')} KM</p></div>
                      </div>
                      <Separator className="bg-border/30" />
                      <div className="flex justify-end gap-3">
-                        <Button variant="outline" className="text-xs uppercase font-bold" onClick={() => openModal('maintenance', selectedVehicle)}>Open Ticket</Button>
-                        <Button variant="default" className="bg-primary text-primary-foreground text-xs uppercase font-bold" onClick={() => openModal('edit', selectedVehicle)}>Refactor Unit</Button>
+                        <Button variant="outline" className="text-xs uppercase font-bold" onClick={() => openModal('maintenance', selectedVehicle)}>Abrir Manutenção</Button>
+                        <Button variant="default" className="bg-primary text-primary-foreground text-xs uppercase font-bold" onClick={() => openModal('edit', selectedVehicle)}>Editar Unidade</Button>
                      </div>
                   </div>
                 )}
