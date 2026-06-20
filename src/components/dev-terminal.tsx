@@ -169,19 +169,21 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                 if (data.length === 0) {
                     addLine('Nenhum registro de auditoria encontrado.');
                 } else {
-                    addLine('DATA/HORA        | QUEM                 | AÇÃO   | TABELA       | ALTERAÇÃO', 'system');
+                    addLine('HORÁRIO  | QUEM                 | AÇÃO   | TABELA       | ALTERAÇÃO', 'system');
                     addLine('--------------------------------------------------------------------------------', 'system');
-                    data.forEach((log: any) => {
+                    data.slice(0, 15).forEach((log: any) => {
                         const time = new Date(log.timestamp).toLocaleTimeString('pt-BR');
                         const who = String(log.user_identity || 'Sistema').substring(0, 20).padEnd(20);
-                        const action = log.action.padEnd(6);
-                        const table = log.table_name.padEnd(12);
-                        const details = log.details.substring(0, 40) + '...';
+                        const action = String(log.action).padEnd(6);
+                        const table = String(log.table_name).padEnd(12);
+                        const details = String(log.details).substring(0, 40) + '...';
                         addLine(`${time} | ${who} | ${action} | ${table} | ${details}`);
                     });
                 }
-            } else addLine('Erro ao obter logs do backend.', 'error');
-        } catch (e) { addLine('Falha de conexão com o sistema de auditoria.', 'error'); }
+            } else {
+                addLine('Erro ao obter logs. O banco pode estar vazio ou a tabela não existe.', 'error');
+            }
+        } catch (e) { addLine('Falha crítica de conexão com o sistema de auditoria.', 'error'); }
         break;
 
       case 'nexus-db-reset':

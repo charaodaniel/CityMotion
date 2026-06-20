@@ -1,14 +1,5 @@
 
---- TABELA DE SETORES
-CREATE TABLE IF NOT EXISTS sectors (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    description TEXT,
-    vehicleCount INTEGER DEFAULT 0,
-    driverCount INTEGER DEFAULT 0
-);
-
---- TABELA DE FUNCIONÁRIOS
+--- TABELA DE FUNCIONÁRIOS (Lotação e Segurança)
 CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -22,7 +13,7 @@ CREATE TABLE IF NOT EXISTS employees (
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
---- TABELA DE VEÍCULOS
+--- TABELA DE VEÍCULOS (Ativos de Frota)
 CREATE TABLE IF NOT EXISTS vehicles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     vehicleModel TEXT NOT NULL,
@@ -33,7 +24,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
---- TABELA DE VIAGENS (MISSÕES)
+--- TABELA DE VIAGENS (Missões Logísticas)
 CREATE TABLE IF NOT EXISTS trips (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -47,6 +38,7 @@ CREATE TABLE IF NOT EXISTS trips (
     endMileage INTEGER,
     status TEXT DEFAULT 'Agendada',
     category TEXT,
+    passengers TEXT, -- JSON Array
     startChecklist TEXT, -- JSON Array
     endChecklist TEXT, -- JSON Array
     startNotes TEXT,
@@ -60,7 +52,7 @@ CREATE TABLE IF NOT EXISTS vehicle_requests (
     sector TEXT NOT NULL,
     details TEXT,
     priority TEXT DEFAULT 'Média',
-    requestDate TEXT NOT NULL,
+    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     requester TEXT,
     status TEXT DEFAULT 'Pendente'
 );
@@ -68,17 +60,25 @@ CREATE TABLE IF NOT EXISTS vehicle_requests (
 --- TABELA DE MANUTENÇÃO
 CREATE TABLE IF NOT EXISTS maintenance_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId TEXT NOT NULL,
-    vehicleModel TEXT NOT NULL,
-    licensePlate TEXT NOT NULL,
-    requesterName TEXT NOT NULL,
-    requestDate TEXT NOT NULL,
-    type TEXT NOT NULL,
+    vehicleId INTEGER NOT NULL,
+    vehicleModel TEXT,
+    licensePlate TEXT,
+    type TEXT,
     description TEXT,
-    status TEXT DEFAULT 'Pendente'
+    requesterName TEXT,
+    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status TEXT DEFAULT 'Pendente',
+    FOREIGN KEY (vehicleId) REFERENCES vehicles(id)
 );
 
---- TABELA DE ESCALAS DE TRABALHO
+--- TABELA DE SETORES
+CREATE TABLE IF NOT EXISTS sectors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    description TEXT
+);
+
+--- TABELA DE ESCALAS (Work Schedules)
 CREATE TABLE IF NOT EXISTS work_schedules (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -90,43 +90,34 @@ CREATE TABLE IF NOT EXISTS work_schedules (
     description TEXT
 );
 
---- TABELA DE AUDITORIA (LOGS DE ALTERAÇÃO)
+--- TABELA DE LOGS DE AUDITORIA (Histórico de Alterações)
 CREATE TABLE IF NOT EXISTS audit_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    action TEXT NOT NULL, -- INSERT, UPDATE, DELETE
+    action TEXT NOT NULL, -- INSERT, UPDATE, DELETE, SOFT_DELETE
     table_name TEXT NOT NULL,
     record_id TEXT,
     details TEXT,
-    user_identity TEXT
+    user_identity TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
---- DADOS INICIAIS: SETORES
-INSERT OR IGNORE INTO sectors (id, name, description) VALUES 
-('SEC01', 'Gabinete do Prefeito', 'Assessoramento direto ao executivo.'),
-('SEC02', 'Secretaria de Administração', 'Gestão de pessoal e patrimônio.'),
-('SEC04', 'Secretaria de Educação', 'Transporte escolar e gestão pedagógica.'),
-('SEC05', 'Secretaria de Saúde', 'Saúde pública e vigilância.'),
-('SEC06', 'Secretaria de Obras', 'Infraestrutura e manutenção urbana.'),
-('SEC10', 'TI - Infraestrutura', 'Suporte tecnológico e NexusOS Core.');
+--- DADOS INICIAIS (SETORES)
+INSERT OR IGNORE INTO sectors (name, description) VALUES 
+('Gabinete do Prefeito', 'Assessoramento direto ao Prefeito e Vice-Prefeito.'),
+('Secretaria de Administração e Planejamento', 'Gestão de pessoal e recursos.'),
+('Secretaria de Saúde', 'Gestão de saúde pública.'),
+('Secretaria de Educação, Cultura, Desporto e Lazer', 'Administração escolar e esportiva.'),
+('Secretaria de Obras, Viação e Urbanismo', 'Manutenção urbana.'),
+('TI - Infraestrutura', 'Suporte tecnológico central.');
 
---- DADOS INICIAIS: FUNCIONÁRIOS (Senha padrão: 123456)
-INSERT OR IGNORE INTO employees (name, email, role, sector, status, matricula) VALUES 
-('Desenvolvedor Root', 'dev@dev.com', 'Desenvolvedor Global', '["TI - Infraestrutura"]', 'Disponível', 'DEV-001'),
-('Júlio César', 'admin@citymotion.com', 'Administrador', '["Gabinete do Prefeito"]', 'Em Serviço', 'GP-001'),
-('Maria Oliveira', 'manager@citymotion.com', 'Gestor de Setor', '["Secretaria de Saúde"]', 'Disponível', 'M-002'),
-('João da Silva', 'driver@citymotion.com', 'Motorista', '["Secretaria de Obras"]', 'Em Serviço', 'M-001'),
-('Ana Souza', 'employee@citymotion.com', 'Colaborador', '["Secretaria de Educação"]', 'Disponível', 'EDU-004'),
-('Sérgio Moraes', 'mecanico@citymotion.com', 'Técnico Mecânico', '["Secretaria de Obras"]', 'Disponível', 'MEC-001');
+--- DADOS INICIAIS (FUNCIONÁRIOS)
+INSERT OR IGNORE INTO employees (id, name, email, password, role, sector, status, matricula) VALUES 
+(0, 'Desenvolvedor Root', 'dev@dev.com', '123456789', 'Desenvolvedor Global', '["TI - Infraestrutura"]', 'Disponível', 'DEV-001'),
+(11, 'Júlio César', 'admin@citymotion.com', '123456', 'Administrador', '["Gabinete do Prefeito"]', 'Em Serviço', 'GP-001'),
+(12, 'Marcos Silva', 'manager@citymotion.com', '123456', 'Gestor de Setor', '["Secretaria de Obras, Viação e Urbanismo"]', 'Disponível', 'M-012');
 
---- DADOS INICIAIS: VEÍCULOS
+--- DADOS INICIAIS (VEÍCULOS)
 INSERT OR IGNORE INTO vehicles (vehicleModel, licensePlate, sector, mileage, status) VALUES 
-('Fiat Strada', 'PM-001', 'Secretaria de Obras', 15000, 'Em Serviço'),
-('VW Gol', 'PM-002', 'Secretaria de Saúde', 8525, 'Disponível'),
-('Renault Kwid', 'PM-003', 'Secretaria de Administração', 22000, 'Em Viagem'),
-('Chevrolet Onix', 'PM-004', 'Secretaria de Educação', 41000, 'Manutenção');
-
---- DADOS INICIAIS: VIAGENS
-INSERT OR IGNORE INTO trips (title, driver, vehicle, origin, destination, departureTime, status, category) VALUES 
-('Transporte de Paciente', 'Maria Oliveira', 'VW Gol (PM-002)', 'Posto de Saúde Central', 'Hospital Regional', '2024-07-28 08:00', 'Concluída', 'Saúde'),
-('Visita Técnica em Obra', 'João da Silva', 'Fiat Strada (PM-001)', 'Secretaria de Obras', 'Bairro Novo Horizonte', '2024-07-30 14:00', 'Agendada', 'Obras');
+('Fiat Strada', 'PM-001', 'Secretaria de Obras, Viação e Urbanismo', 15000, 'Disponível'),
+('VW Gol', 'PM-002', 'Secretaria de Saúde', 8500, 'Disponível'),
+('Renault Kwid', 'PM-003', 'Administração', 22000, 'Disponível');
