@@ -6,7 +6,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Conexão com o Banco de Dados
 const dbPath = path.resolve(__dirname, 'database', 'citymotion.db');
@@ -45,10 +45,21 @@ app.get('/', (req, res) => {
     res.send('Servidor do CityMotion está no ar! Camada de segurança JWT e Bcrypt ativa.');
 });
 
-// Escuta explicitamente em 0.0.0.0 para ser acessível dentro de containers/workstations
-app.listen(PORT, '0.0.0.0', () => {
+// Inicialização do servidor com tratamento de erro EADDRINUSE
+const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`[CityMotion Backend] Rodando em http://0.0.0.0:${PORT}`);
     if (!process.env.JWT_SECRET) {
         console.warn('AVISO: JWT_SECRET não configurado no .env! Usando fallback inseguro.');
+    }
+});
+
+server.on('error', (e) => {
+    if (e.code === 'EADDRINUSE') {
+        console.error(`\x1b[31m[ERRO CRÍTICO] A porta ${PORT} já está em uso.\x1b[0m`);
+        console.error(`Certifique-se de que não há outra instância do backend rodando.`);
+        console.error(`Dica: Se estiver no Linux/Mac, use 'npx kill-port ${PORT}' para liberar a porta.`);
+        process.exit(1);
+    } else {
+        console.error("[Backend Error]:", e);
     }
 });
