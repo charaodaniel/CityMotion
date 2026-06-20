@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity, Save, ArrowLeft, Coffee, ShieldAlert, Sparkles, RefreshCw } from 'lucide-react';
+import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity, Save, ArrowLeft, Coffee, Sparkles, Loader2 } from 'lucide-react';
 import { useApp } from '@/contexts/app-provider';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -34,7 +34,7 @@ const AVAILABLE_ROLES = [
 ];
 
 export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange: (open: boolean) => void; onClose: () => void }) {
-  const { currentUser, refreshData } = useApp();
+  const { updateEmployee, refreshData } = useApp();
   const { toast } = useToast();
   const [history, setHistory] = useState<TerminalLine[]>([
     { type: 'system', content: 'CityMotion NexusOS v2.0.0 (Admin Console)' },
@@ -45,6 +45,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   
   const [tuiMode, setTuiMode] = useState<'edit' | null>(null);
   const [editingUser, setEditingUser] = useState<Employee | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -102,18 +103,13 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         addLine('--- Comandos CityMotion NexusBridge ---', 'system');
         addLine('nexus-info          - Informações gerais do sistema.');
         addLine('nexus-status        - Status dos serviços principais.');
-        addLine('nexus-version       - Versão instalada.');
-        addLine('nexus-health        - Verificação rápida de integridade.');
         addLine('nexus-ping          - Testa comunicação com API/DB.');
         addLine('nexus-resources     - Monitor de hardware (btop).');
-        addLine('nexus-routes        - Lista rotas registradas.');
         addLine('nexus-db-stats      - Estatísticas de registros no banco.');
-        addLine('nexus-db-tables     - Lista tabelas do SQLite.');
         addLine('nexus-db-reset      - Hard reset no banco de dados.');
         addLine('nexus-employees     - Lista todos os funcionários.');
-        addLine('nexus-employee-info - Detalhes de um funcionário (nexus-employee-info <id>).');
+        addLine('nexus-employee-info - Detalhes/Edição de um funcionário (nexus-employee-info <id>).');
         addLine('nexus-vehicles      - Lista frota de veículos.');
-        addLine('nexus-diagnostics   - Executa teste de stress completo.');
         addLine('nexus-terminal-clear - Limpa a tela.');
         addLine('----------------------------------------', 'system');
         break;
@@ -132,23 +128,10 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         try {
             const res = await fetch('/api/nexus/system/db-info');
             if (res.ok) addLine('Backend Express/SQLite: CONECTADO', 'success');
-            else addLine('Backend Express/SQLite: ERRO', 'error');
+            else addLine('Backend Express/SQLite: ERRO NA RESPOSTA', 'error');
         } catch (e) {
             addLine('Backend Express/SQLite: OFFLINE', 'error');
         }
-        break;
-
-      case 'nexus-version':
-        addLine('CityMotion Enterprise: v2.0.0-alpha');
-        addLine('NexusBridge Module: v1.0.4');
-        break;
-
-      case 'nexus-health':
-        addLine('Verificando componentes...', 'system');
-        addLine('Core API: [ OK ]');
-        addLine('Auth Module: [ OK ]');
-        addLine('Storage Driver: [ OK ]');
-        addLine('Bridge Transformer: [ OK ]');
         break;
 
       case 'nexus-ping':
@@ -157,17 +140,10 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
             const res = await fetch('/api/nexus/system/resources');
             const end = Date.now();
             if (res.ok) addLine(`PONG! Resposta em ${end - start}ms`, 'success');
-            else addLine('Falha na resposta.', 'error');
+            else addLine('Falha na resposta do servidor.', 'error');
         } catch (e) {
-            addLine('Requisição falhou.', 'error');
+            addLine('Requisição falhou (servidor offline?).', 'error');
         }
-        break;
-
-      case 'nexus-resources':
-      case 'btop':
-      case 'top':
-        await fetchStats();
-        addLine('Estatísticas de Recursos Atualizadas.', 'success');
         break;
 
       case 'nexus-db-stats':
@@ -178,25 +154,19 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
             Object.entries(data.counts).forEach(([table, count]) => {
                 addLine(`${table.padEnd(20)}: ${count} registros`);
             });
-        } catch (e) { addLine('Erro ao buscar estatísticas.', 'error'); }
-        break;
-
-      case 'nexus-db-tables':
-        addLine('Tabelas detectadas no schema:');
-        addLine('- employees, vehicles, trips, sectors, vehicle_requests, maintenance_requests');
+        } catch (e) { addLine('Erro ao buscar estatísticas do banco.', 'error'); }
         break;
 
       case 'nexus-db-reset':
-      case 'db-reset':
         addLine('Solicitando Hard Reset ao Backend...', 'system');
         try {
             const res = await fetch('/api/nexus/maintenance/db-reset', { method: 'POST' });
             if (res.ok) {
-                addLine('REINICIALIZAÇÃO CONCLUÍDA.', 'success');
-                toast({ title: "Sistema Reiniciado", description: "O banco foi restaurado." });
+                addLine('REINICIALIZAÇÃO CONCLUÍDA COM SUCESSO.', 'success');
+                toast({ title: "Sistema Reiniciado", description: "O banco de dados foi restaurado." });
                 await refreshData();
-            } else addLine('ERRO NO RESET.', 'error');
-        } catch (e) { addLine('Falha catastrófica.', 'error'); }
+            } else addLine('ERRO NO RESET DE BANCO.', 'error');
+        } catch (e) { addLine('Falha de conexão durante o reset.', 'error'); }
         break;
 
       case 'nexus-employees':
@@ -212,8 +182,8 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                     const nameStr = String(u.name).substring(0, 20).padEnd(20);
                     addLine(`${idStr} | ${nameStr} | ${u.role}`);
                 });
-            } else addLine('Erro ao obter lista.', 'error');
-        } catch (e) { addLine('Falha de conexão.', 'error'); }
+            } else addLine('Erro ao obter lista do backend.', 'error');
+        } catch (e) { addLine('Falha de conexão com a API de funcionários.', 'error'); }
         break;
 
       case 'nexus-employee-info':
@@ -226,9 +196,9 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
             if (res.ok) {
                 setEditingUser(userData);
                 setTuiMode('edit');
-                addLine('Interface TUI aberta.', 'success');
-            } else addLine(`Erro: ${userData.error || 'Não encontrado.'}`, 'error');
-        } catch (e) { addLine('Falha ao carregar dados.', 'error'); }
+                addLine('Interface TUI aberta para o ID: ' + userId, 'success');
+            } else addLine(`Erro: Funcionário ${userId} não encontrado.`, 'error');
+        } catch (e) { addLine('Falha ao carregar dados do usuário.', 'error'); }
         break;
 
       case 'nexus-vehicles':
@@ -242,18 +212,8 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         } catch (e) { addLine('Falha ao listar frota.', 'error'); }
         break;
 
-      case 'nexus-diagnostics':
-      case 'test-all':
-        addLine('Iniciando Teste Geral...', 'system');
-        addLine('[1/3] Local API: OK', 'success');
-        addLine('[2/3] NexusBridge: OK', 'success');
-        addLine('[3/3] SQLite Driver: OK', 'success');
-        addLine('Tudo funcionando normalmente.', 'success');
-        break;
-
       case 'nexus-terminal-clear':
       case 'clear':
-      case 'cls':
         setHistory([]);
         break;
 
@@ -261,27 +221,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         addLine('☕ Servindo café virtual para o operador...', 'secret');
         addLine('   ( o)__ ( o)__ ( o)');
         addLine('    (   )  (   )  (   )');
-        break;
-
-      case 'nexus-konami':
-        addLine('UP, UP, DOWN, DOWN, LEFT, RIGHT, LEFT, RIGHT, B, A', 'secret');
-        addLine('CHEATS ATIVADOS: Vidas infinitas concedidas ao desenvolvedor.', 'secret');
-        break;
-
-      case 'nexus-secret':
-        addLine('Você sabia? O nome CityMotion foi escolhido entre 42 opções.', 'secret');
-        addLine('NexusBridge foi inspirado em sistemas de roteamento de hardware.', 'secret');
-        break;
-
-      case 'nexus-root':
-        addLine('Acesso negado.', 'error');
-        addLine('Boa tentativa. 😎');
-        addLine('Evento registrado no Nexus Security Log.', 'system');
-        break;
-
-      case 'nexus-hack':
-        addLine('Operação não autorizada.', 'error');
-        addLine('O NexusBridge registrou sua tentativa.', 'system');
         break;
 
       case 'exit':
@@ -295,8 +234,9 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
 
   const handleTuiSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingUser) return;
+    if (!editingUser || isSaving) return;
     
+    setIsSaving(true);
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     const updatedData = {
         name: formData.get('name') as string,
@@ -306,22 +246,17 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         password: formData.get('password') as string,
     };
 
-    addLine(`Salvando ID ${editingUser.id}...`, 'system');
+    addLine(`Salvando alterações para o ID ${editingUser.id}...`, 'system');
     try {
-        const res = await fetch(`/api/nexus/test/db-employees/${editingUser.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedData)
-        });
-        
-        if (res.ok) {
-            addLine(`SUCESSO: Registro atualizado.`, 'success');
-            toast({ title: "Banco Atualizado", description: "Alterações salvas no SQLite." });
-            await refreshData();
-            setTuiMode(null);
-            setEditingUser(null);
-        } else addLine('ERRO ao salvar no banco.', 'error');
-    } catch (e) { addLine('Erro de conexão.', 'error'); }
+        await updateEmployee(editingUser.id, updatedData);
+        addLine(`SUCESSO: Registro ${editingUser.id} atualizado no SQLite.`, 'success');
+        setTuiMode(null);
+        setEditingUser(null);
+    } catch (e) { 
+        addLine('ERRO: Não foi possível persistir as alterações.', 'error'); 
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -335,7 +270,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
           <span className="text-xs font-bold uppercase tracking-wider">Console Dev NexusBridge</span>
         </div>
         <div className="flex gap-2">
-            <button onClick={() => setHistory([])} className="text-zinc-600 hover:text-zinc-400"><Sparkles className="h-3 w-3" /></button>
+            <button onClick={() => setHistory([])} className="text-zinc-600 hover:text-zinc-400" title="Limpar Histórico"><Sparkles className="h-3 w-3" /></button>
             <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors">
             <X className="h-4 w-4" />
             </button>
@@ -394,7 +329,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
 
         {/* INTERACTIVE TUI OVERLAY */}
         {tuiMode === 'edit' && editingUser && (
-            <div className="absolute inset-0 bg-black/70 flex items-center justify-center p-6 backdrop-blur-[1px]">
+            <div className="absolute inset-0 bg-black/70 flex items-center justify-center p-6 backdrop-blur-[1px] z-[60]">
                 <form 
                     onSubmit={handleTuiSave}
                     className="w-full max-w-lg bg-zinc-200 border-4 border-double border-zinc-400 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] overflow-hidden"
@@ -438,8 +373,8 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                         </div>
 
                         <div className="flex justify-center gap-6 pt-4">
-                            <button type="submit" className="px-6 py-1 bg-zinc-300 border-2 border-zinc-500 active:translate-y-0.5 shadow-[2px_2px_0px_rgba(0,0,0,0.8)] hover:bg-zinc-400 font-bold flex items-center gap-2">
-                                <Save className="h-4 w-4" /> [ SALVAR ]
+                            <button type="submit" disabled={isSaving} className="px-6 py-1 bg-zinc-300 border-2 border-zinc-500 active:translate-y-0.5 shadow-[2px_2px_0px_rgba(0,0,0,0.8)] hover:bg-zinc-400 font-bold flex items-center gap-2">
+                                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} [ SALVAR ]
                             </button>
                             <button type="button" onClick={() => setTuiMode(null)} className="px-6 py-1 bg-zinc-300 border-2 border-zinc-500 active:translate-y-0.5 shadow-[2px_2px_0px_rgba(0,0,0,0.8)] hover:bg-zinc-400 font-bold flex items-center gap-2">
                                 <ArrowLeft className="h-4 w-4" /> [ CANCELAR ]

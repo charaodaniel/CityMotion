@@ -113,6 +113,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     else setIsRefreshing(true);
 
     try {
+      // Sincronização via NexusBridge (Busca do SQLite real)
       const response = await fetch('/api/nexus/sync-all');
       if (!response.ok) throw new Error('Falha ao sincronizar com o banco.');
       
@@ -126,20 +127,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setWorkSchedules(data.workSchedules || []);
       setMaintenanceRequests(data.maintenanceRequests || []);
       
+      // Busca dados de organizações (Apenas infra global)
       const orgRes = await fetch('/api/data?type=organizations');
       if (orgRes.ok) {
           const orgs = await orgRes.json();
           setOrganizations(orgs);
           
-          const savedOrg = localStorage.getItem('activeOrganization');
-          if (savedOrg) setActiveOrganizationState(JSON.parse(savedOrg));
+          if (typeof window !== 'undefined') {
+              const savedOrg = localStorage.getItem('activeOrganization');
+              if (savedOrg) setActiveOrganizationState(JSON.parse(savedOrg));
+          }
       }
       
       prevRequestsLength.current = data.requests?.length || 0;
       prevSchedulesLength.current = data.schedules?.length || 0;
 
-      const savedNotifications = localStorage.getItem('app_notifications');
-      if (savedNotifications) setNotifications(JSON.parse(savedNotifications));
+      if (typeof window !== 'undefined') {
+          const savedNotifications = localStorage.getItem('app_notifications');
+          if (savedNotifications) setNotifications(JSON.parse(savedNotifications));
+      }
 
       return data;
     } catch (error) {
@@ -166,9 +172,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(employee)
       });
-      if (res.ok) await fetchData(true);
+      if (res.ok) {
+          await fetchData(true);
+      } else {
+          throw new Error('Falha ao criar funcionário no SQLite');
+      }
     } catch (e) {
       console.error("Error adding employee", e);
+      toast({ title: "Erro no Banco", description: "Não foi possível cadastrar o colaborador.", variant: "destructive" });
     }
   };
 
@@ -179,10 +190,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      if (res.ok) await fetchData(true);
-      else throw new Error('Falha no backend');
+      
+      if (res.ok) {
+          await fetchData(true);
+      } else {
+          const errData = await res.json();
+          throw new Error(errData.message || 'Falha no backend');
+      }
     } catch (e) {
       console.error("Error updating employee", e);
+      toast({ title: "Erro na Atualização", description: "As alterações não foram salvas no banco de dados.", variant: "destructive" });
       throw e;
     }
   };
@@ -232,7 +249,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
     setNotifications(prev => {
       const updated = [newNotif, ...prev].slice(0, 50);
-      localStorage.setItem('app_notifications', JSON.stringify(updated));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('app_notifications', JSON.stringify(updated));
+      }
       return updated;
     });
 
@@ -242,19 +261,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const markNotificationAsRead = (id: string) => {
     setNotifications(prev => {
       const updated = prev.map(n => n.id === id ? { ...n, read: true } : n);
-      localStorage.setItem('app_notifications', JSON.stringify(updated));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('app_notifications', JSON.stringify(updated));
+      }
       return updated;
     });
   };
 
   const clearNotifications = () => {
     setNotifications([]);
-    localStorage.removeItem('app_notifications');
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem('app_notifications');
+    }
   };
 
   const login = useCallback(async (email: string, shouldRedirect = false) => {
     setIsLoading(true);
-    localStorage.setItem('userEmailForSimulation', email);
+    if (typeof window !== 'undefined') {
+        localStorage.setItem('userEmailForSimulation', email);
+    }
     
     const data = await fetchData();
     if (!data) {
@@ -294,12 +319,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     }
     setIsLoading(false);
-  }, [fetchData, router]);
+  }, [fetchData, router, setSelectedSector]);
 
   const logout = () => {
-    localStorage.removeItem('userEmailForSimulation');
-    localStorage.removeItem('selectedSector');
-    localStorage.removeItem('activeOrganization');
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem('userEmailForSimulation');
+        localStorage.removeItem('selectedSector');
+        localStorage.removeItem('activeOrganization');
+    }
     setCurrentUser(null);
     setActiveOrganizationState(null);
     setSelectedSectorState(null);
@@ -309,7 +336,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initializeApp = async () => {
-      const storedEmail = localStorage.getItem('userEmailForSimulation');
+      const storedEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmailForSimulation') : null;
       if (storedEmail) await login(storedEmail, false);
       else await fetchData();
     };

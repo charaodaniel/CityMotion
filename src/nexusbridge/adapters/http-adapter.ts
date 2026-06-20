@@ -14,8 +14,8 @@ export class HttpAdapter {
   async execute(options: HttpAdapterOptions) {
     const { url, method, body, headers } = options;
 
-    // Filtramos headers problemáticos
-    const { host, connection, ...safeHeaders } = headers || {};
+    // Filtramos headers problemáticos que podem corromper o body no proxy
+    const { host, connection, 'content-length': contentLength, ...safeHeaders } = headers || {};
 
     const fetchOptions: RequestInit = {
       method,
@@ -32,7 +32,7 @@ export class HttpAdapter {
     }
 
     try {
-      console.log(`[NexusBridge Adapter] Fetching: ${method} ${url}`);
+      console.log(`[NexusBridge Adapter] Executing: ${method} ${url}`);
       
       const response = await fetch(url, fetchOptions);
       
@@ -51,13 +51,13 @@ export class HttpAdapter {
       console.error(`[NexusBridge Adapter] Fetch error for ${url}:`, error.message);
       
       // Se falhar a conexão (ex: backend desligado), retornamos um erro amigável
-      if (error.message.includes('fetch failed')) {
+      if (error.message.includes('fetch failed') || error.message.includes('ECONNREFUSED')) {
         return {
           status: 503,
           data: { 
             error: "Backend indisponível", 
             message: "Não foi possível conectar ao servidor em " + url,
-            hint: "Verifique se o backend Node está rodando na porta correta."
+            hint: "Verifique se o backend Node está rodando na porta correta (3001)."
           }
         };
       }

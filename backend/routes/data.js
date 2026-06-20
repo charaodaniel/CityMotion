@@ -143,6 +143,7 @@ module.exports = function(db) {
 
     router.post('/employees', (req, res) => {
         const { name, email, role, sector, status, password, matricula, cnh } = req.body;
+        console.log('[SQLite] Criando novo funcionário:', name);
         const sql = `INSERT INTO employees (name, email, role, sector, status, password, matricula, cnh) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
         const params = [
             name, 
@@ -163,6 +164,9 @@ module.exports = function(db) {
 
     router.put('/employees/:id', (req, res) => {
         const { name, role, status, email, sector, matricula, cnh, password } = req.body;
+        const employeeId = req.params.id;
+        
+        console.log(`[SQLite] Atualizando funcionário ID ${employeeId}:`, { name, role, status });
         
         const sql = `UPDATE employees SET 
             name = COALESCE(?, name), 
@@ -175,7 +179,7 @@ module.exports = function(db) {
             password = COALESCE(?, password)
             WHERE id = ?`;
         
-        const sectorStr = sector ? JSON.stringify(sector) : null;
+        const sectorStr = sector ? (Array.isArray(sector) ? JSON.stringify(sector) : sector) : null;
 
         db.run(sql, [
             name || null, 
@@ -186,11 +190,14 @@ module.exports = function(db) {
             matricula || null, 
             cnh || null, 
             password || null,
-            req.params.id
+            employeeId
         ], function(err) {
             if (err) {
                 console.error('Erro no UPDATE SQLite:', err.message);
                 return res.status(500).json({ error: err.message });
+            }
+            if (this.changes === 0) {
+                console.warn(`[SQLite] Nenhum registro alterado para ID ${employeeId}.`);
             }
             res.json({ updated: this.changes, message: 'Registro atualizado no SQLite.' });
         });
