@@ -15,7 +15,14 @@ export class HttpAdapter {
     const { url, method, body, headers } = options;
 
     // Filtramos headers problemáticos que podem corromper o body no proxy
-    const { host, connection, 'content-length': contentLength, ...safeHeaders } = headers || {};
+    // O Next.js Route Handler repassa headers que fazem o fetch do servidor falhar ao recalcular o body
+    const { 
+        host, 
+        connection, 
+        'content-length': contentLength, 
+        'content-type': contentType,
+        ...safeHeaders 
+    } = headers || {};
 
     const fetchOptions: RequestInit = {
       method,
@@ -28,6 +35,7 @@ export class HttpAdapter {
     };
 
     if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+      // Garantimos que o corpo é enviado como uma string JSON limpa
       fetchOptions.body = JSON.stringify(body);
     }
 
@@ -36,16 +44,18 @@ export class HttpAdapter {
       
       const response = await fetch(url, fetchOptions);
       
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => 'No error body');
-        console.error(`[NexusBridge Adapter] HTTP Error ${response.status}: ${errorText}`);
-      }
+      const responseData = await response.json().catch(() => ({ 
+          message: "A resposta não é um JSON válido.",
+          status: response.status 
+      }));
 
-      const data = await response.json();
+      if (!response.ok) {
+        console.error(`[NexusBridge Adapter] HTTP Error ${response.status}:`, responseData);
+      }
 
       return {
         status: response.status,
-        data
+        data: responseData
       };
     } catch (error: any) {
       console.error(`[NexusBridge Adapter] Fetch error for ${url}:`, error.message);

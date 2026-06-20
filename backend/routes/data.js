@@ -166,7 +166,7 @@ module.exports = function(db) {
         const { name, role, status, email, sector, matricula, cnh, password } = req.body;
         const employeeId = req.params.id;
         
-        console.log(`[SQLite] Atualizando funcionário ID ${employeeId}:`, { name, role, status });
+        console.log(`[SQLite] Tentativa de atualização ID ${employeeId}:`, req.body);
         
         const sql = `UPDATE employees SET 
             name = COALESCE(?, name), 
@@ -196,10 +196,8 @@ module.exports = function(db) {
                 console.error('Erro no UPDATE SQLite:', err.message);
                 return res.status(500).json({ error: err.message });
             }
-            if (this.changes === 0) {
-                console.warn(`[SQLite] Nenhum registro alterado para ID ${employeeId}.`);
-            }
-            res.json({ updated: this.changes, message: 'Registro atualizado no SQLite.' });
+            console.log(`[SQLite] Update concluído. Alterações: ${this.changes}`);
+            res.json({ updated: this.changes, message: this.changes > 0 ? 'Registro atualizado no SQLite.' : 'Nenhum dado novo para atualizar.' });
         });
     });
 

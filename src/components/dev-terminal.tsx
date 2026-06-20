@@ -25,6 +25,7 @@ interface SystemStats {
 
 const AVAILABLE_ROLES = [
   "Funcionário",
+  "Colaborador",
   "Motorista",
   "Gestor de Setor",
   "Administrador",
@@ -249,9 +250,10 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
     addLine(`Salvando alterações para o ID ${editingUser.id}...`, 'system');
     try {
         await updateEmployee(editingUser.id, updatedData);
-        addLine(`SUCESSO: Registro ${editingUser.id} atualizado no SQLite.`, 'success');
+        addLine(`SUCESSO: Registro ${editingUser.id} sincronizado com SQLite.`, 'success');
         setTuiMode(null);
         setEditingUser(null);
+        await refreshData(); // Força recarga da interface
     } catch (e) { 
         addLine('ERRO: Não foi possível persistir as alterações.', 'error'); 
     } finally {
