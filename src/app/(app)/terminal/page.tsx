@@ -41,20 +41,21 @@ export default function TerminalPage() {
         const data = await res.json();
 
         if (res.ok && data.user) {
-            const userRole = data.user.role.toLowerCase();
-            // Verifica se o usuário tem cargo técnico ou administrativo
-            const isAuthorized = userRole.includes('dev') || 
-                               userRole.includes('ti') || 
-                               userRole.includes('admin') || 
-                               userRole.includes('infra');
+            const roleStr = data.user.role.toLowerCase();
+            // Verifica se o usuário tem cargo técnico ou administrativo (incluindo global/root)
+            const isAuthorized = roleStr.includes('dev') || 
+                               roleStr.includes('ti') || 
+                               roleStr.includes('admin') || 
+                               roleStr.includes('global') ||
+                               roleStr.includes('root');
 
             if (isAuthorized) {
                 // Sucesso: Carrega info do sistema para o boot
                 const sysRes = await fetch('/api/nexus/system/resources');
-                const sysData = await sysRes.json();
+                const sysData = await sysRes.json().catch(() => ({}));
                 setSystemInfo(sysData);
                 
-                // Loga no contexto global também usando o e-mail ou matrícula fornecidos
+                // Loga no contexto global também
                 await login(username, false);
                 setStep('authenticated');
             } else {

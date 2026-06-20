@@ -374,7 +374,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       let determinedRole: UserRole = 'employee';
       
-      const devKeywords = ['dev', 'developer', 'desenvolvedor', 'root'];
+      const devKeywords = ['dev', 'developer', 'desenvolvedor', 'root', 'global'];
       const tiKeywords = ['ti', 'suporte técnico', 'sysadmin'];
       const adminKeywords = ['administrador', 'diretor', 'ceo', 'admin'];
       const managerKeywords = ['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico'];

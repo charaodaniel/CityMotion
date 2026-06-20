@@ -2,28 +2,37 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, X, Minus, ShieldCheck, Database, Server } from 'lucide-react';
+import { Terminal as TerminalIcon, X, Minus, ShieldCheck, Database, Server, ShieldAlert } from 'lucide-react';
 import { useApp } from '@/contexts/app-provider';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
 
 interface TerminalLine {
-  type: 'input' | 'output' | 'error' | 'system' | 'success';
+  type: 'input' | 'output' | 'error' | 'system' | 'success' | 'root';
   content: string;
 }
 
 export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const { refreshData, currentUser } = useApp();
-  const [history, setHistory] = useState<TerminalLine[]>([
-    { type: 'system', content: 'CityMotion NexusOS v2.4.0 (Console Kernel)' },
-    { type: 'system', content: `Sessão autenticada como: ${currentUser?.name || 'ROOT'}` },
-    { type: 'system', content: 'Digite "nexus-help" para ver os comandos de manutenção.' },
-  ]);
+  const { refreshData, currentUser, userRole } = useApp();
+  const isRoot = userRole === 'dev';
+  
+  const [history, setHistory] = useState<TerminalLine[]>([]);
   const [input, setInput] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
   
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (history.length === 0) {
+        setHistory([
+            { type: 'system', content: 'CityMotion NexusOS v2.4.0 (Console Kernel)' },
+            { type: 'system', content: `Session: ${currentUser?.name || 'ROOT'}@nexusbridge` },
+            { type: isRoot ? 'root' : 'system', content: isRoot ? '[ROOT ACCESS ENABLED] Restricted operations unlocked.' : 'Standard maintenance mode active.' },
+            { type: 'system', content: 'Type "nexus-help" for maintenance commands.' },
+        ]);
+    }
+  }, [currentUser, isRoot]);
 
   useEffect(() => {
     if (isOpen && !isMinimized) {
@@ -47,82 +56,93 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     const parts = cmd.trim().split(' ');
     const command = parts[0].toLowerCase();
 
-    addLine(`> ${cmd}`, 'input');
+    addLine(`${isRoot ? '#' : '>'} ${cmd}`, 'input');
 
     switch (command) {
       case 'nexus-help':
       case 'help':
-        addLine('--- COMANDOS DISPONÍVEIS ---', 'system');
-        addLine('nexus-info     - Informações do Kernel e Sistema.');
-        addLine('nexus-health   - Status de integridade dos serviços.');
-        addLine('nexus-db-stats - Contagem de registros no SQLite.');
-        addLine('nexus-logdb    - Histórico de auditoria (quem alterou o quê).');
-        addLine('nexus-integrity- Verificação PRAGMA do banco de dados.');
-        addLine('nexus-db-reset - Hard Reset do banco de dados.');
-        addLine('cls / clear    - Limpa o histórico do console.');
-        addLine('exit           - Encerra a sessão TTY.');
+        addLine('--- NEXUS OS MAINTENANCE SUITE ---', 'system');
+        addLine('nexus-info      - Kernel & System environment data.');
+        addLine('nexus-health    - Full subsystem integrity report.');
+        addLine('nexus-db-stats  - Table record counts (SQLite).');
+        addLine('nexus-logdb     - Global audit trail history.');
+        addLine('nexus-integrity - Low-level PRAGMA database check.');
+        if (isRoot) {
+            addLine('nexus-db-reset  - [ROOT] Hard reset & Factory restore.', 'root');
+        }
+        addLine('cls / clear     - Wipe terminal history.');
+        addLine('exit            - Terminate TTY session.');
         break;
 
       case 'nexus-info':
-        addLine('OS: CityMotion NexusOS 2.4 (NextJS-Powered)');
-        addLine(`Operador: ${currentUser?.name || 'root'}`);
-        addLine(`Role: ${currentUser?.role || 'SYS_ADMIN'}`);
-        addLine('Architecture: x86_64 linux-node');
+        addLine('OS: CityMotion NexusOS 2.4.0 (Turbopack Powered)');
+        addLine(`Operator: ${currentUser?.name || 'root'}`);
+        addLine(`Privileges: ${isRoot ? 'SUPERUSER (ROOT)' : 'ADMINISTRATOR'}`);
+        addLine(`Ident: ${currentUser?.matricula || 'sys-default'}`);
+        addLine('Architecture: x86_64-linux-nextjs');
         break;
 
       case 'nexus-health':
-        addLine('Checando subsistemas...', 'system');
+        addLine('Starting diagnostic sequence...', 'system');
         try {
           const res = await fetch('/api/nexus/system/db-info');
-          if (res.ok) addLine('DATABASE: [OK] SQLite3 V3.45', 'success');
-          else addLine('DATABASE: [FAIL] Connection Refused', 'error');
-          addLine('API BRIDGE: [OK] NexusBridge V1.2', 'success');
-          addLine('STORAGE: [OK] Filesystem Local', 'success');
-        } catch (e) { addLine('ERRO DE REDE: Backend indisponível', 'error'); }
+          if (res.ok) addLine('DATABASE:  [OK] SQLite3 V3.45 Connected', 'success');
+          else addLine('DATABASE:  [FAIL] Connection Refused', 'error');
+          addLine('BRIDGE:    [OK] NexusBridge V1.2 Operational', 'success');
+          addLine('AUTH:      [OK] JWT Protocol Valid', 'success');
+          addLine('SLA:       [OK] 99.98% Healthy', 'success');
+        } catch (e) { addLine('NETWORK ERROR: Bridge disconnected', 'error'); }
         break;
 
       case 'nexus-db-stats':
-        addLine('Consultando tabelas...', 'system');
+        addLine('Querying SQLite table statistics...', 'system');
         try {
           const res = await fetch('/api/nexus/system/db-info');
           const data = await res.json();
           Object.entries(data.counts).forEach(([table, count]) => {
-              addLine(`TABLE [${table.toUpperCase()}]: ${count} registros`);
+              addLine(`TABLE [${table.toUpperCase().padEnd(15)}]: ${count} records`);
           });
-        } catch (e) { addLine('FALHA AO ACESSAR ESTATÍSTICAS', 'error'); }
+        } catch (e) { addLine('ERROR: Unable to reach database metrics.', 'error'); }
         break;
 
       case 'nexus-logdb':
-        addLine('Lendo logs de auditoria...', 'system');
+        addLine('Accessing audit trail logs...', 'system');
         try {
           const res = await fetch('/api/nexus/system/audit-logs');
           const data = await res.json();
-          if (data.length === 0) addLine('Nenhum registro encontrado.');
+          if (data.length === 0) addLine('No recent activity recorded.');
+          
+          addLine('TIMESTAMP | USER | ACTION | TARGET', 'system');
+          addLine('----------------------------------------', 'system');
           data.slice(0, 15).forEach((l: any) => {
-              addLine(`${l.timestamp.substring(11,19)} | ${l.user_identity} | ${l.action} em ${l.table_name}`);
+              addLine(`${l.timestamp.substring(11,19)} | ${l.user_identity.split(' ')[0]} | ${l.action} | ${l.table_name}`);
           });
-        } catch (e) { addLine('ERRO AO RECUPERAR AUDITORIA', 'error'); }
+        } catch (e) { addLine('ERROR: Audit system unreachable.', 'error'); }
         break;
 
       case 'nexus-integrity':
-        addLine('Executando PRAGMA integrity_check...', 'system');
+        addLine('Running PRAGMA integrity_check...', 'system');
         try {
             const res = await fetch('/api/nexus/system/db-integrity');
             const data = await res.json();
-            if (data.status === 'Success') addLine(`RESULTADO: ${data.result}`, 'success');
-            else addLine(`ALERTA: ${data.result}`, 'error');
-        } catch (e) { addLine('ERRO NA EXECUÇÃO', 'error'); }
+            if (data.status === 'Success') addLine(`STATUS: ${data.result} (Database is healthy)`, 'success');
+            else addLine(`WARNING: ${data.result}`, 'error');
+        } catch (e) { addLine('ERROR: Integrity check failed.', 'error'); }
         break;
 
       case 'nexus-db-reset':
-        addLine('!!! ATENÇÃO: INICIANDO RESTAURAÇÃO DE FÁBRICA !!!', 'error');
+        if (!isRoot) {
+            addLine('PERMISSION DENIED: This operation requires root access.', 'error');
+            break;
+        }
+        addLine('!!! ALERT: INITIATING FACTORY RESET PROTOCOL !!!', 'error');
         try {
           const res = await fetch('/api/nexus/maintenance/db-reset', { method: 'POST' });
           if (res.ok) {
-              addLine('BANCO RESTAURADO COM SUCESSO. SINCRONIZANDO...', 'success');
+              addLine('SUCCESS: DATABASE RESTORED. SYNCING UI...', 'success');
               refreshData();
           }
-        } catch (e) { addLine('ERRO CRÍTICO NO RESET', 'error'); }
+        } catch (e) { addLine('CRITICAL: Reset operation failed.', 'error'); }
         break;
 
       case 'cls':
@@ -135,7 +155,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
         break;
 
       default:
-        if (cmd.trim()) addLine(`Comando não reconhecido: "${command}". Digite "help" para auxílio.`, 'error');
+        if (cmd.trim()) addLine(`Command not found: "${command}". Type "help" for a list of commands.`, 'error');
     }
   };
 
@@ -150,8 +170,10 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     >
       <div className="flex items-center justify-between px-4 py-2 bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 shrink-0 select-none">
         <div className="flex items-center gap-2">
-          <TerminalIcon className="h-4 w-4 text-primary animate-pulse" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/90">NexusOS Shell v2.4</span>
+          <TerminalIcon className={cn("h-4 w-4 animate-pulse", isRoot ? "text-red-500" : "text-primary")} />
+          <span className={cn("text-[10px] font-bold uppercase tracking-[0.2em]", isRoot ? "text-red-500" : "text-primary/90")}>
+            NexusOS Shell v2.4 {isRoot && "// ROOT"}
+          </span>
         </div>
         <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-3 text-[9px] uppercase tracking-widest opacity-50 mr-4">
@@ -171,10 +193,11 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                     {history.map((line, i) => (
                         <div key={i} className={cn(
                             "text-[13px] leading-relaxed break-all",
-                            line.type === 'input' && "text-primary font-bold",
+                            line.type === 'input' && (isRoot ? "text-red-400 font-bold" : "text-primary font-bold"),
                             line.type === 'error' && "text-red-500",
                             line.type === 'success' && "text-emerald-400",
                             line.type === 'system' && "text-amber-500/80 italic",
+                            line.type === 'root' && "text-red-500 font-black uppercase tracking-widest",
                             line.type === 'output' && "text-zinc-400"
                         )}>
                             {line.content}
@@ -185,7 +208,9 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
             </ScrollArea>
 
             <form onSubmit={(e) => { e.preventDefault(); if (input.trim()) { processCommand(input); setInput(''); } }} className="p-4 bg-zinc-900/40 border-t border-zinc-800 flex items-center gap-3 group">
-                <span className="text-primary font-bold animate-pulse group-focus-within:animate-none">#</span>
+                <span className={cn("font-bold animate-pulse group-focus-within:animate-none", isRoot ? "text-red-500" : "text-primary")}>
+                    {isRoot ? '#' : '$'}
+                </span>
                 <input
                     ref={inputRef}
                     type="text"
@@ -194,7 +219,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                     className="bg-transparent border-none outline-none text-zinc-100 flex-1 text-sm font-mono focus:ring-0 p-0"
                     autoComplete="off"
                     spellCheck="false"
-                    placeholder="Aguardando comando..."
+                    placeholder={isRoot ? "Kernel waiting..." : "Waiting for command..."}
                 />
                 <div className="hidden sm:block text-[9px] text-zinc-600 uppercase tracking-widest font-bold">
                     User: {currentUser?.name?.split(' ')[0] || 'ROOT'}
