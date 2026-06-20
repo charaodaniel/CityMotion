@@ -1,10 +1,9 @@
-
 "use client";
 
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Car, Clock, PlusCircle, User, Play, CheckSquare, Ban, Gauge, ClipboardCheck, ClipboardX, MessageSquareText, Check, Fuel, AlertTriangle, FileImage } from 'lucide-react';
+import { Car, Clock, PlusCircle, User, Play, CheckSquare, Gauge, ClipboardCheck, AlertTriangle } from 'lucide-react';
 import type { Schedule, ScheduleStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -13,28 +12,11 @@ import { Separator } from '@/components/ui/separator';
 import { ScheduleTripForm } from '@/components/forms/schedule-trip-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
 import { useApp } from '@/contexts/app-provider';
 import { ReportIncidentForm } from '@/components/forms/report-incident-form';
+import { cn } from '@/lib/utils';
 
 type ModalState = 'details' | 'finish' | 'start-checklist' | 'form' | 'refueling' | 'incident' | null;
-
-const startChecklistItems = [
-    'Nível de óleo e água verificado',
-    'Calibragem dos pneus verificada',
-    'Documentos do veículo (CRLV) conferidos',
-    'Limpeza interna e externa adequada'
-];
-
-const finishChecklistItems = [
-    'Veículo estacionado em local seguro',
-    'Chaves entregues ao setor responsável',
-    'Veículo sem novos danos aparentes',
-    'Veículo deixado limpo e organizado',
-];
 
 function getStatusVariant(status: ScheduleStatus) {
     switch (status) {
@@ -74,52 +56,52 @@ function TripsView({
     }
     
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
             {statusColumns.map(column => (
                 <div key={column.status} className="flex flex-col gap-4">
-                    <h2 className="text-xl font-semibold tracking-tight">{column.title} ({schedulesByStatus(column.status).length})</h2>
-                    <div className="bg-muted/50 rounded-lg p-4 space-y-4 min-h-[200px]">
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-primary/70 px-2">{column.title} ({schedulesByStatus(column.status).length})</h2>
+                    <div className="bg-sidebar/30 rounded-xl p-4 space-y-4 min-h-[300px] border border-border/50 scanlines">
                         {schedulesByStatus(column.status).length > 0 ? (
                             schedulesByStatus(column.status).map(schedule => (
                                 <Card 
                                     key={schedule.id} 
-                                    className="cursor-pointer hover:shadow-md transition-shadow relative"
+                                    className="cursor-pointer hover:border-primary transition-all duration-300 bg-sidebar/80 border-border/50 group"
                                 >
-                                    <div onClick={() => onCardClick(schedule)}>
-                                        <CardHeader className="pb-4">
-                                            <CardTitle className="text-base">{schedule.title}</CardTitle>
-                                            <CardDescription className="flex items-center text-xs">
+                                    <div onClick={() => onCardClick(schedule)} className="p-4 pb-2">
+                                        <CardHeader className="p-0 mb-4">
+                                            <CardTitle className="text-base font-bold tracking-tight">{schedule.title}</CardTitle>
+                                            <CardDescription className="flex items-center text-[10px] font-mono font-bold uppercase tracking-widest text-primary/60 mt-1">
                                                 <Clock className="mr-1.5 h-3 w-3" /> {schedule.departureTime}
                                             </CardDescription>
                                         </CardHeader>
-                                        <CardContent className="text-xs space-y-2">
-                                            <div className="flex items-center">
-                                                <User className="mr-2 h-3 w-3" />
-                                                <span>{schedule.driver}</span>
+                                        <CardContent className="p-0 space-y-2">
+                                            <div className="flex items-center text-[11px] text-muted-foreground">
+                                                <User className="mr-2 h-3.5 w-3.5 text-primary/40" />
+                                                <span className="truncate">{schedule.driver}</span>
                                             </div>
-                                            <div className="flex items-center">
-                                                <Car className="mr-2 h-3 w-3" />
-                                                <span>{schedule.vehicle}</span>
+                                            <div className="flex items-center text-[11px] text-muted-foreground">
+                                                <Car className="mr-2 h-3.5 w-3.5 text-primary/40" />
+                                                <span className="truncate">{schedule.vehicle}</span>
                                             </div>
                                         </CardContent>
                                     </div>
-                                    <CardContent className="p-2 pt-0">
+                                    <CardContent className="p-2 pt-0 border-t border-border/10 mt-2 bg-black/20">
                                          {schedule.status === 'Agendada' && (
-                                            <Button size="sm" className="w-full" onClick={() => onOpenChecklistModal(schedule)}>
-                                                <Play className="mr-2 h-4 w-4"/> Iniciar
+                                            <Button size="sm" variant="ghost" className="w-full h-8 text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => onOpenChecklistModal(schedule)}>
+                                                <Play className="mr-2 h-3 w-3"/> Iniciar Missão
                                             </Button>
                                         )}
                                         {schedule.status === 'Em Andamento' && (
-                                            <Button size="sm" className="w-full" onClick={() => onOpenFinishModal(schedule)}>
-                                                <CheckSquare className="mr-2 h-4 w-4"/> Finalizar
+                                            <Button size="sm" variant="ghost" className="w-full h-8 text-[10px] font-bold uppercase tracking-widest text-emerald-400 hover:bg-emerald-500 hover:text-white" onClick={() => onOpenFinishModal(schedule)}>
+                                                <CheckSquare className="mr-2 h-3 w-3"/> Finalizar
                                             </Button>
                                         )}
                                     </CardContent>
                                 </Card>
                             ))
                         ) : (
-                            <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-                                Nenhuma viagem nesta etapa.
+                            <div className="flex items-center justify-center h-full text-[10px] uppercase tracking-widest text-muted-foreground opacity-30 italic">
+                                Sem registros
                             </div>
                         )}
                     </div>
@@ -138,11 +120,6 @@ export default function ViagensPage() {
   const [finalMileage, setFinalMileage] = useState<number | string>('');
   const [checkedItems, setCheckedItems] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
-  
-  const [refuelMileage, setRefuelMileage] = useState<string>('');
-  const [refuelLiters, setRefuelLiters] = useState<string>('');
-  const [refuelPrice, setRefuelPrice] = useState<string>('');
-  const [refuelReceipt, setRefuelReceipt] = useState<File | null>(null);
 
   const { toast } = useToast();
   
@@ -162,10 +139,6 @@ export default function ViagensPage() {
   const openModal = (modal: ModalState, schedule: Schedule | null = null) => {
     setSelectedSchedule(schedule);
     setActiveModal(modal);
-    if (modal === 'refueling' && schedule) {
-        const vehicle = vehicles.find(v => schedule.vehicle.includes(v.licensePlate));
-        setRefuelMileage(String(vehicle?.mileage || ''));
-    }
   };
   
   const closeModal = () => {
@@ -174,10 +147,6 @@ export default function ViagensPage() {
       setFinalMileage('');
       setCheckedItems([]);
       setNotes('');
-      setRefuelMileage('');
-      setRefuelLiters('');
-      setRefuelPrice('');
-      setRefuelReceipt(null);
   }
 
   const updateScheduleStatus = (scheduleId: string, newStatus: ScheduleStatus, details?: { startNotes?: string, endNotes?: string, startMileage?: number, endMileage?: number, startChecklist?: string[], endChecklist?: string[] }) => {
@@ -221,18 +190,6 @@ export default function ViagensPage() {
     setVehicles(updatedVehicles);
   };
 
-  const handleStartTrip = () => {
-    if (!selectedSchedule || !startMileage) return;
-    updateScheduleStatus(selectedSchedule.id, 'Em Andamento', { startNotes: notes, startMileage: Number(startMileage), startChecklist: checkedItems });
-    closeModal();
-  };
-
-  const handleFinishTrip = () => {
-    if (!selectedSchedule || !finalMileage) return;
-    updateScheduleStatus(selectedSchedule.id, 'Concluída', { endNotes: notes, endMileage: Number(finalMileage), endChecklist: checkedItems });
-    closeModal();
-  };
-
   const handleOpenChecklistModal = (schedule: Schedule) => {
     const vehicle = vehicles.find(v => schedule.vehicle.includes(v.licensePlate));
     setStartMileage(vehicle?.mileage || '');
@@ -244,47 +201,48 @@ export default function ViagensPage() {
     openModal('finish', schedule);
   };
   
-  const handleChecklistItem = (item: string) => {
-    setCheckedItems(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
-  }
-
   const allSchedules = visibleSchedules.filter(s => s.status !== 'Cancelada');
   const schoolSchedules = allSchedules.filter(s => s.category.toLowerCase().includes('escolar'));
   const generalSchedules = allSchedules.filter(s => !s.category.toLowerCase().includes('escolar'));
 
   return (
-    <div className="container mx-auto p-4 sm:p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="container mx-auto p-4 sm:p-8 space-y-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight font-headline">
-            Painel de Viagens
+          <h1 className="text-5xl font-black tracking-tighter text-on-surface flex items-center gap-4">
+            <Gauge className="h-10 w-10 text-primary" />
+            Missões
           </h1>
-          <p className="text-muted-foreground">
-            Monitoramento de missões e linhas logísticas.
+          <p className="text-muted-foreground text-lg mt-1 font-medium">
+            Monitoramento de tráfego e logística operacional.
           </p>
         </div>
         <Dialog open={activeModal === 'form'} onOpenChange={() => closeModal()}>
             <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90" onClick={() => openModal('form')}>
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-6 rounded-lg font-bold uppercase tracking-widest text-xs" onClick={() => openModal('form')}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Agendar Viagem
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-3xl">
-                <DialogHeader>
-                    <DialogTitle className="text-2xl">Nova Missão</DialogTitle>
-                </DialogHeader>
-                 <ScrollArea className="max-h-[70vh] p-4">
-                    <ScheduleTripForm onFormSubmit={() => closeModal()}/>
+            <DialogContent className="sm:max-w-3xl border-border/50 bg-sidebar p-0 overflow-hidden">
+                <div className="h-1.5 w-full bg-primary" />
+                <ScrollArea className="max-h-[70vh] p-8">
+                    <DialogHeader className="mb-6">
+                        <DialogTitle className="text-2xl font-black tracking-tight">Novo Protocolo de Viagem</DialogTitle>
+                        <DialogDescription className="text-xs font-mono uppercase tracking-widest text-primary/70">Executando agendamento logístico V3</DialogDescription>
+                    </DialogHeader>
+                    <div className="scanlines rounded-lg border border-border/50 p-6 bg-accent/10">
+                        <ScheduleTripForm onFormSubmit={() => closeModal()}/>
+                    </div>
                 </ScrollArea>
             </DialogContent>
         </Dialog>
       </div>
 
       <Tabs defaultValue="general">
-        <TabsList>
-          <TabsTrigger value="general">Viagens Gerais ({generalSchedules.length})</TabsTrigger>
-          <TabsTrigger value="school">Linhas Escolares ({schoolSchedules.length})</TabsTrigger>
+        <TabsList className="bg-sidebar/50 border border-border/50 p-1">
+          <TabsTrigger value="general" className="text-xs uppercase font-bold tracking-widest">Gerais ({generalSchedules.length})</TabsTrigger>
+          <TabsTrigger value="school" className="text-xs uppercase font-bold tracking-widest">Escolares ({schoolSchedules.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="general">
           <TripsView 
@@ -304,34 +262,40 @@ export default function ViagensPage() {
         </TabsContent>
       </Tabs>
       
-      {/* Detalhes, Checklist e outras modais mantidas conforme lógica anterior mas com imports corrigidos */}
+      {/* Details Modal */}
       <Dialog open={activeModal === 'details'} onOpenChange={() => closeModal()}>
-          <DialogContent>
-              <ScrollArea className="max-h-[80vh] p-4">
+          <DialogContent className="sm:max-w-2xl border-border/50 bg-sidebar p-0 overflow-hidden">
+              <div className="h-1.5 w-full bg-primary" />
+              <ScrollArea className="max-h-[80vh] p-8">
               {selectedSchedule && (
                   <>
-                  <DialogHeader>
-                      <DialogTitle className="text-2xl">{selectedSchedule.title}</DialogTitle>
-                      <DialogDescription>Detalhes da missão.</DialogDescription>
+                  <DialogHeader className="mb-6">
+                      <DialogTitle className="text-3xl font-black tracking-tight">{selectedSchedule.title}</DialogTitle>
+                      <DialogDescription className="text-xs font-mono uppercase tracking-widest text-primary/70">Visualizando telemetria de missão</DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4 py-4 pr-4">
+                  <div className="scanlines rounded-lg border border-border/50 p-6 bg-accent/10 space-y-6">
                         <div>
-                            <span className="text-sm font-semibold text-muted-foreground">Status</span>
-                            <div>
-                                <Badge variant={getStatusVariant(selectedSchedule.status)}>{selectedSchedule.status}</Badge>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Status</span>
+                            <div className="mt-1">
+                                <Badge variant={getStatusVariant(selectedSchedule.status)} className="text-[10px] font-bold uppercase tracking-tight">{selectedSchedule.status}</Badge>
                             </div>
                         </div>
-                        <Separator />
-                        <div className='pt-4 flex justify-end gap-2'>
+                        <Separator className="bg-border/30" />
+                        <div className="grid grid-cols-2 gap-8">
+                            <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Motorista</p><p className="text-sm font-bold">{selectedSchedule.driver}</p></div>
+                            <div><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Veículo</p><p className="text-sm font-bold">{selectedSchedule.vehicle}</p></div>
+                        </div>
+                        <Separator className="bg-border/30" />
+                        <div className='flex justify-end gap-3'>
                             {selectedSchedule.status === 'Agendada' && (
-                                <Button onClick={() => openModal('start-checklist', selectedSchedule)}>
+                                <Button onClick={() => openModal('start-checklist', selectedSchedule)} className="bg-primary text-primary-foreground font-bold uppercase tracking-widest text-[10px] h-10 px-6">
                                     <ClipboardCheck className="mr-2 h-4 w-4"/>
                                     Executar Checklist
                                 </Button>
                             )}
                              {selectedSchedule.status === 'Em Andamento' && (
                                 <>
-                                    <Button variant="destructive" onClick={() => openModal('incident', selectedSchedule)}>
+                                    <Button variant="destructive" onClick={() => openModal('incident', selectedSchedule)} className="font-bold uppercase tracking-widest text-[10px] h-10 px-6">
                                         <AlertTriangle className="mr-2 h-4 w-4" />
                                         Relatar Sinistro
                                     </Button>
@@ -341,6 +305,22 @@ export default function ViagensPage() {
                   </div>
                   </>
               )}
+              </ScrollArea>
+          </DialogContent>
+      </Dialog>
+
+      {/* Incident Modal */}
+      <Dialog open={activeModal === 'incident'} onOpenChange={() => closeModal()}>
+          <DialogContent className="sm:max-w-2xl border-border/50 bg-sidebar p-0 overflow-hidden">
+              <div className="h-1.5 w-full bg-destructive" />
+              <ScrollArea className="max-h-[80vh] p-8">
+                <DialogHeader className="mb-6">
+                    <DialogTitle className="text-2xl font-black tracking-tight text-destructive">Relatório de Sinistro</DialogTitle>
+                    <DialogDescription className="text-xs font-mono uppercase tracking-widest text-destructive/70">Protocolo de incidente crítico</DialogDescription>
+                </DialogHeader>
+                <div className="scanlines rounded-lg border border-destructive/30 p-6 bg-destructive/5">
+                    <ReportIncidentForm schedule={selectedSchedule} onFormSubmit={() => closeModal()} />
+                </div>
               </ScrollArea>
           </DialogContent>
       </Dialog>
