@@ -125,7 +125,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         addLine('nexus-employees     - Lista todos os funcionários.');
         addLine('nexus-employee-info - Detalhes/Edição de um funcionário (nexus-employee-info <id>).');
         addLine('nexus-vehicles      - Lista frota de veículos.');
-        addLine('nexus-terminal-clear - Limpa a tela.');
+        addLine('nexus-terminal-clear - Limpa a tela (alias: clear, cls).');
         addLine('----------------------------------------', 'system');
         break;
 
@@ -247,6 +247,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
 
       case 'nexus-terminal-clear':
       case 'clear':
+      case 'cls':
         setHistory([]);
         break;
 
