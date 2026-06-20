@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo } from 'react';
@@ -50,11 +51,11 @@ const platformNavItems = [
 ];
 
 const operationalNavItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/dashboard', label: 'Painel', icon: LayoutDashboard, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
   { href: '/setores', label: 'Setores', icon: Building, roles: ['dev', 'ti', 'admin'] },
   { href: '/funcionarios', label: 'Funcionários', icon: Users, roles: ['dev', 'ti', 'admin', 'manager'] },
-  { href: '/veiculos', label: 'Fleet', icon: Car, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
-  { href: '/viagens', label: 'Trips', icon: Route, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/veiculos', label: 'Frota', icon: Car, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/viagens', label: 'Missões', icon: Route, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
   { href: '/manutencao', label: 'Manutenção', icon: Wrench, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
   { href: '/escalas', label: 'Escalas', icon: CalendarClock, roles: ['dev', 'ti', 'admin', 'manager'] },
   { href: '/relatorios', label: 'Relatórios', icon: ScrollText, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
@@ -70,7 +71,6 @@ export function AppSidebar() {
   const filteredPlatformItems = useMemo(() => platformNavItems.filter(item => item.roles.includes(userRole)), [userRole]);
   
   const filteredOperationalItems = useMemo(() => operationalNavItems.filter(item => {
-    // Para DEV e TI, a seção de operação só aparece se houver uma organização ativa selecionada
     if (['dev', 'ti'].includes(userRole) && !activeOrganization) {
       return false;
     }
@@ -191,14 +191,14 @@ export function AppSidebar() {
       <SidebarFooter className='mt-auto p-4 border-t border-border/50'>
          <div className="flex items-center gap-2 p-2 bg-accent/30 rounded border border-border/50">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-mono text-emerald-500 font-bold uppercase tracking-tight">System Status: Active</span>
+            <span className="text-[10px] font-mono text-emerald-500 font-bold uppercase tracking-tight">Status do Sistema: Ativo</span>
          </div>
          <div className="flex flex-col gap-1 mt-4">
             <Button variant="ghost" size="sm" className="justify-start h-8 px-2 text-muted-foreground hover:text-foreground text-xs" asChild>
-                <Link href="/docs"><BookOpen className="mr-2 h-3.5 w-3.5" /> Docs</Link>
+                <Link href="/docs"><BookOpen className="mr-2 h-3.5 w-3.5" /> Documentação</Link>
             </Button>
             <Button variant="ghost" size="sm" className="justify-start h-8 px-2 text-muted-foreground hover:text-foreground text-xs" onClick={logout}>
-                <LogOut className="mr-2 h-3.5 w-3.5" /> Logout
+                <LogOut className="mr-2 h-3.5 w-3.5" /> Sair
             </Button>
          </div>
       </SidebarFooter>

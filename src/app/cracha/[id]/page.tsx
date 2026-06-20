@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -48,7 +49,7 @@ export default function BadgePage() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-            <p className="text-xs font-mono uppercase tracking-widest text-primary/70">Initializing Identity Protocol...</p>
+            <p className="text-xs font-mono uppercase tracking-widest text-primary/70">Iniciando Protocolo de Identidade...</p>
         </div>
     )
   }
@@ -66,9 +67,9 @@ export default function BadgePage() {
         {/* Context Header */}
         <div className="flex justify-between items-center w-full">
           <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-primary transition-colors uppercase text-[10px] font-bold tracking-widest p-0" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4" /> Return
+            <ArrowLeft className="h-4 w-4" /> Voltar
           </Button>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 border border-border/50 px-2 py-0.5 rounded">Secure Area</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 border border-border/50 px-2 py-0.5 rounded">Área Segura</span>
         </div>
 
         {/* Virtual Badge Card */}
@@ -85,7 +86,7 @@ export default function BadgePage() {
             </div>
             <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1 flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[9px] font-bold uppercase tracking-tight text-emerald-400">Validated</span>
+              <span className="text-[9px] font-bold uppercase tracking-tight text-emerald-400">Validado</span>
             </div>
           </CardHeader>
 
@@ -119,11 +120,11 @@ export default function BadgePage() {
 
             <div className="w-full grid grid-cols-2 gap-4 bg-background/50 rounded-lg p-4 border border-border/30 font-mono text-[10px]">
               <div className="flex flex-col text-left">
-                <span className="uppercase text-muted-foreground/60 mb-1">Fleet ID</span>
+                <span className="uppercase text-muted-foreground/60 mb-1">ID da Frota</span>
                 <span className="text-sm font-bold tracking-tighter">CM-{employee.matricula || 'SYS-' + employee.id.padStart(4, '0')}</span>
               </div>
               <div className="flex flex-col text-right">
-                <span className="uppercase text-muted-foreground/60 mb-1">Access Level</span>
+                <span className="uppercase text-muted-foreground/60 mb-1">Nível de Acesso</span>
                 <span className="text-sm font-bold text-primary">{employee.role === 'Desenvolvedor Global' ? 'ROOT-L5' : 'AUTH-L1'}</span>
               </div>
             </div>
@@ -135,15 +136,15 @@ export default function BadgePage() {
             <Wallet className="h-4 w-4" /> Apple Wallet
           </Button>
           <Button variant="default" className="h-14 font-bold uppercase tracking-widest text-[10px] gap-2 bg-primary text-primary-foreground shadow-[0_0_20px_rgba(173,198,255,0.2)]" onClick={() => window.print()}>
-            <Download className="h-4 w-4" /> Download
+            <Download className="h-4 w-4" /> Baixar
           </Button>
         </div>
 
         <div className="flex flex-col items-center gap-2 opacity-50 mt-4">
           <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-             <ShieldCheck className="h-3 w-3" /> Secure NexusOS Session
+             <ShieldCheck className="h-3 w-3" /> Sessão Segura NexusOS
           </div>
-          <p className="text-[9px] font-mono text-muted-foreground/70">{currentTime || 'VALIDATING ENCRYPTION...'}</p>
+          <p className="text-[9px] font-mono text-muted-foreground/70">{currentTime || 'VALIDANDO CRIPTOGRAFIA...'}</p>
         </div>
       </div>
     </div>

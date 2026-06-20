@@ -47,29 +47,35 @@ export function AppHeader({ onTerminalOpen }: AppHeaderProps) {
 
   const getRoleName = (role: string) => {
     switch (role) {
-      case 'dev': return 'Developer';
-      case 'ti': return 'TI Expert';
-      case 'admin': return 'Administrator';
-      case 'manager': return 'Fleet Manager';
-      default: return currentUser?.role || 'User';
+      case 'dev': return 'Desenvolvedor';
+      case 'ti': return 'Especialista de TI';
+      case 'admin': return 'Administrador';
+      case 'manager': return 'Gestor de Frota';
+      default: return currentUser?.role || 'Usuário';
     }
   }
+
+  const menuItems = [
+    { label: 'Painel', href: '/dashboard', path: 'dashboard' },
+    { label: 'Frota', href: '/veiculos', path: 'veiculos' },
+    { label: 'Rede', href: '/nexus', path: 'nexus' },
+  ];
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/50 bg-background/95 backdrop-blur-md px-6">
         <div className="flex items-center gap-6">
           <SidebarTrigger className="h-8 w-8" />
           <nav className="hidden lg:flex items-center gap-6">
-            {['Dashboard', 'Fleet', 'Network'].map((label) => (
+            {menuItems.map((item) => (
               <Link 
-                key={label} 
-                href={label === 'Dashboard' ? '/dashboard' : label === 'Fleet' ? '/veiculos' : '/nexus'}
+                key={item.label} 
+                href={item.href}
                 className={cn(
                   "text-[10px] font-bold uppercase tracking-widest transition-colors pb-1 border-b-2",
-                  pathname.includes(label.toLowerCase()) ? "text-primary border-primary" : "text-muted-foreground border-transparent hover:text-primary"
+                  pathname.includes(item.path) ? "text-primary border-primary" : "text-muted-foreground border-transparent hover:text-primary"
                 )}
               >
-                {label}
+                {item.label}
               </Link>
             ))}
           </nav>

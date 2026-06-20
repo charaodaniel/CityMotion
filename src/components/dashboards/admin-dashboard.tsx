@@ -13,32 +13,32 @@ export default function AdminDashboard() {
   
   const metrics = [
     { 
-      label: 'Active Vehicles', 
+      label: 'Veículos Ativos', 
       value: vehicles.filter(v => v.status === 'Em Serviço' || v.status === 'Em Viagem').length, 
       total: vehicles.length,
       icon: Zap,
-      trend: '+12% from yesterday',
+      trend: '+12% desde ontem',
       color: 'text-primary'
     },
     { 
-      label: 'Daily Trips', 
+      label: 'Viagens Diárias', 
       value: schedules.filter(s => s.status !== 'Cancelada').length, 
       icon: Route,
-      trend: '+5.4% from yesterday',
+      trend: '+5.4% desde ontem',
       color: 'text-primary'
     },
     { 
-      label: 'Fleet Utilization', 
+      label: 'Utilização da Frota', 
       value: '84%', 
       icon: Network,
-      trend: 'Stable',
+      trend: 'Estável',
       color: 'text-emerald-400'
     },
     { 
-      label: 'Critical Alerts', 
+      label: 'Alertas Críticos', 
       value: vehicleRequests.filter(r => r.priority === 'Alta' && r.status === 'Pendente').length, 
       icon: AlertTriangle,
-      trend: 'Requires immediate action',
+      trend: 'Requer ação imediata',
       color: 'text-destructive',
       error: true
     }
@@ -48,11 +48,11 @@ export default function AdminDashboard() {
     <div className='space-y-8 max-w-container-max mx-auto'>
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Overview</h2>
-          <p className="text-muted-foreground text-sm mt-1">Real-time telematics and infrastructure status.</p>
+          <h2 className="text-3xl font-bold tracking-tight">Visão Geral</h2>
+          <p className="text-muted-foreground text-sm mt-1">Telemetria em tempo real e status da infraestrutura.</p>
         </div>
         <div className="text-[10px] font-mono text-muted-foreground flex items-center gap-2 uppercase tracking-widest">
-          <Clock className="h-3 w-3" /> Last updated: Just now
+          <Clock className="h-3 w-3" /> Última atualização: Agora mesmo
         </div>
       </div>
 
@@ -83,10 +83,10 @@ export default function AdminDashboard() {
         <Card className="lg:col-span-2 border-border/50 bg-sidebar/50">
             <CardHeader className="flex flex-row items-center justify-between border-b border-border/30 pb-4">
                 <div>
-                  <CardTitle className="text-lg font-bold tracking-tight">Fleet Throughput (7 Days)</CardTitle>
-                  <CardDescription className="text-xs">Volume of operations processed by the NexusBridge engine.</CardDescription>
+                  <CardTitle className="text-lg font-bold tracking-tight">Fluxo da Frota (7 Dias)</CardTitle>
+                  <CardDescription className="text-xs">Volume de operações processadas pelo motor NexusBridge.</CardDescription>
                 </div>
-                <Button variant="ghost" size="sm" className="text-[10px] font-bold uppercase tracking-widest text-primary">View Report</Button>
+                <Button variant="ghost" size="sm" className="text-[10px] font-bold uppercase tracking-widest text-primary">Ver Relatório</Button>
             </CardHeader>
             <CardContent className="pt-6 h-[300px]">
                 <div className="flex h-full items-end gap-3 border-b border-l border-border/50 pl-2 relative">
@@ -102,14 +102,14 @@ export default function AdminDashboard() {
                   ))}
                 </div>
                 <div className="flex justify-between mt-4 text-[9px] font-mono text-muted-foreground px-2">
-                  {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map(d => <span key={d}>{d}</span>)}
+                  {['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'].map(d => <span key={d}>{d}</span>)}
                 </div>
             </CardContent>
         </Card>
 
         <Card className="border-border/50 bg-sidebar/50 overflow-hidden flex flex-col">
             <CardHeader className="p-4 border-b border-border/30 bg-accent/30 backdrop-blur-md z-10 flex flex-row items-center justify-between">
-                <CardTitle className="text-xs font-bold uppercase tracking-widest">Live Coverage</CardTitle>
+                <CardTitle className="text-xs font-bold uppercase tracking-widest">Cobertura ao Vivo</CardTitle>
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </CardHeader>
             <CardContent className="p-0 flex-1 relative bg-zinc-900 grayscale opacity-70 flex items-center justify-center">
@@ -131,10 +131,10 @@ export default function AdminDashboard() {
 
       <Card className="border-border/50 bg-sidebar/50 flex flex-col flex-1 min-h-[300px]">
         <CardHeader className="flex flex-row items-center justify-between border-b border-border/30 pb-4">
-            <CardTitle className="text-lg font-bold tracking-tight">Terminal / Recent Activity</CardTitle>
+            <CardTitle className="text-lg font-bold tracking-tight">Terminal / Atividade Recente</CardTitle>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-widest">Filter</Button>
-              <Button variant="default" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-widest bg-primary text-primary-foreground">Export</Button>
+              <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-widest">Filtrar</Button>
+              <Button variant="default" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-widest bg-primary text-primary-foreground">Exportar</Button>
             </div>
         </CardHeader>
         <CardContent className="pt-6 flex-1 overflow-y-auto font-mono text-xs">
@@ -142,22 +142,22 @@ export default function AdminDashboard() {
                 <div className="flex gap-4 p-2 hover:bg-accent/30 rounded transition-colors group">
                   <span className="w-20 shrink-0 opacity-50">10:42:05Z</span>
                   <span className="text-primary w-12 font-bold">[INFO]</span>
-                  <span className="text-foreground">Vehicle <span className="text-primary/70">V-8902</span> completed charging cycle at Hub Alpha.</span>
+                  <span className="text-foreground">Veículo <span className="text-primary/70">V-8902</span> completou ciclo de carga no Hub Alpha.</span>
                 </div>
                 <div className="flex gap-4 p-2 hover:bg-accent/30 rounded transition-colors group">
                   <span className="w-20 shrink-0 opacity-50">10:41:12Z</span>
                   <span className="text-destructive w-12 font-bold">[WARN]</span>
-                  <span className="text-foreground">Telemetry sync timeout for unit <span className="text-destructive/70">V-331X</span>. Retrying connection...</span>
+                  <span className="text-foreground">Timeout de sincronização de telemetria para unidade <span className="text-destructive/70">V-331X</span>. Reconectando...</span>
                 </div>
                 <div className="flex gap-4 p-2 hover:bg-accent/30 rounded transition-colors group">
                   <span className="w-20 shrink-0 opacity-50">10:35:00Z</span>
                   <span className="text-emerald-500 w-12 font-bold">[AUTH]</span>
-                  <span className="text-foreground">Admin session initiated from <span className="text-emerald-500/70">192.168.1.45</span> via SSO.</span>
+                  <span className="text-foreground">Sessão de admin iniciada por <span className="text-emerald-500/70">192.168.1.45</span> via SSO.</span>
                 </div>
                 <div className="flex gap-4 p-2 hover:bg-accent/30 rounded transition-colors group">
                   <span className="w-20 shrink-0 opacity-50">10:15:22Z</span>
                   <span className="text-primary w-12 font-bold">[INFO]</span>
-                  <span className="text-foreground">Automated route optimization script executed successfully. 450 routes updated.</span>
+                  <span className="text-foreground">Script de otimização de rotas executado com sucesso. 450 rotas atualizadas.</span>
                 </div>
                 <div className="flex items-center gap-2 p-2">
                   <span className="text-primary font-bold">&gt;</span>

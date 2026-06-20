@@ -43,7 +43,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   const [input, setInput] = useState('');
   const [stats, setStats] = useState<SystemStats | null>(null);
   
-  // TUI (Terminal User Interface) State
   const [tuiMode, setTuiMode] = useState<'edit' | null>(null);
   const [editingUser, setEditingUser] = useState<Employee | null>(null);
 
@@ -122,9 +121,9 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
       case 'nexus-info':
         addLine('Ambiente: Desenvolvimento');
         addLine('Engine: NexusBridge Core 1.2');
-        addLine('Database: SQLite3 (Local File)');
-        addLine('Platform: ' + (stats?.platform || 'Loading...'));
-        addLine('Node: ' + (stats?.nodeVersion || 'Loading...'));
+        addLine('Database: SQLite3 (Arquivo Local)');
+        addLine('Platform: ' + (stats?.platform || 'Carregando...'));
+        addLine('Node: ' + (stats?.nodeVersion || 'Carregando...'));
         break;
 
       case 'nexus-status':
@@ -246,7 +245,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
       case 'nexus-diagnostics':
       case 'test-all':
         addLine('Iniciando Teste Geral...', 'system');
-        // Sequência rápida de testes mockados e reais
         addLine('[1/3] Local API: OK', 'success');
         addLine('[2/3] NexusBridge: OK', 'success');
         addLine('[3/3] SQLite Driver: OK', 'success');
@@ -319,10 +317,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         if (res.ok) {
             addLine(`SUCESSO: Registro atualizado.`, 'success');
             toast({ title: "Banco Atualizado", description: "Alterações salvas no SQLite." });
-            
-            // Sincroniza o estado global da aplicação com o banco
             await refreshData();
-            
             setTuiMode(null);
             setEditingUser(null);
         } else addLine('ERRO ao salvar no banco.', 'error');
@@ -337,7 +332,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
       <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800">
         <div className="flex items-center gap-2 text-zinc-400">
           <TerminalIcon className="h-4 w-4" />
-          <span className="text-xs font-bold uppercase tracking-wider">NexusBridge Dev Console</span>
+          <span className="text-xs font-bold uppercase tracking-wider">Console Dev NexusBridge</span>
         </div>
         <div className="flex gap-2">
             <button onClick={() => setHistory([])} className="text-zinc-600 hover:text-zinc-400"><Sparkles className="h-3 w-3" /></button>
@@ -351,7 +346,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
       <div className="p-4 bg-zinc-900/50 border-b border-zinc-800 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
             <div className="flex items-center justify-between text-[10px] uppercase font-bold text-zinc-500">
-                <span className="flex items-center gap-1"><Cpu className="h-3 w-3" /> CPU Load</span>
+                <span className="flex items-center gap-1"><Cpu className="h-3 w-3" /> Carga CPU</span>
                 <span>{stats?.cpu.load || '0'}%</span>
             </div>
             <Progress value={parseFloat(stats?.cpu.load || '0') * 10} className="h-1.5 bg-zinc-800" />
@@ -405,18 +400,18 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                     className="w-full max-w-lg bg-zinc-200 border-4 border-double border-zinc-400 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] overflow-hidden"
                 >
                     <div className="bg-[#0000AA] text-white px-3 py-1 font-bold flex justify-between items-center select-none">
-                        <span>Edit User: {editingUser.id}</span>
+                        <span>Editar Usuário: {editingUser.id}</span>
                         <button type="button" onClick={() => setTuiMode(null)} className="hover:bg-red-600 px-1">X</button>
                     </div>
 
                     <div className="p-6 space-y-4 text-black">
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold uppercase block">Full Name:</label>
+                            <label className="text-xs font-bold uppercase block">Nome Completo:</label>
                             <input name="name" defaultValue={editingUser.name} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none" required />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold uppercase block">Role:</label>
+                                <label className="text-xs font-bold uppercase block">Cargo:</label>
                                 <select name="role" defaultValue={editingUser.role} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none">
                                   {AVAILABLE_ROLES.map(role => <option key={role} value={role}>{role}</option>)}
                                 </select>
@@ -437,17 +432,17 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                                 <input name="email" type="email" defaultValue={editingUser.email} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none" required />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold uppercase block">New Password:</label>
+                                <label className="text-xs font-bold uppercase block">Nova Senha:</label>
                                 <input name="password" type="text" defaultValue={editingUser.password} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none" required />
                             </div>
                         </div>
 
                         <div className="flex justify-center gap-6 pt-4">
                             <button type="submit" className="px-6 py-1 bg-zinc-300 border-2 border-zinc-500 active:translate-y-0.5 shadow-[2px_2px_0px_rgba(0,0,0,0.8)] hover:bg-zinc-400 font-bold flex items-center gap-2">
-                                <Save className="h-4 w-4" /> [ SAVE ]
+                                <Save className="h-4 w-4" /> [ SALVAR ]
                             </button>
                             <button type="button" onClick={() => setTuiMode(null)} className="px-6 py-1 bg-zinc-300 border-2 border-zinc-500 active:translate-y-0.5 shadow-[2px_2px_0px_rgba(0,0,0,0.8)] hover:bg-zinc-400 font-bold flex items-center gap-2">
-                                <ArrowLeft className="h-4 w-4" /> [ CANCEL ]
+                                <ArrowLeft className="h-4 w-4" /> [ CANCELAR ]
                             </button>
                         </div>
                     </div>

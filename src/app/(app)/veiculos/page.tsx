@@ -204,7 +204,7 @@ export default function VehiclesPage() {
             </h4>
             <div className="font-mono text-[10px] text-muted-foreground flex flex-col gap-3">
               {[
-                { time: '10:42', id: 'NEX-108', msg: 'Geofence Z-04 detectado', type: 'primary' },
+                { time: '10:42', id: 'NEX-108', msg: 'Geocerca Z-04 detectada', type: 'primary' },
                 { time: '10:38', id: 'NEX-015', msg: 'Manutenção #882 aberta', type: 'destructive' },
                 { time: '10:15', id: 'NEX-042', msg: 'Viagem T-9912 concluída', type: 'emerald' },
                 { time: '09:55', id: 'SYS', msg: 'Update OTA v2.4 aplicado', type: 'primary' }
