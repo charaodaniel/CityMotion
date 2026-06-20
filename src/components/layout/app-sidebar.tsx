@@ -46,7 +46,7 @@ import { cn } from '@/lib/utils';
 
 const platformNavItems = [
   { href: '/dev-global', label: 'Gestão Global', icon: ShieldCheck, roles: ['dev'] },
-  { href: '/dev-docs', label: 'Documentação Técnica', icon: FileCode, roles: ['dev'] },
+  { href: '/dev-docs', label: 'Documentação Central', icon: FileCode, roles: ['dev', 'ti', 'admin'] },
   { href: '/faturamento', label: 'Faturamento', icon: DollarSign, roles: ['dev', 'ti'] },
   { href: '/nexus', label: 'NexusBridge', icon: Network, roles: ['dev', 'ti'] },
   { href: '/perfis', label: 'Gerenciar Perfis', icon: UserCog, roles: ['dev', 'ti', 'admin'] },

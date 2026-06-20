@@ -4,20 +4,24 @@
 import { useApp } from "@/contexts/app-provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck, Database, Code2, Network, Lock, FileCode, GitBranch, Terminal } from "lucide-react";
+import { ShieldCheck, Database, Code2, Network, Lock, FileCode, GitBranch, Terminal, Book, UserCircle, Car, Route, HelpCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 export default function DevDocsPage() {
   const { userRole } = useApp();
 
-  if (userRole !== 'dev') {
+  // Acesso permitido para Dev, TI e Admin
+  const hasPermission = ['dev', 'ti', 'admin'].includes(userRole);
+
+  if (!hasPermission) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
         <Card className="max-w-md text-center border-destructive/50 bg-destructive/5">
           <CardHeader>
             <Lock className="h-12 w-12 text-destructive mx-auto mb-4" />
             <CardTitle>Acesso Negado</CardTitle>
-            <CardDescription>Esta documentação contém segredos industriais e chaves de acesso restritas ao nível ROOT.</CardDescription>
+            <CardDescription>Esta documentação contém informações privilegiadas de administração e infraestrutura.</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -28,16 +32,19 @@ export default function DevDocsPage() {
     <div className="container mx-auto p-4 sm:p-8 space-y-8 pb-20">
       <div className="flex flex-col gap-2">
         <h1 className="text-4xl font-black tracking-tighter flex items-center gap-4">
-          <Terminal className="h-10 w-10 text-primary" />
-          Technical Documentation // NexusOS
+          <FileCode className="h-10 w-10 text-primary" />
+          Central de Documentação // NexusOS
         </h1>
         <p className="text-muted-foreground font-mono text-xs uppercase tracking-[0.2em]">
-          Internal Reference Guide for Global Developers • Confidential
+          Manual Operacional & Referência Técnica • Nível Administrativo
         </p>
       </div>
 
-      <Tabs defaultValue="architecture" className="space-y-6">
+      <Tabs defaultValue="manual" className="space-y-6">
         <TabsList className="bg-sidebar border border-border/50 p-1 w-full justify-start overflow-x-auto h-auto gap-1">
+          <TabsTrigger value="manual" className="text-[10px] font-bold uppercase tracking-widest gap-2">
+            <Book className="h-3 w-3" /> Manual do Usuário
+          </TabsTrigger>
           <TabsTrigger value="architecture" className="text-[10px] font-bold uppercase tracking-widest gap-2">
             <GitBranch className="h-3 w-3" /> Arquitetura UML
           </TabsTrigger>
@@ -48,9 +55,55 @@ export default function DevDocsPage() {
             <Network className="h-3 w-3" /> NexusBridge
           </TabsTrigger>
           <TabsTrigger value="security" className="text-[10px] font-bold uppercase tracking-widest gap-2">
-            <Lock className="h-3 w-3" /> Segurança
+            <Lock className="h-3 w-3" /> Segurança e LGPD
           </TabsTrigger>
         </TabsList>
+
+        {/* 0. USER MANUAL (Unified Content) */}
+        <TabsContent value="manual">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+             <div className="lg:col-span-2 space-y-6">
+                <Card className="bg-sidebar/50 border-border/50">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <HelpCircle className="h-5 w-5 text-primary" />
+                            Guia Rápido de Operação
+                        </CardTitle>
+                        <CardDescription>Como utilizar as principais funções do CityMotion.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+                        <div className="space-y-6">
+                            <section>
+                                <h3 className="text-foreground flex items-center gap-2"><Car className="h-4 w-4" /> Gestão de Frota</h3>
+                                <p>Todos os veículos devem ser cadastrados com placa, modelo e quilometragem inicial. O status "Em Manutenção" bloqueia o veículo para novas missões automaticamente.</p>
+                            </section>
+                            <Separator className="bg-border/30" />
+                            <section>
+                                <h3 className="text-foreground flex items-center gap-2"><UserCircle className="h-4 w-4" /> Controle de Funcionários</h3>
+                                <p>O cadastro de colaboradores exige o aceite do termo de LGPD. Motoristas devem ter o número da CNH preenchido para validação jurídica nos relatórios de sinistro.</p>
+                            </section>
+                            <Separator className="bg-border/30" />
+                            <section>
+                                <h3 className="text-foreground flex items-center gap-2"><Route className="h-4 w-4" /> Ciclo de Missões</h3>
+                                <p>Uma viagem passa pelos estados: <strong>Agendada</strong> → <strong>Em Andamento</strong> (Checklist de Saída) → <strong>Concluída</strong> (Checklist de Chegada). A quilometragem final da viagem atualiza automaticamente o odômetro do veículo no sistema.</p>
+                            </section>
+                        </div>
+                    </CardContent>
+                </Card>
+             </div>
+             
+             <Card className="bg-sidebar/50 border-border/50 h-fit">
+                <CardHeader>
+                    <CardTitle className="text-sm font-bold uppercase tracking-widest">Atalhos de Teclado</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 font-mono text-[10px]">
+                    <div className="flex justify-between p-2 bg-black/20 rounded"><span>Terminal Dev</span><span>CTRL + B</span></div>
+                    <div className="flex justify-between p-2 bg-black/20 rounded"><span>Sincronizar Dados</span><span>F5</span></div>
+                    <div className="flex justify-between p-2 bg-black/20 rounded"><span>Pesquisa Rápida</span><span>CTRL + K</span></div>
+                </CardContent>
+             </Card>
+          </div>
+        </TabsContent>
 
         {/* 1. ARCHITECTURE / UML */}
         <TabsContent value="architecture">
