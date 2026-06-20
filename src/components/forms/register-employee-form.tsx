@@ -56,12 +56,12 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
   useEffect(() => {
     if (isEditMode && existingEmployee) {
       form.reset({
-        name: existingEmployee.name,
-        matricula: existingEmployee.matricula,
-        email: existingEmployee.email,
-        role: existingEmployee.role,
-        cnh: existingEmployee.cnh,
-        sector: Array.isArray(existingEmployee.sector) ? existingEmployee.sector : [existingEmployee.sector],
+        name: existingEmployee.name || '',
+        matricula: existingEmployee.matricula || '',
+        email: existingEmployee.email || '',
+        role: existingEmployee.role || '',
+        cnh: existingEmployee.cnh || '',
+        sector: Array.isArray(existingEmployee.sector) ? existingEmployee.sector : [],
         lgpdConsent: true,
       });
     }

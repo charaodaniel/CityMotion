@@ -43,12 +43,12 @@ export function RegisterVehicleForm({ onFormSubmit, existingVehicle }: RegisterV
   });
 
    useEffect(() => {
-    if (isEditMode) {
+    if (isEditMode && existingVehicle) {
       form.reset({
-        vehicleModel: existingVehicle.vehicleModel,
-        licensePlate: existingVehicle.licensePlate,
-        sector: existingVehicle.sector,
-        mileage: existingVehicle.mileage,
+        vehicleModel: existingVehicle.vehicleModel || '',
+        licensePlate: existingVehicle.licensePlate || '',
+        sector: existingVehicle.sector || '',
+        mileage: existingVehicle.mileage ?? 0,
       });
     }
   }, [isEditMode, existingVehicle, form]);

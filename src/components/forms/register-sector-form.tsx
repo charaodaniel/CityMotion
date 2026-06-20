@@ -36,8 +36,8 @@ export function RegisterSectorForm({ onFormSubmit, existingSector }: RegisterSec
   useEffect(() => {
     if (isEditMode && existingSector) {
       form.reset({
-        name: existingSector.name,
-        description: existingSector.description
+        name: existingSector.name || '',
+        description: existingSector.description || ''
       });
     }
   }, [isEditMode, existingSector, form]);
