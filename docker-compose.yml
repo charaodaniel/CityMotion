@@ -1,17 +1,16 @@
-
 version: '3.8'
 
 services:
   citymotion:
     build: .
-    container_name: citymotion-persistent
+    container_name: citymotion-app
     ports:
       - "9002:9002"
       - "3001:3001"
     volumes:
-      # Mapeia a pasta do pendrive para a pasta do container
+      # Persistência do banco de dados no pendrive
       - ./backend/database:/app/backend/database
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - JWT_SECRET=sua_chave_ultra_secreta_aqui
+      - JWT_SECRET=citymotion_secret_key_2024

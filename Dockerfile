@@ -1,35 +1,44 @@
-
-# Estágio de construção e execução otimizado para economia de espaço
-FROM node:20-slim AS builder
-
-# Instala dependências de compilação necessárias para o SQLite3 no Linux
-RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
-
+# Estágio de Dependências
+FROM node:18-slim AS deps
 WORKDIR /app
+COPY package*.json ./
+COPY backend/package*.json ./backend/
+RUN npm install && cd backend && npm install
 
-# Copia apenas os arquivos de dependências primeiro
-COPY package.json package-lock.json ./
-COPY backend/package.json ./backend/
-
-# Instala dependências (incluindo as de build para o sqlite)
-RUN npm install
-RUN cd backend && npm install
-
-# Copia o restante do código
+# Estágio de Build
+FROM node:18-slim AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/backend/node_modules ./backend/node_modules
 COPY . .
-
-# Gera o build do Next.js
+ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
-# Remove dependências de desenvolvimento para economizar espaço
-RUN npm prune --production
+# Estágio de Produção (Pendrive Optimized)
+FROM node:18-slim AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# Instalar dependências para o SQLite3 nativo
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/backend ./backend
+COPY --from=builder /app/src/data/database.sql ./src/data/database.sql
+
+# Script de inicialização dupla
+RUN echo "#!/bin/sh\n\
+echo '--- Iniciando NexusOS Ecosystem ---'\n\
+cd /app/backend && node server.js &\n\
+cd /app && npx next start -p 9002\n\
+" > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 EXPOSE 9002
 EXPOSE 3001
 
-# Script de inicialização para rodar ambos os serviços
-CMD ["sh", "-c", "cd backend && npm start & npm start"]
+CMD ["/app/entrypoint.sh"]

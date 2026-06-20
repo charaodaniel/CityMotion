@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # --- CityMotion antiX Automation Script (8GB Flash Drive Optimized) ---
@@ -38,10 +37,9 @@ PROJECT_DIR=$(pwd)
 mkdir -p "$PROJECT_DIR/backend/database"
 chown -R $USER_NAME:$USER_NAME "$PROJECT_DIR/backend/database"
 
-# 4. Construção Otimizada (Limpa o cache anterior para poupar espaço)
-echo -e "${BLUE}[3/5] Construindo Imagem (Limpando caches antigos)...${NC}"
-docker system prune -f
-docker build -t citymotion-app .
+# 4. Construção Otimizada
+echo -e "${BLUE}[3/5] Construindo Imagem CityMotion...${NC}"
+docker compose build
 
 # 5. Criar Lançador no Desktop
 DESKTOP_DIR="/home/$USER_NAME/Desktop"
@@ -49,18 +47,11 @@ LAUNCHER_PATH="/home/$USER_NAME/.citymotion-launcher.sh"
 
 cat <<EOF > $LAUNCHER_PATH
 #!/bin/bash
-echo "Limpando containers antigos para liberar memória RAM..."
-docker stop citymotion-instance 2>/dev/null
-docker rm citymotion-instance 2>/dev/null
-docker system prune -f # Mantém o pendrive de 8GB limpo
-
-echo "Iniciando CityMotion Persistente..."
-docker run -d \\
-  --name citymotion-instance \\
-  -p 9002:9002 -p 3001:3001 \\
-  -v "$PROJECT_DIR/backend/database:/app/backend/database" \\
-  citymotion-app
-
+cd "$PROJECT_DIR"
+echo "Limpando instâncias anteriores..."
+docker compose down
+echo "Iniciando CityMotion (Front + Back)..."
+docker compose up -d
 echo "Aguardando Kernel carregar..."
 sleep 10
 xdg-open http://localhost:9002
@@ -85,4 +76,4 @@ chmod +x "$DESKTOP_DIR/CityMotion.desktop"
 chown $USER_NAME:$USER_NAME "$DESKTOP_DIR/CityMotion.desktop"
 
 echo -e "${GREEN}=== CONFIGURAÇÃO CONCLUÍDA! ===${NC}"
-echo -e "${BLUE}Dica: Reinicie o computador para o ícone da área de trabalho funcionar.${NC}"
+echo -e "${BLUE}Dica: Reinicie o antiX para aplicar as permissões do Docker.${NC}"
