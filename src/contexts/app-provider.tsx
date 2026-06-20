@@ -194,9 +194,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const deleteEmployee = async (id: string) => {
     try {
       const res = await fetch(`/api/nexus/test/db-employees/${id}`, { method: 'DELETE' });
-      if (res.ok) await fetchData(true);
+      if (res.ok) {
+          const result = await res.json();
+          await fetchData(true);
+          toast({ 
+              title: result.deleted ? "Registro Removido" : "Colaborador Desativado", 
+              description: result.message 
+          });
+      }
     } catch (e) {
       console.error("Error deleting employee", e);
+      toast({ title: "Erro na Deleção", description: "Não foi possível completar a ação.", variant: "destructive" });
     }
   };
 
