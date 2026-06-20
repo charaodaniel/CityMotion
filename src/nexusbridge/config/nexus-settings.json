@@ -108,6 +108,41 @@
       "backendId": "node-backend",
       "target": "/system/db-info",
       "transformer": "identity"
+    },
+    {
+        "path": "trips",
+        "method": "PUT",
+        "backendId": "node-backend",
+        "target": "/trips",
+        "transformer": "identity"
+    },
+    {
+        "path": "requests",
+        "method": "POST",
+        "backendId": "node-backend",
+        "target": "/vehicle_requests",
+        "transformer": "identity"
+    },
+    {
+        "path": "requests",
+        "method": "PUT",
+        "backendId": "node-backend",
+        "target": "/vehicle_requests",
+        "transformer": "identity"
+    },
+    {
+        "path": "maintenance",
+        "method": "POST",
+        "backendId": "node-backend",
+        "target": "/maintenance_requests",
+        "transformer": "identity"
+    },
+    {
+        "path": "maintenance",
+        "method": "PUT",
+        "backendId": "node-backend",
+        "target": "/maintenance_requests",
+        "transformer": "identity"
     }
   ]
 }

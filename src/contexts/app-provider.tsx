@@ -22,10 +22,11 @@ interface AppContextType {
   
   schedules: Schedule[];
   setSchedules: React.Dispatch<React.SetStateAction<Schedule[]>>;
+  updateScheduleStatus: (id: string, status: ScheduleStatus, details?: any) => Promise<void>;
   
   vehicleRequests: VehicleRequest[];
-  addVehicleRequest: (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => void;
-  updateVehicleRequestStatus: (id: string, status: VehicleRequestStatus) => void;
+  addVehicleRequest: (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => Promise<void>;
+  updateVehicleRequestStatus: (id: string, status: VehicleRequestStatus) => Promise<void>;
   
   employees: Employee[];
   addEmployee: (employee: Partial<Employee>) => Promise<void>;
@@ -46,8 +47,8 @@ interface AppContextType {
 
   maintenanceRequests: MaintenanceRequest[];
   setMaintenanceRequests: React.Dispatch<React.SetStateAction<MaintenanceRequest[]>>;
-  addMaintenanceRequest: (request: Omit<MaintenanceRequest, 'id' | 'status' | 'requestDate' | 'requesterName'>) => void;
-  updateMaintenanceRequestStatus: (id: string, status: MaintenanceRequestStatus) => void;
+  addMaintenanceRequest: (request: Omit<MaintenanceRequest, 'id' | 'status' | 'requestDate' | 'requesterName'>) => Promise<void>;
+  updateMaintenanceRequestStatus: (id: string, status: MaintenanceRequestStatus) => Promise<void>;
 
   organizations: Organization[];
   setOrganizations: React.Dispatch<React.SetStateAction<Organization[]>>;
@@ -113,7 +114,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     else setIsRefreshing(true);
 
     try {
-      // Sincronização via NexusBridge (Busca do SQLite real)
       const response = await fetch('/api/nexus/sync-all');
       if (!response.ok) throw new Error('Falha ao sincronizar com o banco.');
       
@@ -127,7 +127,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setWorkSchedules(data.workSchedules || []);
       setMaintenanceRequests(data.maintenanceRequests || []);
       
-      // Busca dados de organizações (Apenas infra global)
       const orgRes = await fetch('/api/data?type=organizations');
       if (orgRes.ok) {
           const orgs = await orgRes.json();
@@ -172,14 +171,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(employee)
       });
-      if (res.ok) {
-          await fetchData(true);
-      } else {
-          throw new Error('Falha ao criar funcionário no SQLite');
-      }
+      if (res.ok) await fetchData(true);
     } catch (e) {
       console.error("Error adding employee", e);
-      toast({ title: "Erro no Banco", description: "Não foi possível cadastrar o colaborador.", variant: "destructive" });
     }
   };
 
@@ -190,16 +184,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      
-      if (res.ok) {
-          await fetchData(true);
-      } else {
-          const errData = await res.json();
-          throw new Error(errData.message || 'Falha no backend');
-      }
+      if (res.ok) await fetchData(true);
     } catch (e) {
       console.error("Error updating employee", e);
-      toast({ title: "Erro na Atualização", description: "As alterações não foram salvas no banco de dados.", variant: "destructive" });
       throw e;
     }
   };
@@ -237,6 +224,83 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (res.ok) await fetchData(true);
     } catch (e) {
       console.error("Error updating vehicle", e);
+    }
+  };
+
+  // --- Trips (Schedules) Persistance ---
+  const updateScheduleStatus = async (id: string, status: ScheduleStatus, details?: any) => {
+    try {
+      const res = await fetch(`/api/nexus/trips/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, ...details })
+      });
+      if (res.ok) {
+        await fetchData(true);
+        toast({ title: "Status Atualizado", description: `A missão agora está: ${status}.` });
+      }
+    } catch (e) {
+      console.error("Error updating trip", e);
+    }
+  };
+
+  // --- Requests Persistance ---
+  const addVehicleRequest = async (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => {
+    try {
+        const res = await fetch('/api/nexus/requests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...request,
+            requester: currentUser?.name || 'Usuário',
+          })
+        });
+        if (res.ok) await fetchData(true);
+      } catch (e) {
+        console.error("Error creating request", e);
+      }
+  };
+
+  const updateVehicleRequestStatus = async (id: string, status: VehicleRequestStatus) => {
+    try {
+      const res = await fetch(`/api/nexus/requests/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.ok) await fetchData(true);
+    } catch (e) {
+      console.error("Error updating request status", e);
+    }
+  };
+
+  // --- Maintenance Persistance ---
+  const addMaintenanceRequest = async (request: Omit<MaintenanceRequest, 'id' | 'status' | 'requestDate' | 'requesterName'>) => {
+    try {
+        const res = await fetch('/api/nexus/maintenance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...request,
+            requesterName: currentUser?.name || 'Usuário',
+          })
+        });
+        if (res.ok) await fetchData(true);
+      } catch (e) {
+        console.error("Error creating maintenance request", e);
+      }
+  };
+
+  const updateMaintenanceRequestStatus = async (id: string, status: MaintenanceRequestStatus) => {
+    try {
+      const res = await fetch(`/api/nexus/maintenance/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.ok) await fetchData(true);
+    } catch (e) {
+      console.error("Error updating maintenance status", e);
     }
   };
 
@@ -343,112 +407,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     initializeApp();
   }, []);
 
-  useEffect(() => {
-    if (!currentUser || isLoading) return;
-
-    if (userRole === 'manager' && selectedSector && vehicleRequests.length > prevRequestsLength.current) {
-      const latestRequest = vehicleRequests[0];
-      if (latestRequest.sector === selectedSector && latestRequest.status === 'Pendente' && latestRequest.requester !== currentUser.name) {
-        addNotification({
-          title: "Nova Solicitação de Veículo",
-          message: `${latestRequest.requester} solicitou transporte: "${latestRequest.title}"`,
-          type: 'request'
-        });
-      }
-    }
-    prevRequestsLength.current = vehicleRequests.length;
-
-    const isDriver = currentUser.role.toLowerCase().includes('motorista');
-    if (isDriver && schedules.length > prevSchedulesLength.current) {
-      const latestTrip = schedules[0];
-      if (latestTrip.driver === currentUser.name && latestTrip.status === 'Agendada') {
-        addNotification({
-          title: "Nova Viagem Agendada",
-          message: `Você tem uma nova viagem atribuída: "${latestTrip.title}" para ${latestTrip.destination}.`,
-          type: 'trip'
-        });
-      }
-    }
-    prevSchedulesLength.current = schedules.length;
-
-  }, [vehicleRequests, schedules, userRole, selectedSector, currentUser, isLoading, addNotification]);
-
-  const addVehicleRequest = (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => {
-    const newRequest: VehicleRequest = {
-      ...request,
-      id: `REQ${Date.now()}`,
-      status: 'Pendente',
-      requester: currentUser?.name || 'Usuário do Sistema',
-      requestDate: new Date().toISOString(),
-      priority: request.priority || 'Média',
-      details: request.details || 'N/A'
-    };
-    setVehicleRequests(prev => [newRequest, ...prev]);
-  };
-  
-  const updateVehicleRequestStatus = (id: string, status: VehicleRequestStatus) => {
-    let requestToProcess: VehicleRequest | undefined;
-    
-    setVehicleRequests(prev => 
-        prev.map(req => {
-            if (req.id === id) {
-                requestToProcess = { ...req, status };
-                return requestToProcess;
-            }
-            return req;
-        })
-    );
-
-    if (status === 'Aprovada' && requestToProcess) {
-      const request = requestToProcess;
-        const availableDriver = employees.find(d => d.status === 'Disponível' && Array.isArray(d.sector) && d.sector.includes(request.sector) && d.role.toLowerCase().includes('motorista'));
-        const availableVehicle = vehicles.find(v => v.status === 'Disponível' && v.sector === request.sector);
-
-        if (availableDriver && availableVehicle) {
-            const newSchedule: Schedule = {
-                id: `SCH${Date.now()}`,
-                title: request.title,
-                driver: availableDriver.name,
-                vehicle: `${availableVehicle.vehicleModel} (${availableVehicle.licensePlate})`,
-                origin: "Sede da Organização",
-                destination: request.details.split("Destino: ")[1]?.split('.')[0] || "Destino não especificado",
-                departureTime: format(new Date(), "dd/MM/yyyy HH:mm"),
-                status: 'Agendada',
-                category: request.sector,
-            };
-            setSchedules(prevSchedules => [newSchedule, ...prevSchedules]);
-            setEmployees(prev => prev.map(d => d.id === availableDriver.id ? { ...d, status: 'Em Serviço' } : d));
-            setVehicles(prev => prev.map(v => v.id === availableVehicle.id ? { ...v, status: 'Em Serviço' } : v));
-        }
-    }
-  };
-
-  const addMaintenanceRequest = (request: Omit<MaintenanceRequest, 'id' | 'status' | 'requestDate' | 'requesterName'>) => {
-    const newRequest: MaintenanceRequest = {
-      ...request,
-      id: `MNT${Date.now()}`,
-      status: 'Pendente',
-      requesterName: currentUser?.name || 'Usuário',
-      requestDate: new Date().toISOString(),
-    };
-    setMaintenanceRequests(prev => [newRequest, ...prev]);
-  };
-
-  const updateMaintenanceRequestStatus = (id: string, status: MaintenanceRequestStatus) => {
-    setMaintenanceRequests(prev =>
-      prev.map(req => (req.id === id ? { ...req, status } : req))
-    );
-
-    const request = maintenanceRequests.find(req => req.id === id);
-    if (request) {
-        if (status === 'Em Andamento') {
-            setVehicles(prev => prev.map(v => v.id === request.vehicleId ? { ...v, status: 'Manutenção' } : v));
-        } else if (status === 'Concluída') {
-            setVehicles(prev => prev.map(v => v.id === request.vehicleId ? { ...v, status: 'Disponível' } : v));
-        }
-    }
-  };
-
   return (
     <AppContext.Provider value={{ 
         isLoading,
@@ -462,7 +420,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         refreshData,
-        schedules, setSchedules, 
+        schedules, setSchedules, updateScheduleStatus,
         vehicleRequests, addVehicleRequest, updateVehicleRequestStatus,
         employees, addEmployee, updateEmployee, deleteEmployee, setEmployees,
         vehicles, addVehicle, updateVehicle, setVehicles,
