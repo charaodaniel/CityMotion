@@ -1,4 +1,3 @@
-
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -7,7 +6,7 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-insecure-secret';
 
 module.exports = function(db) {
-    // Rota de Login - Suporta Email ou Matrícula
+    // Rota de Login - Suporta Email, Matrícula ou Telefone
     router.post('/login', (req, res) => {
         const { email, password } = req.body;
 
@@ -15,10 +14,10 @@ module.exports = function(db) {
             return res.status(400).json({ message: 'Identificador e senha são obrigatórios.' });
         }
 
-        // Busca por email OU matrícula
-        const sql = `SELECT * FROM employees WHERE email = ? OR matricula = ?`;
+        // Busca por email OU matrícula OU telefone
+        const sql = `SELECT * FROM employees WHERE email = ? OR matricula = ? OR phone = ?`;
 
-        db.get(sql, [email, email], (err, user) => {
+        db.get(sql, [email, email, email], (err, user) => {
             if (err) {
                 console.error('Erro no banco de dados:', err);
                 return res.status(500).json({ message: 'Erro interno no servidor.' });

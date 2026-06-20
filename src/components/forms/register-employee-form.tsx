@@ -13,13 +13,14 @@ import type { Employee } from '@/lib/types';
 import { useEffect } from 'react';
 import { useApp } from '@/contexts/app-provider';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Phone } from 'lucide-react';
 import Link from 'next/link';
 
 const formSchema = z.object({
   name: z.string().min(2, "O nome completo deve ter pelo menos 2 caracteres."),
   matricula: z.string().min(1, "A matrícula é obrigatória."),
   email: z.string().email("Por favor, insira um email válido."),
+  phone: z.string().optional(),
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres.").optional().or(z.literal('')),
   role: z.string().min(1, "O cargo é obrigatório."),
   cnh: z.string().optional(),
@@ -45,6 +46,7 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
       name: '',
       matricula: '',
       email: '',
+      phone: '',
       password: '',
       role: '',
       cnh: '',
@@ -59,6 +61,7 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
         name: existingEmployee.name || '',
         matricula: existingEmployee.matricula || '',
         email: existingEmployee.email || '',
+        phone: existingEmployee.phone || '',
         role: existingEmployee.role || '',
         cnh: existingEmployee.cnh || '',
         sector: Array.isArray(existingEmployee.sector) ? existingEmployee.sector : [],
@@ -118,6 +121,23 @@ export function RegisterEmployeeForm({ onFormSubmit, existingEmployee }: Registe
                     <FormControl>
                       <Input type="password" placeholder={isEditMode ? "Deixe em branco para não alterar" : "Senha de 6+ dígitos"} {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Telefone / WhatsApp</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
+                        <Input placeholder="5511999999999" className="pl-10" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormDescription className="text-[10px]">Utilizado para login e notificações de viagem.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

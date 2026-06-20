@@ -1,4 +1,3 @@
-
 const express = require('express');
 const { exec } = require('child_process');
 const path = require('path');
@@ -97,17 +96,17 @@ module.exports = function(db) {
         if (!isAuthorized) return res.status(403).json({ message: 'Acesso negado: privilégios insuficientes.' });
 
         backupDb();
-        const { name, email, role: empRole, sector, status, password, matricula, cnh } = req.body;
+        const { name, email, phone, role: empRole, sector, status, password, matricula, cnh } = req.body;
         
         // Hashing da senha antes de inserir no banco
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = bcrypt.hashSync(password || '123456', salt);
         
-        const sql = `INSERT INTO employees (name, email, role, sector, status, password, matricula, cnh) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-        const params = [name, email, empRole, JSON.stringify(sector || []), status || 'Disponível', hashedPassword, matricula || null, cnh || null];
+        const sql = `INSERT INTO employees (name, email, phone, role, sector, status, password, matricula, cnh) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        const params = [name, email, phone || null, empRole, JSON.stringify(sector || []), status || 'Disponível', hashedPassword, matricula || null, cnh || null];
         
         db.run(sql, params, function(err) {
-            if (err) return res.status(500).json({ error: 'Falha ao persistir novo colaborador. Verifique se o e-mail ou matrícula já existem.' });
+            if (err) return res.status(500).json({ error: 'Falha ao persistir novo colaborador. Verifique se o e-mail, matrícula ou telefone já existem.' });
             logChange('INSERT', 'employees', this.lastID, { name, role: empRole, matricula }, req.user);
             res.json({ id: this.lastID });
         });
@@ -120,10 +119,10 @@ module.exports = function(db) {
         if (!isAuthorized) return res.status(403).json({ message: 'Ação não permitida para seu nível de acesso.' });
 
         backupDb();
-        const { name, role: empRole, status, email, sector, password, matricula, cnh } = req.body;
+        const { name, role: empRole, status, email, phone, sector, password, matricula, cnh } = req.body;
         
         let passwordFragment = '';
-        const params = [name || null, empRole || null, status || null, email || null, null, matricula || null, cnh || null];
+        const params = [name || null, empRole || null, status || null, email || null, phone || null, null, matricula || null, cnh || null];
 
         // Se uma nova senha foi enviada, hasheamos
         if (password) {
@@ -134,7 +133,7 @@ module.exports = function(db) {
         }
 
         const sectorStr = sector ? (Array.isArray(sector) ? JSON.stringify(sector) : sector) : null;
-        params[4] = sectorStr;
+        params[5] = sectorStr;
         params.push(req.params.id);
 
         const sql = `UPDATE employees SET 
@@ -142,6 +141,7 @@ module.exports = function(db) {
             role = COALESCE(?, role), 
             status = COALESCE(?, status), 
             email = COALESCE(?, email), 
+            phone = COALESCE(?, phone),
             sector = COALESCE(?, sector), 
             matricula = COALESCE(?, matricula),
             cnh = COALESCE(?, cnh)

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useApp } from '@/contexts/app-provider';
-import { CarFront, LogIn, Users, Loader2, ShieldCheck } from 'lucide-react';
+import { CarFront, LogIn, Users, Loader2, ShieldCheck, Phone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -25,7 +24,6 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Correção: Passando email, password e o flag de redirecionamento como true
       await login(email, password, true);
 
     } catch (error: any) {
@@ -67,16 +65,23 @@ export default function LoginPage() {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email">Identificador (E-mail ou Matrícula)</Label>
-                <Input
-                  id="email"
-                  type="text"
-                  placeholder="seu.nome@empresa.com ou MAT-123"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                />
+                <Label htmlFor="email">Identificador</Label>
+                <div className="relative">
+                    <Input
+                      id="email"
+                      type="text"
+                      placeholder="E-mail, Matrícula ou Telefone"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={isLoading}
+                      className="pr-10"
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-20">
+                        <Users className="h-4 w-4" />
+                    </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground">Ex: admin@citymotion.com, MAT-123 ou 5511999999999</p>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -121,10 +126,8 @@ export default function LoginPage() {
                 <button onClick={() => handleSimulatedLogin('dev@dev.com', '123456789')} className="text-primary hover:underline ml-1">dev@dev.com</button>
               </p>
               <p><strong>Admin Geral:</strong> <button onClick={() => handleSimulatedLogin('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
-              <p><strong>Gestor de Setor:</strong> <button onClick={() => handleSimulatedLogin('manager@citymotion.com')} className="text-primary hover:underline">manager@citymotion.com</button></p>
+              <p><strong>Gestor (via Telefone):</strong> <button onClick={() => handleSimulatedLogin('5511977777777')} className="text-primary hover:underline">5511977777777</button></p>
               <p><strong>Motorista:</strong> <button onClick={() => handleSimulatedLogin('driver@citymotion.com')} className="text-primary hover:underline">driver@citymotion.com</button></p>
-              <p><strong>Colaborador:</strong> <button onClick={() => handleSimulatedLogin('employee@citymotion.com')} className="text-primary hover:underline">employee@citymotion.com</button></p>
-              <p><strong>Técnico Mecânico:</strong> <button onClick={() => handleSimulatedLogin('mecanico@citymotion.com')} className="text-primary hover:underline">mecanico@citymotion.com</button></p>
           </CardContent>
         </Card>
 

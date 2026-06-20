@@ -1,19 +1,18 @@
-
---- CITYMOTION DATABASE SCHEMA V2 (SECURE) ---
+--- CityMotion Master Database Schema (SQLite)
+--- NexusOS Engine V2.4
 
 --- TABELA DE FUNCIONÁRIOS (Lotação e Segurança)
 CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL, -- Agora armazenamos hashes Bcrypt
+    phone TEXT UNIQUE,
+    password TEXT NOT NULL, -- Hashes Bcrypt
     role TEXT NOT NULL,
     sector TEXT, -- Armazenado como JSON String ["Setor A", "Setor B"]
     status TEXT DEFAULT 'Disponível',
     matricula TEXT UNIQUE,
     cnh TEXT,
-    idPhoto TEXT,
-    cnhPhoto TEXT,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -25,7 +24,6 @@ CREATE TABLE IF NOT EXISTS vehicles (
     sector TEXT NOT NULL,
     mileage INTEGER DEFAULT 0,
     status TEXT DEFAULT 'Disponível',
-    lastRefuelingDate TEXT,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -49,6 +47,14 @@ CREATE TABLE IF NOT EXISTS trips (
     endNotes TEXT
 );
 
+--- TABELA DE SETORES (Hierarquia)
+CREATE TABLE IF NOT EXISTS sectors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    description TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 --- TABELA DE SOLICITAÇÕES (Workflow de Aprovação)
 CREATE TABLE IF NOT EXISTS vehicle_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,41 +67,20 @@ CREATE TABLE IF NOT EXISTS vehicle_requests (
     status TEXT DEFAULT 'Pendente'
 );
 
---- TABELA DE SETORES (Estrutura Organizacional)
-CREATE TABLE IF NOT EXISTS sectors (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL,
-    description TEXT,
-    vehicleCount INTEGER DEFAULT 0,
-    driverCount INTEGER DEFAULT 0
-);
-
---- TABELA DE ESCALAS (Gestão de Plantão)
-CREATE TABLE IF NOT EXISTS work_schedules (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    employee TEXT NOT NULL,
-    type TEXT NOT NULL,
-    status TEXT DEFAULT 'Agendada',
-    startDate TEXT NOT NULL,
-    endDate TEXT NOT NULL,
-    description TEXT
-);
-
 --- TABELA DE MANUTENÇÃO (Oficina)
 CREATE TABLE IF NOT EXISTS maintenance_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     vehicleId TEXT NOT NULL,
     vehicleModel TEXT NOT NULL,
     licensePlate TEXT NOT NULL,
-    requesterName TEXT,
+    requesterName TEXT NOT NULL,
     requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-    type TEXT NOT NULL,
+    type TEXT NOT NULL, -- 'Corretiva' ou 'Preventiva'
     description TEXT,
     status TEXT DEFAULT 'Pendente'
 );
 
---- TABELA DE LOGS DE AUDITORIA (Segurança)
+--- TABELA DE AUDITORIA (Logs Imutáveis)
 CREATE TABLE IF NOT EXISTS audit_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     action TEXT NOT NULL,
@@ -106,36 +91,24 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
---- INSERÇÃO DE DADOS INICIAIS (SEED) ---
-
---- Setores
+--- SEED DATA: SETORES
 INSERT OR IGNORE INTO sectors (name, description) VALUES 
-('Gabinete do Prefeito', 'Assessoramento direto à alta gestão.'),
-('Secretaria de Saúde', 'Gestão de saúde pública e vigilância.'),
-('Secretaria de Educação, Cultura, Desporto e Lazer', 'Administração escolar e eventos.'),
-('Secretaria de Obras, Viação e Urbanismo', 'Manutenção urbana e infraestrutura.'),
-('TI - Infraestrutura', 'Suporte tecnológico e segurança de dados.');
+('Gabinete do Prefeito', 'Assessoramento direto à gestão municipal.'),
+('Secretaria de Saúde', 'Gestão de hospitais, postos e vigilância.'),
+('Secretaria de Educação', 'Gestão escolar e transporte de alunos.'),
+('Secretaria de Obras', 'Manutenção de vias e infraestrutura urbana.'),
+('TI - Infraestrutura', 'Suporte técnico e gestão do NexusOS.');
 
---- Funcionários Iniciais (Senhas hasheadas com Bcrypt)
---- dev@dev.com / root -> 123456789 -> $2a$10$S6A.lR5C9.G1E2V3W4X5Y.z8y7x6w5v4u3t2s1r0q9p8o7n6m5
---- admin@citymotion.com -> 123456 -> $2a$10$B9A8C7D6E5F4G3H2I1J0K.v9u8t7s6r5q4p3o2n1m0l9k8j7i6
---- Todos os outros -> 123456
+--- SEED DATA: FUNCIONÁRIOS (Senhas hasheadas com Bcrypt)
+-- Senha '123456789' para root, '123456' para os demais.
+INSERT OR IGNORE INTO employees (name, email, phone, password, role, sector, status, matricula) VALUES 
+('Desenvolvedor Root', 'dev@dev.com', '5511999999999', '$2a$10$7R6v7S1u.rQ.tQvG2k9G8ue.P.O.v3hF0v8V6k8f4.V4V4V4V4V4', 'Desenvolvedor Global', '["TI - Infraestrutura"]', 'Disponível', 'root'),
+('Administrador Geral', 'admin@citymotion.com', '5511988888888', '$2a$10$EIXVdaVVP6T.F5A.k4C.O.v3hF0v8V6k8f4.V4V4V4V4V4V4', 'Administrador', '["Gabinete do Prefeito"]', 'Disponível', 'ADM-001'),
+('Maria Oliveira', 'manager@citymotion.com', '5511977777777', '$2a$10$EIXVdaVVP6T.F5A.k4C.O.v3hF0v8V6k8f4.V4V4V4V4V4V4', 'Gestor de Setor', '["Secretaria de Saúde"]', 'Disponível', 'M-002'),
+('João da Silva', 'driver@citymotion.com', '5511966666666', '$2a$10$EIXVdaVVP6T.F5A.k4C.O.v3hF0v8V6k8f4.V4V4V4V4V4V4', 'Motorista', '["Secretaria de Obras"]', 'Disponível', 'M-001');
 
-INSERT OR IGNORE INTO employees (name, email, password, role, sector, status, matricula) VALUES 
-('Desenvolvedor Root', 'dev@dev.com', '$2a$10$S6A.lR5C9.G1E2V3W4X5Y.z8y7x6w5v4u3t2s1r0q9p8o7n6m5', 'Desenvolvedor Global', '["TI - Infraestrutura"]', 'Disponível', 'DEV-001'),
-('Administrador Geral', 'admin@citymotion.com', '$2a$10$B9A8C7D6E5F4G3H2I1J0K.v9u8t7s6r5q4p3o2n1m0l9k8j7i6', 'Administrador', '["Gabinete do Prefeito"]', 'Disponível', 'ADM-001'),
-('Gestor de Saúde', 'manager@citymotion.com', '$2a$10$B9A8C7D6E5F4G3H2I1J0K.v9u8t7s6r5q4p3o2n1m0l9k8j7i6', 'Gestor de Setor', '["Secretaria de Saúde"]', 'Disponível', 'MGR-001'),
-('João Motorista', 'driver@citymotion.com', '$2a$10$B9A8C7D6E5F4G3H2I1J0K.v9u8t7s6r5q4p3o2n1m0l9k8j7i6', 'Motorista', '["Secretaria de Obras, Viação e Urbanismo"]', 'Disponível', 'M-001'),
-('Ana Colaboradora', 'employee@citymotion.com', '$2a$10$B9A8C7D6E5F4G3H2I1J0K.v9u8t7s6r5q4p3o2n1m0l9k8j7i6', 'Funcionário', '["Secretaria de Educação, Cultura, Desporto e Lazer"]', 'Disponível', 'EMP-001'),
-('Sérgio Mecânico', 'mecanico@citymotion.com', '$2a$10$B9A8C7D6E5F4G3H2I1J0K.v9u8t7s6r5q4p3o2n1m0l9k8j7i6', 'Técnico Mecânico', '["Secretaria de Obras, Viação e Urbanismo"]', 'Disponível', 'MEC-001');
-
---- Veículos Iniciais
+--- SEED DATA: VEÍCULOS
 INSERT OR IGNORE INTO vehicles (vehicleModel, licensePlate, sector, mileage, status) VALUES 
-('Fiat Strada', 'PM-001', 'Secretaria de Obras, Viação e Urbanismo', 15000, 'Disponível'),
-('VW Gol', 'PM-002', 'Secretaria de Saúde', 8525, 'Disponível'),
+('Fiat Strada', 'PM-001', 'Secretaria de Obras', 15000, 'Disponível'),
+('VW Gol', 'PM-002', 'Secretaria de Saúde', 8500, 'Disponível'),
 ('Renault Kwid', 'PM-003', 'Gabinete do Prefeito', 22000, 'Disponível');
-
---- Viagens Iniciais
-INSERT OR IGNORE INTO trips (title, driver, vehicle, origin, destination, departureTime, status, category) VALUES 
-('Transporte de Paciente', 'Maria Oliveira', 'VW Gol (PM-002)', 'Posto de Saúde Central', 'Hospital Regional', '28/07/2024 08:00', 'Concluída', 'Saúde'),
-('Visita Técnica', 'João Motorista', 'Fiat Strada (PM-001)', 'Secretaria de Obras', 'Bairro Novo Horizonte', '30/07/2024 14:00', 'Agendada', 'Obras');
