@@ -439,7 +439,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } else {
           setIsLoading(false);
           // Só redireciona para login se não estiver em rotas públicas
-          const publicRoutes = ['/home', '/cracha'];
+          const publicRoutes = ['/home', '/cracha', '/docs'];
           const isPublic = publicRoutes.some(r => window.location.pathname.startsWith(r));
           if (!isPublic && window.location.pathname !== '/login') {
             router.push('/login');

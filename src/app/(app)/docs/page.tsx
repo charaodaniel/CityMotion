@@ -28,7 +28,7 @@ export default function DocsPage() {
   return (
     <div className="container mx-auto p-4 sm:p-8 space-y-8 pb-20">
       <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-black tracking-tighter flex items-center gap-4">
+        <h1 className="text-4xl font-black tracking-tighter flex items-center gap-4 text-on-surface">
           <BookOpen className="h-10 w-10 text-primary" />
           Central de Ajuda // CityMotion
         </h1>
@@ -102,7 +102,7 @@ export default function DocsPage() {
                 </div>
                 <Separator className="bg-primary/10" />
                 <p className="text-[10px] text-muted-foreground italic">
-                  Sua sessão está protegida por criptografia de ponta a ponta via protocolo JWT.
+                  O acesso público permite visualizar guias e manuais. Funções operacionais exigem autenticação segura.
                 </p>
               </CardContent>
             </Card>
