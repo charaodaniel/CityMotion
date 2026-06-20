@@ -5,7 +5,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '@/contexts/app-provider';
 import { DevTerminal } from '@/components/dev-terminal';
 import { Loader2, ShieldAlert } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 type LoginStep = 'username' | 'password' | 'authenticating' | 'authenticated';
 
@@ -17,8 +16,8 @@ export default function TerminalPage() {
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Acesso permitido apenas para perfis técnicos
-  const hasPermission = ['dev', 'ti', 'admin'].includes(userRole);
+  // Acesso permitido apenas para perfis de alta criticidade técnica
+  const hasPermission = ['dev', 'ti'].includes(userRole);
 
   useEffect(() => {
     if (step !== 'authenticated') {
@@ -33,10 +32,10 @@ export default function TerminalPage() {
     } else if (step === 'password') {
       setStep('authenticating');
       
-      // Simulação de autenticação TTY
+      // Simulação de autenticação de baixo nível (Kernel Login)
       setTimeout(() => {
-        // Aceita as credenciais padrão do sistema de simulação
-        if (password === '123456789' || password === '123456') {
+        // Credenciais de segurança do console
+        if ((username === 'root' || username === 'admin') && (password === '123456789' || password === '123456')) {
             setStep('authenticated');
         } else {
             setError('Login incorrect');
@@ -45,7 +44,7 @@ export default function TerminalPage() {
             setPassword('');
             setTimeout(() => setError(''), 3000);
         }
-      }, 1500);
+      }, 1200);
     }
   };
 
@@ -54,7 +53,7 @@ export default function TerminalPage() {
       <div className="flex flex-col items-center justify-center min-h-[80vh] bg-black text-destructive font-mono p-4">
         <ShieldAlert className="h-16 w-16 mb-4" />
         <h1 className="text-xl font-bold uppercase tracking-widest">Access Denied</h1>
-        <p className="mt-2 text-sm">Insufficient privileges to access NexusOS kernel console.</p>
+        <p className="mt-2 text-sm text-center max-w-md">Sua conta não possui privilégios de acesso ao kernel do NexusOS. Esta violação foi registrada.</p>
       </div>
     );
   }
@@ -106,7 +105,7 @@ export default function TerminalPage() {
             {step === 'authenticating' && (
               <div className="flex items-center gap-2 pt-4 text-primary">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Verifying credentials...</span>
+                <span>Validando credenciais de criptografia...</span>
               </div>
             )}
             
@@ -115,15 +114,12 @@ export default function TerminalPage() {
         </div>
       ) : (
         <div className="h-screen w-screen flex flex-col">
-           {/* Renderizamos o componente de terminal forçado a ocupar a página inteira */}
-           <div className="flex-1 relative">
              <DevTerminal 
                 isOpen={true} 
                 onClose={() => setStep('username')} 
-                onOpenChange={() => {}} 
              />
              
-             {/* Estilo Custom para forçar o terminal a ser full-screen nesta rota */}
+             {/* Estilo para forçar o terminal a ser full-screen nesta rota */}
              <style jsx global>{`
                 .fixed.bottom-6.right-6 {
                     position: relative !important;
@@ -134,12 +130,12 @@ export default function TerminalPage() {
                     max-width: none !important;
                     border: none !important;
                     margin: 0 !important;
+                    box-shadow: none !important;
                 }
                 [data-sidebar="trigger"] {
                     display: none !important;
                 }
              `}</style>
-           </div>
         </div>
       )}
     </div>
