@@ -117,7 +117,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
       
       if (response.status === 401 || response.status === 403) {
-          if (currentUser) logout();
           return null;
       }
 
@@ -156,8 +155,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.error("Erro na sincronização de dados:", error);
       if (!isSilent) {
           toast({
-              title: "Erro de Conexão",
-              description: "Não foi possível sincronizar os dados. Verifique se o servidor backend está rodando.",
+              title: "Erro de Sincronização",
+              description: "Verifique se o servidor backend está rodando em http://localhost:3001",
               variant: "destructive"
           });
       }
@@ -165,13 +164,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [getHeaders, currentUser, toast]);
+  }, [getHeaders, toast]);
 
   const refreshData = async () => {
     await fetchData(true);
     toast({
-        title: "Sincronização Completa",
-        description: "Os dados da interface agora estão idênticos aos do banco SQLite.",
+        title: "Dados Sincronizados",
+        description: "A interface foi atualizada com os dados mais recentes do banco.",
     });
   };
 
@@ -364,6 +363,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (res.ok && data.token && data.user) {
             localStorage.setItem('citymotion_token', data.token);
             localStorage.setItem('userEmailForSimulation', identifier);
+            localStorage.setItem('userPassForSimulation', password);
             
             setCurrentUser(data.user);
             const roleString = data.user.role.toLowerCase();
@@ -381,25 +381,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
             
             setUserRole(determinedRole);
             
+            // Sincroniza os dados antes de redirecionar
             await fetchData(true);
 
             if (shouldRedirect) {
                 if (determinedRole === 'dev') router.push('/dev-global');
                 else if (['ti', 'admin'].includes(determinedRole)) router.push('/dashboard');
-                else if (determinedRole === 'manager' && Array.isArray(data.user.sector) && data.user.sector.length > 1) router.push('/select-sector');
-                else if (determinedRole === 'manager' && Array.isArray(data.user.sector) && data.user.sector.length === 1) {
+                else if (determinedRole === 'manager' && Array.isArray(data.user.sector) && data.user.sector.length > 1) {
+                    router.push('/select-sector');
+                } else if (determinedRole === 'manager' && Array.isArray(data.user.sector) && data.user.sector.length === 1) {
                     setSelectedSector(data.user.sector[0]);
                     router.push('/dashboard');
-                } else router.push('/dashboard');
+                } else {
+                    router.push('/dashboard');
+                }
             }
         } else {
-            throw new Error(data.message || 'Falha na autenticação');
+            throw new Error(data.message || 'Credenciais inválidas ou erro no servidor.');
         }
     } catch (error: any) {
         if (shouldRedirect) {
             toast({ title: "Erro de Acesso", description: error.message, variant: "destructive" });
         }
-        logout();
+        throw error;
     } finally {
         setIsLoading(false);
     }
@@ -408,6 +412,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     if (typeof window !== 'undefined') {
         localStorage.removeItem('userEmailForSimulation');
+        localStorage.removeItem('userPassForSimulation');
         localStorage.removeItem('citymotion_token');
         localStorage.removeItem('selectedSector');
         localStorage.removeItem('activeOrganization');
@@ -422,13 +427,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initializeApp = async () => {
       const storedIdentifier = typeof window !== 'undefined' ? localStorage.getItem('userEmailForSimulation') : null;
+      const storedPass = typeof window !== 'undefined' ? localStorage.getItem('userPassForSimulation') : null;
       const storedToken = typeof window !== 'undefined' ? localStorage.getItem('citymotion_token') : null;
       
       if (storedIdentifier && storedToken) {
-          await login(storedIdentifier, '123456', false);
+          try {
+              await login(storedIdentifier, storedPass || '123456', false);
+          } catch (e) {
+              logout();
+          }
       } else {
           setIsLoading(false);
-          router.push('/login');
+          // Só redireciona para login se não estiver em rotas públicas
+          const publicRoutes = ['/home', '/cracha'];
+          const isPublic = publicRoutes.some(r => window.location.pathname.startsWith(r));
+          if (!isPublic && window.location.pathname !== '/login') {
+            router.push('/login');
+          }
       }
     };
     initializeApp();

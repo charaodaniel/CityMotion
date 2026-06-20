@@ -25,7 +25,8 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email, true);
+      // Correção: Passando email, password e o flag de redirecionamento como true
+      await login(email, password, true);
 
     } catch (error: any) {
         toast({
@@ -66,11 +67,11 @@ export default function LoginPage() {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email">E-mail Corporativo</Label>
+                <Label htmlFor="email">Identificador (E-mail ou Matrícula)</Label>
                 <Input
                   id="email"
-                  type="email"
-                  placeholder="seu.nome@empresa.com"
+                  type="text"
+                  placeholder="seu.nome@empresa.com ou MAT-123"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -93,7 +94,7 @@ export default function LoginPage() {
                     disabled={isLoading}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full h-11 font-bold uppercase tracking-widest text-xs" disabled={isLoading}>
                 {isLoading ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
