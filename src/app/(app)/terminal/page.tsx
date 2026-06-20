@@ -16,8 +16,8 @@ export default function TerminalPage() {
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Acesso permitido apenas para perfis de alta criticidade técnica
-  const hasPermission = ['dev', 'ti'].includes(userRole);
+  // Verificação de permissão de acesso à página (apenas dev e ti)
+  const hasPagePermission = ['dev', 'ti', 'admin'].includes(userRole);
 
   useEffect(() => {
     if (step !== 'authenticated') {
@@ -33,9 +33,9 @@ export default function TerminalPage() {
       setStep('authenticating');
       
       // Simulação de autenticação de baixo nível (Kernel Login)
+      // Nota: O terminal tem suas próprias credenciais de segurança independentes da sessão web
       setTimeout(() => {
-        // Credenciais de segurança do console
-        if ((username === 'root' || username === 'admin') && (password === '123456789' || password === '123456')) {
+        if ((username === 'root' && password === '123456789') || (username === 'admin' && password === '123456')) {
             setStep('authenticated');
         } else {
             setError('Login incorrect');
@@ -44,11 +44,11 @@ export default function TerminalPage() {
             setPassword('');
             setTimeout(() => setError(''), 3000);
         }
-      }, 1200);
+      }, 1000);
     }
   };
 
-  if (!hasPermission) {
+  if (!hasPagePermission) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] bg-black text-destructive font-mono p-4">
         <ShieldAlert className="h-16 w-16 mb-4" />
@@ -67,7 +67,7 @@ export default function TerminalPage() {
         <div className="p-8 max-w-2xl mx-auto space-y-4 pt-20">
           <div className="space-y-1 mb-8">
             <p className="text-primary font-bold">CityMotion(tm) NexusOS v2.4.0 (tty1)</p>
-            <p className="text-zinc-500 text-xs">Kernel 6.1.0-21-nexus-x86_64 on an x86_64</p>
+            <p className="text-zinc-500 text-xs uppercase tracking-widest">Kernel 6.1.0-21-nexus-x86_64</p>
           </div>
 
           {error && <p className="text-red-500 animate-pulse">{error}</p>}
@@ -87,15 +87,14 @@ export default function TerminalPage() {
               />
             </div>
 
-            {step !== 'username' && (
+            {step === 'password' && (
               <div className="flex items-center gap-2">
                 <span className="shrink-0">Password:</span>
                 <input
-                  ref={step === 'password' ? inputRef : null}
+                  ref={inputRef}
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  disabled={step !== 'password'}
                   className="bg-transparent border-none outline-none text-white flex-1"
                   autoComplete="off"
                 />
@@ -105,7 +104,7 @@ export default function TerminalPage() {
             {step === 'authenticating' && (
               <div className="flex items-center gap-2 pt-4 text-primary">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Validando credenciais de criptografia...</span>
+                <span>Verificando hashes de segurança...</span>
               </div>
             )}
             
