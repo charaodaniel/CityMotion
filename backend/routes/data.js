@@ -28,6 +28,7 @@ module.exports = function(db) {
         const sql = `INSERT INTO audit_logs (action, table_name, record_id, details, user_identity) VALUES (?, ?, ?, ?, ?)`;
         db.run(sql, [action, tableName, recordId, JSON.stringify(details), userIdentity], (err) => {
             if (err) console.error('[Audit] Erro ao gravar log:', err.message);
+            else console.log(`[Audit] ${action} em ${tableName} por ${userIdentity}`);
         });
     }
 
@@ -114,11 +115,14 @@ module.exports = function(db) {
     router.post('/employees', (req, res) => {
         backupDb();
         const { name, email, role, sector, status, password, matricula, cnh } = req.body;
+        const identity = req.headers['x-nexus-user'] || 'Sistema';
+        
         const sql = `INSERT INTO employees (name, email, role, sector, status, password, matricula, cnh) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
         const params = [name, email, role, JSON.stringify(sector || []), status || 'Disponível', password || '123456', matricula || null, cnh || null];
+        
         db.run(sql, params, function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('INSERT', 'employees', this.lastID, { name, role, email }, req.headers['user-agent']);
+            logChange('INSERT', 'employees', this.lastID, { name, role, email }, identity);
             res.json({ id: this.lastID });
         });
     });
@@ -126,14 +130,14 @@ module.exports = function(db) {
     router.put('/employees/:id', (req, res) => {
         backupDb();
         const { name, role, status, email, sector, matricula, cnh, password } = req.body;
-        console.log(`[Backend] PUT /employees/${req.params.id} body:`, req.body);
+        const identity = req.headers['x-nexus-user'] || 'Sistema';
         
         const sql = `UPDATE employees SET name = COALESCE(?, name), role = COALESCE(?, role), status = COALESCE(?, status), email = COALESCE(?, email), sector = COALESCE(?, sector), matricula = COALESCE(?, matricula), cnh = COALESCE(?, cnh), password = COALESCE(?, password) WHERE id = ?`;
         const sectorStr = sector ? (Array.isArray(sector) ? JSON.stringify(sector) : sector) : null;
         
         db.run(sql, [name || null, role || null, status || null, email || null, sectorStr, matricula || null, cnh || null, password || null, req.params.id], function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('UPDATE', 'employees', req.params.id, { name, role, status }, req.headers['user-agent']);
+            logChange('UPDATE', 'employees', req.params.id, { name, role, status }, identity);
             res.json({ updated: this.changes });
         });
     });
@@ -141,23 +145,37 @@ module.exports = function(db) {
     router.delete('/employees/:id', (req, res) => {
         backupDb();
         const employeeId = req.params.id;
-        // Simulado: apenas desenvolvedores reais usariam o token para Hard Delete
-        // No protótipo, verificamos se o nome do agente sugere um hard delete ou soft delete
-        db.run('DELETE FROM employees WHERE id = ?', [employeeId], function(err) {
-            if (err) return res.status(500).json({ error: err.message });
-            logChange('DELETE', 'employees', employeeId, { message: 'Remoção física efetuada.' });
-            res.json({ message: 'Registro removido permanentemente.', deleted: true });
-        });
+        const identity = req.headers['x-nexus-user'] || 'Sistema';
+        
+        // Verifica se é Dev Global para permitir Hard Delete
+        // No protótipo, simulamos verificando se o header de identidade contém 'Desenvolvedor' ou 'Root'
+        const isRoot = identity.toLowerCase().includes('dev') || identity.toLowerCase().includes('root');
+
+        if (isRoot) {
+            db.run('DELETE FROM employees WHERE id = ?', [employeeId], function(err) {
+                if (err) return res.status(500).json({ error: err.message });
+                logChange('DELETE', 'employees', employeeId, { message: 'Remoção física efetuada.' }, identity);
+                res.json({ message: 'Registro removido permanentemente.', deleted: true });
+            });
+        } else {
+            db.run("UPDATE employees SET status = 'Desativado' WHERE id = ?", [employeeId], function(err) {
+                if (err) return res.status(500).json({ error: err.message });
+                logChange('SOFT_DELETE', 'employees', employeeId, { status: 'Desativado' }, identity);
+                res.json({ message: 'Colaborador marcado como desativado.', deleted: false });
+            });
+        }
     });
 
     // --- CRUD VEHICLES ---
     router.put('/vehicles/:id', (req, res) => {
         backupDb();
         const { vehicleModel, licensePlate, sector, mileage, status } = req.body;
+        const identity = req.headers['x-nexus-user'] || 'Sistema';
+        
         const sql = `UPDATE vehicles SET vehicleModel = COALESCE(?, vehicleModel), licensePlate = COALESCE(?, licensePlate), sector = COALESCE(?, sector), mileage = COALESCE(?, mileage), status = COALESCE(?, status) WHERE id = ?`;
         db.run(sql, [vehicleModel || null, licensePlate || null, sector || null, mileage || null, status || null, req.params.id], function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('UPDATE', 'vehicles', req.params.id, { vehicleModel, licensePlate, status });
+            logChange('UPDATE', 'vehicles', req.params.id, { vehicleModel, licensePlate, status }, identity);
             res.json({ updated: this.changes });
         });
     });
@@ -166,6 +184,8 @@ module.exports = function(db) {
     router.put('/trips/:id', (req, res) => {
         backupDb();
         const { status, startMileage, endMileage, arrivalTime, startChecklist, endChecklist } = req.body;
+        const identity = req.headers['x-nexus-user'] || 'Sistema';
+        
         const sql = `UPDATE trips SET status = COALESCE(?, status), startMileage = COALESCE(?, startMileage), endMileage = COALESCE(?, endMileage), arrivalTime = COALESCE(?, arrivalTime), startChecklist = COALESCE(?, startChecklist), endChecklist = COALESCE(?, endChecklist) WHERE id = ?`;
         db.run(sql, [
             status || null, 
@@ -177,7 +197,7 @@ module.exports = function(db) {
             req.params.id
         ], function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('UPDATE', 'trips', req.params.id, { status, endMileage });
+            logChange('UPDATE', 'trips', req.params.id, { status, endMileage }, identity);
             res.json({ updated: this.changes });
         });
     });
@@ -186,10 +206,12 @@ module.exports = function(db) {
     router.post('/vehicle_requests', (req, res) => {
         backupDb();
         const { title, sector, details, priority, requester } = req.body;
+        const identity = req.headers['x-nexus-user'] || 'Sistema';
+        
         const sql = `INSERT INTO vehicle_requests (title, sector, details, priority, requester, requestDate, status) VALUES (?, ?, ?, ?, ?, ?, ?)`;
         db.run(sql, [title, sector, details, priority || 'Média', requester, new Date().toISOString(), 'Pendente'], function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('INSERT', 'vehicle_requests', this.lastID, { title, requester });
+            logChange('INSERT', 'vehicle_requests', this.lastID, { title, requester }, identity);
             res.json({ id: this.lastID });
         });
     });
@@ -197,9 +219,11 @@ module.exports = function(db) {
     router.put('/vehicle_requests/:id', (req, res) => {
         backupDb();
         const { status } = req.body;
+        const identity = req.headers['x-nexus-user'] || 'Sistema';
+        
         db.run('UPDATE vehicle_requests SET status = ? WHERE id = ?', [status, req.params.id], function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('UPDATE', 'vehicle_requests', req.params.id, { status });
+            logChange('UPDATE', 'vehicle_requests', req.params.id, { status }, identity);
             res.json({ updated: this.changes });
         });
     });
@@ -208,10 +232,12 @@ module.exports = function(db) {
     router.post('/maintenance_requests', (req, res) => {
         backupDb();
         const { vehicleId, vehicleModel, licensePlate, type, description, requesterName } = req.body;
+        const identity = req.headers['x-nexus-user'] || 'Sistema';
+        
         const sql = `INSERT INTO maintenance_requests (vehicleId, vehicleModel, licensePlate, type, description, requesterName, requestDate, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
         db.run(sql, [vehicleId, vehicleModel, licensePlate, type, description, requesterName, new Date().toISOString(), 'Pendente'], function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('INSERT', 'maintenance_requests', this.lastID, { vehicleModel, type });
+            logChange('INSERT', 'maintenance_requests', this.lastID, { vehicleModel, type }, identity);
             res.json({ id: this.lastID });
         });
     });
@@ -219,9 +245,11 @@ module.exports = function(db) {
     router.put('/maintenance_requests/:id', (req, res) => {
         backupDb();
         const { status } = req.body;
+        const identity = req.headers['x-nexus-user'] || 'Sistema';
+        
         db.run('UPDATE maintenance_requests SET status = ? WHERE id = ?', [status, req.params.id], function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('UPDATE', 'maintenance_requests', req.params.id, { status });
+            logChange('UPDATE', 'maintenance_requests', req.params.id, { status }, identity);
             res.json({ updated: this.changes });
         });
     });

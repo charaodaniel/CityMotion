@@ -93,6 +93,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const prevRequestsLength = useRef<number>(0);
   const prevSchedulesLength = useRef<number>(0);
 
+  const getHeaders = useCallback(() => {
+    return {
+      'Content-Type': 'application/json',
+      'X-Nexus-User': currentUser?.name || 'Sistema/Terminal'
+    };
+  }, [currentUser]);
+
   const setActiveOrganization = (org: Organization | null) => {
     if (typeof window !== 'undefined') {
       if (org) localStorage.setItem('activeOrganization', JSON.stringify(org));
@@ -168,7 +175,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch('/api/nexus/test/db-employees', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify(employee)
       });
       if (res.ok) await fetchData(true);
@@ -181,7 +188,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch(`/api/nexus/test/db-employees/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify(data)
       });
       if (res.ok) await fetchData(true);
@@ -193,7 +200,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteEmployee = async (id: string) => {
     try {
-      const res = await fetch(`/api/nexus/test/db-employees/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/nexus/test/db-employees/${id}`, { 
+        method: 'DELETE',
+        headers: getHeaders()
+      });
       if (res.ok) {
           const result = await res.json();
           await fetchData(true);
@@ -213,7 +223,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch('/api/nexus/test/db-vehicles', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify(vehicle)
       });
       if (res.ok) await fetchData(true);
@@ -226,7 +236,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch(`/api/nexus/test/db-vehicles/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify(data)
       });
       if (res.ok) await fetchData(true);
@@ -240,7 +250,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch(`/api/nexus/trips/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify({ status, ...details })
       });
       if (res.ok) {
@@ -257,7 +267,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
         const res = await fetch('/api/nexus/requests', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({
             ...request,
             requester: currentUser?.name || 'Usuário',
@@ -273,7 +283,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch(`/api/nexus/requests/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify({ status })
       });
       if (res.ok) await fetchData(true);
@@ -287,7 +297,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
         const res = await fetch('/api/nexus/maintenance', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({
             ...request,
             requesterName: currentUser?.name || 'Usuário',
@@ -303,7 +313,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch(`/api/nexus/maintenance/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify({ status })
       });
       if (res.ok) await fetchData(true);

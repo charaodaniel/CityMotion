@@ -35,7 +35,7 @@ const AVAILABLE_ROLES = [
 ];
 
 export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange: (open: boolean) => void; onClose: () => void }) {
-  const { updateEmployee, refreshData } = useApp();
+  const { updateEmployee, refreshData, currentUser } = useApp();
   const { toast } = useToast();
   const [history, setHistory] = useState<TerminalLine[]>([
     { type: 'system', content: 'CityMotion NexusOS v2.0.0 (Admin Console)' },
@@ -107,7 +107,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         addLine('nexus-ping          - Testa comunicação com API/DB.');
         addLine('nexus-resources     - Monitor de hardware (btop).');
         addLine('nexus-db-stats      - Estatísticas de registros no banco.');
-        addLine('nexus-logdb         - Exibe log de auditoria de alterações.');
+        addLine('nexus-logdb         - Log de Auditoria (Data, Quem, O quê).');
         addLine('nexus-db-reset      - Hard reset no banco de dados.');
         addLine('nexus-employees     - Lista todos os funcionários.');
         addLine('nexus-employee-info - Detalhes/Edição de um funcionário (nexus-employee-info <id>).');
@@ -118,6 +118,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
 
       case 'nexus-info':
         addLine('Ambiente: Desenvolvimento');
+        addLine('Operador: ' + (currentUser?.name || 'Sistema/Root'));
         addLine('Engine: NexusBridge Core 1.2');
         addLine('Database: SQLite3 (Arquivo Local)');
         addLine('Platform: ' + (stats?.platform || 'Carregando...'));
@@ -160,21 +161,23 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         break;
 
       case 'nexus-logdb':
-        addLine('Recuperando logs de auditoria...', 'system');
+        addLine('Recuperando logs de auditoria do banco...', 'system');
         try {
             const res = await fetch('/api/nexus/system/audit-logs');
             const data = await res.json();
             if (res.ok && Array.isArray(data)) {
                 if (data.length === 0) {
-                    addLine('Nenhum log de alteração encontrado no banco.');
+                    addLine('Nenhum registro de auditoria encontrado.');
                 } else {
-                    addLine('HORÁRIO            | AÇÃO   | TABELA       | ID  | DETALHES', 'system');
+                    addLine('DATA/HORA        | QUEM                 | AÇÃO   | TABELA       | ALTERAÇÃO', 'system');
+                    addLine('--------------------------------------------------------------------------------', 'system');
                     data.forEach((log: any) => {
                         const time = new Date(log.timestamp).toLocaleTimeString('pt-BR');
+                        const who = String(log.user_identity || 'Sistema').substring(0, 20).padEnd(20);
                         const action = log.action.padEnd(6);
                         const table = log.table_name.padEnd(12);
-                        const id = String(log.record_id).padEnd(3);
-                        addLine(`${time} | ${action} | ${table} | ${id} | ${log.details}`);
+                        const details = log.details.substring(0, 40) + '...';
+                        addLine(`${time} | ${who} | ${action} | ${table} | ${details}`);
                     });
                 }
             } else addLine('Erro ao obter logs do backend.', 'error');
@@ -276,7 +279,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         addLine(`SUCESSO: Registro ${editingUser.id} sincronizado com SQLite.`, 'success');
         setTuiMode(null);
         setEditingUser(null);
-        await refreshData(); // Força recarga da interface
+        await refreshData();
     } catch (e) { 
         addLine('ERRO: Não foi possível persistir as alterações.', 'error'); 
     } finally {
