@@ -125,15 +125,35 @@ module.exports = function(db) {
 
     router.put('/employees/:id', (req, res) => {
         backupDb();
-        const { name, role, status, email, sector, password } = req.body;
+        const { name, role, status, email, sector, password, matricula, cnh } = req.body;
         const identity = req.headers['x-nexus-user'] || 'Sistema';
         
-        const sql = `UPDATE employees SET name = COALESCE(?, name), role = COALESCE(?, role), status = COALESCE(?, status), email = COALESCE(?, email), sector = COALESCE(?, sector), password = COALESCE(?, password) WHERE id = ?`;
+        const sql = `UPDATE employees SET 
+            name = COALESCE(?, name), 
+            role = COALESCE(?, role), 
+            status = COALESCE(?, status), 
+            email = COALESCE(?, email), 
+            sector = COALESCE(?, sector), 
+            password = COALESCE(?, password),
+            matricula = COALESCE(?, matricula),
+            cnh = COALESCE(?, cnh)
+            WHERE id = ?`;
+        
         const sectorStr = sector ? (Array.isArray(sector) ? JSON.stringify(sector) : sector) : null;
         
-        db.run(sql, [name || null, role || null, status || null, email || null, sectorStr, password || null, req.params.id], function(err) {
+        db.run(sql, [
+            name || null, 
+            role || null, 
+            status || null, 
+            email || null, 
+            sectorStr, 
+            password || null,
+            matricula || null,
+            cnh || null,
+            req.params.id
+        ], function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('UPDATE', 'employees', req.params.id, { name, role, status }, identity);
+            logChange('UPDATE', 'employees', req.params.id, { name, role, status, matricula }, identity);
             res.json({ updated: this.changes });
         });
     });

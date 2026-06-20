@@ -270,12 +270,20 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
     
     setIsSaving(true);
     const formData = new FormData(e.currentTarget as HTMLFormElement);
+    
+    // Converte setores de volta para array
+    const sectorInput = formData.get('sector') as string;
+    const sectorArray = sectorInput.split(',').map(s => s.trim()).filter(s => s !== '');
+
     const updatedData = {
         name: formData.get('name') as string,
         role: formData.get('role') as string,
         status: formData.get('status') as string,
         email: formData.get('email') as string,
         password: formData.get('password') as string,
+        matricula: formData.get('matricula') as string,
+        cnh: formData.get('cnh') as string,
+        sector: sectorArray
     };
 
     addLine(`Salvando alterações para o ID ${editingUser.id}...`, 'system');
@@ -374,9 +382,15 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                     </div>
 
                     <div className="p-6 space-y-4 text-black">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold uppercase block">Nome Completo:</label>
-                            <input name="name" defaultValue={editingUser.name} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none" required />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase block">Nome Completo:</label>
+                                <input name="name" defaultValue={editingUser.name} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none" required />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase block">Matrícula:</label>
+                                <input name="matricula" defaultValue={editingUser.matricula} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none" placeholder="Ex: M-001" />
+                            </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
@@ -397,12 +411,22 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase block">Setores (separados por vírgula):</label>
+                                <input name="sector" defaultValue={Array.isArray(editingUser.sector) ? editingUser.sector.join(', ') : editingUser.sector} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase block">CNH:</label>
+                                <input name="cnh" defaultValue={editingUser.cnh} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none" placeholder="Apenas motoristas" />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
                                 <label className="text-xs font-bold uppercase block">Email:</label>
                                 <input name="email" type="email" defaultValue={editingUser.email} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none" required />
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold uppercase block">Nova Senha:</label>
-                                <input name="password" type="text" defaultValue={editingUser.password} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none" required />
+                                <input name="password" type="text" defaultValue={editingUser.password} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none" />
                             </div>
                         </div>
 
