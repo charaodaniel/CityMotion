@@ -110,6 +110,13 @@
       "transformer": "identity"
     },
     {
+      "path": "system/audit-logs",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/system/audit-logs",
+      "transformer": "identity"
+    },
+    {
         "path": "trips",
         "method": "PUT",
         "backendId": "node-backend",

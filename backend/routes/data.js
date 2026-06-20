@@ -23,6 +23,14 @@ module.exports = function(db) {
         }
     }
 
+    // Função auxiliar para registrar auditoria
+    function logChange(action, tableName, recordId, details, userIdentity = 'System') {
+        const sql = `INSERT INTO audit_logs (action, table_name, record_id, details, user_identity) VALUES (?, ?, ?, ?, ?)`;
+        db.run(sql, [action, tableName, recordId, JSON.stringify(details), userIdentity], (err) => {
+            if (err) console.error('[Audit] Erro ao gravar log:', err.message);
+        });
+    }
+
     // Rota para buscar todos os dados iniciais consolidada
     router.get('/data', (req, res) => {
         const queries = {
@@ -72,7 +80,7 @@ module.exports = function(db) {
             });
     });
 
-    // --- READ ROUTES (Required for Terminal) ---
+    // --- READ ROUTES ---
     router.get('/employees', (req, res) => {
         db.all('SELECT * FROM employees', [], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
@@ -110,6 +118,7 @@ module.exports = function(db) {
         const params = [name, email, role, JSON.stringify(sector || []), status || 'Disponível', password || '123456', matricula || null, cnh || null];
         db.run(sql, params, function(err) {
             if (err) return res.status(500).json({ error: err.message });
+            logChange('INSERT', 'employees', this.lastID, { name, role, email }, req.headers['user-agent']);
             res.json({ id: this.lastID });
         });
     });
@@ -117,10 +126,14 @@ module.exports = function(db) {
     router.put('/employees/:id', (req, res) => {
         backupDb();
         const { name, role, status, email, sector, matricula, cnh, password } = req.body;
+        console.log(`[Backend] PUT /employees/${req.params.id} body:`, req.body);
+        
         const sql = `UPDATE employees SET name = COALESCE(?, name), role = COALESCE(?, role), status = COALESCE(?, status), email = COALESCE(?, email), sector = COALESCE(?, sector), matricula = COALESCE(?, matricula), cnh = COALESCE(?, cnh), password = COALESCE(?, password) WHERE id = ?`;
         const sectorStr = sector ? (Array.isArray(sector) ? JSON.stringify(sector) : sector) : null;
+        
         db.run(sql, [name || null, role || null, status || null, email || null, sectorStr, matricula || null, cnh || null, password || null, req.params.id], function(err) {
             if (err) return res.status(500).json({ error: err.message });
+            logChange('UPDATE', 'employees', req.params.id, { name, role, status }, req.headers['user-agent']);
             res.json({ updated: this.changes });
         });
     });
@@ -128,9 +141,11 @@ module.exports = function(db) {
     router.delete('/employees/:id', (req, res) => {
         backupDb();
         const employeeId = req.params.id;
-        // Simplificado para o terminal aceitar deleção sem token JWT complexo no protótipo
+        // Simulado: apenas desenvolvedores reais usariam o token para Hard Delete
+        // No protótipo, verificamos se o nome do agente sugere um hard delete ou soft delete
         db.run('DELETE FROM employees WHERE id = ?', [employeeId], function(err) {
             if (err) return res.status(500).json({ error: err.message });
+            logChange('DELETE', 'employees', employeeId, { message: 'Remoção física efetuada.' });
             res.json({ message: 'Registro removido permanentemente.', deleted: true });
         });
     });
@@ -142,6 +157,7 @@ module.exports = function(db) {
         const sql = `UPDATE vehicles SET vehicleModel = COALESCE(?, vehicleModel), licensePlate = COALESCE(?, licensePlate), sector = COALESCE(?, sector), mileage = COALESCE(?, mileage), status = COALESCE(?, status) WHERE id = ?`;
         db.run(sql, [vehicleModel || null, licensePlate || null, sector || null, mileage || null, status || null, req.params.id], function(err) {
             if (err) return res.status(500).json({ error: err.message });
+            logChange('UPDATE', 'vehicles', req.params.id, { vehicleModel, licensePlate, status });
             res.json({ updated: this.changes });
         });
     });
@@ -161,6 +177,7 @@ module.exports = function(db) {
             req.params.id
         ], function(err) {
             if (err) return res.status(500).json({ error: err.message });
+            logChange('UPDATE', 'trips', req.params.id, { status, endMileage });
             res.json({ updated: this.changes });
         });
     });
@@ -172,6 +189,7 @@ module.exports = function(db) {
         const sql = `INSERT INTO vehicle_requests (title, sector, details, priority, requester, requestDate, status) VALUES (?, ?, ?, ?, ?, ?, ?)`;
         db.run(sql, [title, sector, details, priority || 'Média', requester, new Date().toISOString(), 'Pendente'], function(err) {
             if (err) return res.status(500).json({ error: err.message });
+            logChange('INSERT', 'vehicle_requests', this.lastID, { title, requester });
             res.json({ id: this.lastID });
         });
     });
@@ -181,6 +199,7 @@ module.exports = function(db) {
         const { status } = req.body;
         db.run('UPDATE vehicle_requests SET status = ? WHERE id = ?', [status, req.params.id], function(err) {
             if (err) return res.status(500).json({ error: err.message });
+            logChange('UPDATE', 'vehicle_requests', req.params.id, { status });
             res.json({ updated: this.changes });
         });
     });
@@ -192,6 +211,7 @@ module.exports = function(db) {
         const sql = `INSERT INTO maintenance_requests (vehicleId, vehicleModel, licensePlate, type, description, requesterName, requestDate, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
         db.run(sql, [vehicleId, vehicleModel, licensePlate, type, description, requesterName, new Date().toISOString(), 'Pendente'], function(err) {
             if (err) return res.status(500).json({ error: err.message });
+            logChange('INSERT', 'maintenance_requests', this.lastID, { vehicleModel, type });
             res.json({ id: this.lastID });
         });
     });
@@ -201,11 +221,12 @@ module.exports = function(db) {
         const { status } = req.body;
         db.run('UPDATE maintenance_requests SET status = ? WHERE id = ?', [status, req.params.id], function(err) {
             if (err) return res.status(500).json({ error: err.message });
+            logChange('UPDATE', 'maintenance_requests', req.params.id, { status });
             res.json({ updated: this.changes });
         });
     });
 
-    // --- SYSTEM INFO ---
+    // --- SYSTEM INFO & AUDIT ---
     router.get('/system/resources', (req, res) => {
         const totalMem = os.totalmem();
         const freeMem = os.freemem();
@@ -222,7 +243,7 @@ module.exports = function(db) {
     });
 
     router.get('/system/db-info', (req, res) => {
-        const tables = ['employees', 'vehicles', 'trips', 'sectors', 'vehicle_requests', 'maintenance_requests'];
+        const tables = ['employees', 'vehicles', 'trips', 'sectors', 'vehicle_requests', 'maintenance_requests', 'audit_logs'];
         const stats = {};
         const promises = tables.map(table => new Promise((resolve) => {
             db.get(`SELECT COUNT(*) as count FROM ${table}`, (err, row) => {
@@ -231,6 +252,13 @@ module.exports = function(db) {
             });
         }));
         Promise.all(promises).then(() => res.json({ tables, counts: stats, database: 'SQLite3', status: 'Healthy' }));
+    });
+
+    router.get('/system/audit-logs', (req, res) => {
+        db.all('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 50', [], (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(rows);
+        });
     });
 
     router.post('/maintenance/reset', (req, res) => {

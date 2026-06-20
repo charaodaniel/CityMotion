@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity, Save, ArrowLeft, Coffee, Sparkles, Loader2 } from 'lucide-react';
+import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity, Save, ArrowLeft, Coffee, Sparkles, Loader2, History } from 'lucide-react';
 import { useApp } from '@/contexts/app-provider';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -107,6 +107,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         addLine('nexus-ping          - Testa comunicação com API/DB.');
         addLine('nexus-resources     - Monitor de hardware (btop).');
         addLine('nexus-db-stats      - Estatísticas de registros no banco.');
+        addLine('nexus-logdb         - Exibe log de auditoria de alterações.');
         addLine('nexus-db-reset      - Hard reset no banco de dados.');
         addLine('nexus-employees     - Lista todos os funcionários.');
         addLine('nexus-employee-info - Detalhes/Edição de um funcionário (nexus-employee-info <id>).');
@@ -156,6 +157,28 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                 addLine(`${table.padEnd(20)}: ${count} registros`);
             });
         } catch (e) { addLine('Erro ao buscar estatísticas do banco.', 'error'); }
+        break;
+
+      case 'nexus-logdb':
+        addLine('Recuperando logs de auditoria...', 'system');
+        try {
+            const res = await fetch('/api/nexus/system/audit-logs');
+            const data = await res.json();
+            if (res.ok && Array.isArray(data)) {
+                if (data.length === 0) {
+                    addLine('Nenhum log de alteração encontrado no banco.');
+                } else {
+                    addLine('HORÁRIO            | AÇÃO   | TABELA       | ID  | DETALHES', 'system');
+                    data.forEach((log: any) => {
+                        const time = new Date(log.timestamp).toLocaleTimeString('pt-BR');
+                        const action = log.action.padEnd(6);
+                        const table = log.table_name.padEnd(12);
+                        const id = String(log.record_id).padEnd(3);
+                        addLine(`${time} | ${action} | ${table} | ${id} | ${log.details}`);
+                    });
+                }
+            } else addLine('Erro ao obter logs do backend.', 'error');
+        } catch (e) { addLine('Falha de conexão com o sistema de auditoria.', 'error'); }
         break;
 
       case 'nexus-db-reset':
