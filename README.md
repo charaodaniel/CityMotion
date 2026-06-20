@@ -13,8 +13,8 @@ Desenvolvido com uma arquitetura desacoplada e modular, o sistema centraliza o c
 - **NexusBridge Architecture:** Camada intermediária de adaptação que permite conectar o frontend a múltiplos backends (Node.js, Legados, APIs externas) sem alterar o código do cliente.
 - **Multi-Empresa e Multi-Setor:** Suporte a hierarquias complexas de departamentos e unidades de negócio.
 - **Admin Console (btop style):** Terminal integrado para manutenção e monitoramento de hardware em tempo real.
-- **Design System Profissional:** Construído com Tailwind CSS e componentes ShadCN UI.
-- **Desktop Ready:** Estrutura integrada com Electron.
+- **Design System V2 (NexusOS):** Interface high-tech com telemetria e scanlines.
+- **Segurança de Dados:** Backups automáticos e exclusão lógica (Soft Delete).
 
 ---
 
@@ -32,9 +32,10 @@ O CityMotion utiliza o conceito de **NexusBridge** para garantir flexibilidade t
 ## ✅ Documentação Adicional
 
 - [🚀 Referência da API Backend](./backend/API_REFERENCE.md)
-- [🛠️ Ferramentas de Administração e Terminal](./docs/ADMIN_TOOLS.md)
+- [📊 Diagramas UML e Arquitetura](./docs/DIAGRAMS.md)
+- [🎨 Guia de UI e Layout](./docs/UI_LAYOUT_GUIDE.md)
+- [🛠️ Ferramentas de Administração](./docs/ADMIN_TOOLS.md)
 - [🏗️ Guia de Implementação do Backend](./docs/BACKEND_GUIDE.md)
-- [🛡️ Política de Privacidade e LGPD](./src/app/(app)/privacy/page.tsx)
 
 ---
 
