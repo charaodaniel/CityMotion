@@ -25,13 +25,10 @@ module.exports = function(db) {
                     if (err) {
                         reject(err);
                     } else {
-                        // Tratamento de campos JSON
                         results[key] = rows.map(row => {
                             const newRow = { ...row };
-                            // Remover senhas por segurança no carregamento geral (front-end público)
                             if (key === 'employees') delete newRow.password;
                             
-                            // Parsear campos que são strings JSON no SQLite
                             if (key === 'employees' && newRow.sector) {
                                 try { newRow.sector = JSON.parse(newRow.sector); } catch(e) { newRow.sector = [newRow.sector]; }
                             }
@@ -123,10 +120,10 @@ module.exports = function(db) {
         });
     });
 
-    // --- CRUD TEST ENDPOINTS ---
+    // --- CRUD EMPLOYEES ---
 
     router.get('/employees', (req, res) => {
-        db.all('SELECT id, name, email, role, status, sector FROM employees', [], (err, rows) => {
+        db.all('SELECT id, name, email, role, status, sector, matricula, cnh FROM employees', [], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json(rows.map(r => {
                 try { return { ...r, sector: JSON.parse(r.sector) }; } 
@@ -145,9 +142,18 @@ module.exports = function(db) {
     });
 
     router.post('/employees', (req, res) => {
-        const { name, email, role, sector, status, password } = req.body;
-        const sql = `INSERT INTO employees (name, email, role, sector, status, password) VALUES (?, ?, ?, ?, ?, ?)`;
-        const params = [name, email, role, JSON.stringify(sector || []), status || 'Disponível', password || '123456'];
+        const { name, email, role, sector, status, password, matricula, cnh } = req.body;
+        const sql = `INSERT INTO employees (name, email, role, sector, status, password, matricula, cnh) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        const params = [
+            name, 
+            email, 
+            role, 
+            JSON.stringify(sector || []), 
+            status || 'Disponível', 
+            password || '123456',
+            matricula || null,
+            cnh || null
+        ];
         
         db.run(sql, params, function(err) {
             if (err) return res.status(500).json({ error: err.message });
@@ -197,10 +203,36 @@ module.exports = function(db) {
         });
     });
 
+    // --- CRUD VEHICLES ---
+
     router.get('/vehicles', (req, res) => {
         db.all('SELECT * FROM vehicles', [], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json(rows);
+        });
+    });
+
+    router.post('/vehicles', (req, res) => {
+        const { vehicleModel, licensePlate, sector, mileage, status } = req.body;
+        const sql = `INSERT INTO vehicles (vehicleModel, licensePlate, sector, mileage, status) VALUES (?, ?, ?, ?, ?)`;
+        db.run(sql, [vehicleModel, licensePlate, sector, mileage || 0, status || 'Disponível'], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ id: this.lastID, message: 'Veículo cadastrado.' });
+        });
+    });
+
+    router.put('/vehicles/:id', (req, res) => {
+        const { vehicleModel, licensePlate, sector, mileage, status } = req.body;
+        const sql = `UPDATE vehicles SET 
+            vehicleModel = COALESCE(?, vehicleModel),
+            licensePlate = COALESCE(?, licensePlate),
+            sector = COALESCE(?, sector),
+            mileage = COALESCE(?, mileage),
+            status = COALESCE(?, status)
+            WHERE id = ?`;
+        db.run(sql, [vehicleModel || null, licensePlate || null, sector || null, mileage || null, status || null, req.params.id], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ updated: this.changes });
         });
     });
 

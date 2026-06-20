@@ -14,11 +14,9 @@ import { UserCog, ShieldCheck, ShieldAlert } from 'lucide-react';
 import type { Employee } from '@/lib/types';
 
 export default function ProfilesPage() {
-  const { employees, setEmployees, userRole } = useApp();
+  const { employees, setEmployees, userRole, updateEmployee, refreshData } = useApp();
   const { toast } = useToast();
 
-  // Cargos que podem ser atribuídos. 
-  // O cargo de Desenvolvedor Global é restrito apenas a quem já possui esse cargo.
   const availableRoles = useMemo(() => {
     const baseRoles = [
         "Funcionário", 
@@ -29,7 +27,6 @@ export default function ProfilesPage() {
         "Técnico Mecânico"
     ];
     
-    // Trava de segurança: apenas DEV pode criar outro DEV
     if (userRole === 'dev') {
         return [...baseRoles, "Desenvolvedor Global"];
     }
@@ -38,34 +35,15 @@ export default function ProfilesPage() {
   }, [userRole]);
 
   const handleRoleChange = async (employeeId: string, newRole: string) => {
-    
-    // Otimistic UI Update
-    const originalEmployees = [...employees];
-    const updatedEmployees = employees.map(emp =>
-      emp.id === employeeId ? { ...emp, role: newRole } : emp
-    );
-    setEmployees(updatedEmployees);
-
     try {
-      // API Call via NexusBridge
-      const response = await fetch(`/api/nexus/test/db-employees/${employeeId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: newRole }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Falha ao atualizar o perfil.');
-      }
-
+      await updateEmployee(employeeId, { role: newRole });
+      
       toast({
         title: "Perfil Atualizado!",
         description: `O perfil do colaborador foi alterado para ${newRole}.`,
       });
 
     } catch (error) {
-      // Revert on failure
-      setEmployees(originalEmployees);
       toast({
         title: "Erro!",
         description: "Não foi possível salvar a alteração no banco de dados.",
@@ -127,7 +105,6 @@ export default function ProfilesPage() {
             </TableHeader>
             <TableBody>
               {employees.map((employee) => {
-                // Se o funcionário na lista for DEV e o logado não for DEV, ele não pode ser editado.
                 const isTargetDev = employee.role === 'Desenvolvedor Global';
                 const canEdit = userRole === 'dev' || !isTargetDev;
 

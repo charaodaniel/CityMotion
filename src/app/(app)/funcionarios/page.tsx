@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Employee, EmployeeStatus } from '@/lib/types';
@@ -5,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { PlusCircle, ShieldCheck, Edit, FileText, Link as LinkIcon, Briefcase, Users } from 'lucide-react';
+import { PlusCircle, ShieldCheck, Edit, FileText, Link as LinkIcon, Briefcase, Users, Loader2 } from 'lucide-react';
 import { RegisterEmployeeForm } from '@/components/forms/register-employee-form';
 import { useState, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -29,10 +30,11 @@ function getStatusVariant(status: EmployeeStatus) {
 }
 
 export default function EmployeesPage() {
-  const { employees, setEmployees, userRole, selectedSector } = useApp();
+  const { employees, userRole, selectedSector, updateEmployee, addEmployee } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const visibleEmployees = useMemo(() => {
     if (userRole === 'manager' && selectedSector) {
@@ -61,22 +63,29 @@ export default function EmployeesPage() {
   }
 
   const closeModal = () => {
+    if (isProcessing) return;
     setIsModalOpen(false);
     setSelectedEmployee(null);
   };
 
-  const handleFormSubmit = (newEmployeeData: Partial<Employee>) => {
-    if (modalMode === 'edit' && selectedEmployee) {
-      setEmployees(employees.map(d => d.id === selectedEmployee.id ? { ...d, ...newEmployeeData } as Employee : d));
-    } else {
-      const newEmployee: Employee = {
-        id: `${employees.length + 1}`,
-        status: 'Disponível',
-        ...newEmployeeData
-      } as Employee;
-      setEmployees([...employees, newEmployee]);
+  const handleFormSubmit = async (newEmployeeData: Partial<Employee>) => {
+    setIsProcessing(true);
+    try {
+        if (modalMode === 'edit' && selectedEmployee) {
+            await updateEmployee(selectedEmployee.id, newEmployeeData);
+        } else {
+            await addEmployee({
+                ...newEmployeeData,
+                status: 'Disponível'
+            });
+        }
+        setIsModalOpen(false);
+        setSelectedEmployee(null);
+    } catch (e) {
+        console.error("Falha ao salvar funcionário");
+    } finally {
+        setIsProcessing(false);
     }
-    closeModal();
   };
   
   const getModalContent = () => {
@@ -260,7 +269,12 @@ export default function EmployeesPage() {
                       <DialogTitle className="text-2xl font-black tracking-tight">{title}</DialogTitle>
                       <DialogDescription className="text-xs font-mono uppercase tracking-widest text-primary/70">{description}</DialogDescription>
                   </DialogHeader>
-                  <div className="scanlines rounded-lg border border-border/50 p-6 bg-accent/10">
+                  <div className="scanlines rounded-lg border border-border/50 p-6 bg-accent/10 relative">
+                    {isProcessing && (
+                        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] z-50 flex items-center justify-center rounded-lg">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                    )}
                     {content}
                   </div>
                 </>

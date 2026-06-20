@@ -75,6 +75,20 @@
       "transformer": "identity"
     },
     {
+      "path": "test/db-vehicles",
+      "method": "POST",
+      "backendId": "node-backend",
+      "target": "/vehicles",
+      "transformer": "identity"
+    },
+    {
+      "path": "test/db-vehicles",
+      "method": "PUT",
+      "backendId": "node-backend",
+      "target": "/vehicles",
+      "transformer": "identity"
+    },
+    {
       "path": "maintenance/db-reset",
       "method": "POST",
       "backendId": "node-backend",

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
@@ -27,9 +28,14 @@ interface AppContextType {
   updateVehicleRequestStatus: (id: string, status: VehicleRequestStatus) => void;
   
   employees: Employee[];
+  addEmployee: (employee: Partial<Employee>) => Promise<void>;
+  updateEmployee: (id: string, data: Partial<Employee>) => Promise<void>;
+  deleteEmployee: (id: string) => Promise<void>;
   setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
   
   vehicles: Vehicle[];
+  addVehicle: (vehicle: Partial<Vehicle>) => Promise<void>;
+  updateVehicle: (id: string, data: Partial<Vehicle>) => Promise<void>;
   setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
 
   sectors: Sector[];
@@ -54,7 +60,6 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Mapa de e-mail para ID baseado no banco de dados SQLite real
 const emailToIdMap: Record<string, string> = {
     'dev@dev.com': '0',
     'admin@citymotion.com': '11', 
@@ -126,7 +131,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const orgs = await orgRes.json();
           setOrganizations(orgs);
           
-          // Restaurar organização ativa se salva
           const savedOrg = localStorage.getItem('activeOrganization');
           if (savedOrg) setActiveOrganizationState(JSON.parse(savedOrg));
       }
@@ -152,6 +156,71 @@ export function AppProvider({ children }: { children: ReactNode }) {
         title: "Sincronização Completa",
         description: "Os dados da interface agora estão idênticos aos do banco SQLite.",
     });
+  };
+
+  // --- CRUD Employees ---
+  const addEmployee = async (employee: Partial<Employee>) => {
+    try {
+      const res = await fetch('/api/nexus/test/db-employees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(employee)
+      });
+      if (res.ok) await fetchData(true);
+    } catch (e) {
+      console.error("Error adding employee", e);
+    }
+  };
+
+  const updateEmployee = async (id: string, data: Partial<Employee>) => {
+    try {
+      const res = await fetch(`/api/nexus/test/db-employees/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) await fetchData(true);
+      else throw new Error('Falha no backend');
+    } catch (e) {
+      console.error("Error updating employee", e);
+      throw e;
+    }
+  };
+
+  const deleteEmployee = async (id: string) => {
+    try {
+      const res = await fetch(`/api/nexus/test/db-employees/${id}`, { method: 'DELETE' });
+      if (res.ok) await fetchData(true);
+    } catch (e) {
+      console.error("Error deleting employee", e);
+    }
+  };
+
+  // --- CRUD Vehicles ---
+  const addVehicle = async (vehicle: Partial<Vehicle>) => {
+    try {
+      const res = await fetch('/api/nexus/test/db-vehicles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(vehicle)
+      });
+      if (res.ok) await fetchData(true);
+    } catch (e) {
+      console.error("Error adding vehicle", e);
+    }
+  };
+
+  const updateVehicle = async (id: string, data: Partial<Vehicle>) => {
+    try {
+      const res = await fetch(`/api/nexus/test/db-vehicles/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) await fetchData(true);
+    } catch (e) {
+      console.error("Error updating vehicle", e);
+    }
   };
 
   const addNotification = useCallback((notification: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
@@ -368,8 +437,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         refreshData,
         schedules, setSchedules, 
         vehicleRequests, addVehicleRequest, updateVehicleRequestStatus,
-        employees, setEmployees,
-        vehicles, setVehicles,
+        employees, addEmployee, updateEmployee, deleteEmployee, setEmployees,
+        vehicles, addVehicle, updateVehicle, setVehicles,
         sectors, setSectors,
         workSchedules, setWorkSchedules,
         maintenanceRequests, setMaintenanceRequests, addMaintenanceRequest, updateMaintenanceRequestStatus,
