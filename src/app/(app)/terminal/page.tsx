@@ -2,22 +2,17 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useApp } from '@/contexts/app-provider';
 import { DevTerminal } from '@/components/dev-terminal';
-import { Loader2, ShieldAlert } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 type LoginStep = 'username' | 'password' | 'authenticating' | 'authenticated';
 
 export default function TerminalPage() {
-  const { userRole } = useApp();
   const [step, setStep] = useState<LoginStep>('username');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Verificação de permissão de acesso à página (apenas dev e ti)
-  const hasPagePermission = ['dev', 'ti', 'admin'].includes(userRole);
 
   useEffect(() => {
     if (step !== 'authenticated') {
@@ -33,7 +28,6 @@ export default function TerminalPage() {
       setStep('authenticating');
       
       // Simulação de autenticação de baixo nível (Kernel Login)
-      // Nota: O terminal tem suas próprias credenciais de segurança independentes da sessão web
       setTimeout(() => {
         if ((username === 'root' && password === '123456789') || (username === 'admin' && password === '123456')) {
             setStep('authenticated');
@@ -47,16 +41,6 @@ export default function TerminalPage() {
       }, 1000);
     }
   };
-
-  if (!hasPagePermission) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] bg-black text-destructive font-mono p-4">
-        <ShieldAlert className="h-16 w-16 mb-4" />
-        <h1 className="text-xl font-bold uppercase tracking-widest">Access Denied</h1>
-        <p className="mt-2 text-sm text-center max-w-md">Sua conta não possui privilégios de acesso ao kernel do NexusOS. Esta violação foi registrada.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-black text-zinc-300 font-mono selection:bg-primary/30 relative overflow-hidden">
@@ -81,7 +65,7 @@ export default function TerminalPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={step !== 'username'}
-                className="bg-transparent border-none outline-none text-white flex-1"
+                className="bg-transparent border-none outline-none text-white flex-1 focus:ring-0"
                 autoComplete="off"
                 autoFocus
               />
@@ -95,7 +79,7 @@ export default function TerminalPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-transparent border-none outline-none text-white flex-1"
+                  className="bg-transparent border-none outline-none text-white flex-1 focus:ring-0"
                   autoComplete="off"
                 />
               </div>
@@ -118,7 +102,6 @@ export default function TerminalPage() {
                 onClose={() => setStep('username')} 
              />
              
-             {/* Estilo para forçar o terminal a ser full-screen nesta rota */}
              <style jsx global>{`
                 .fixed.bottom-6.right-6 {
                     position: relative !important;
