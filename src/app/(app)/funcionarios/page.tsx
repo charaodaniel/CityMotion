@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { PlusCircle, ShieldCheck, Edit, FileText, Link as LinkIcon, Briefcase, Users, Loader2 } from 'lucide-react';
+import { PlusCircle, ShieldCheck, Edit, FileText, Link as LinkIcon, Briefcase, Users, Loader2, Trash2 } from 'lucide-react';
 import { RegisterEmployeeForm } from '@/components/forms/register-employee-form';
 import { useState, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -14,8 +14,9 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useApp } from '@/contexts/app-provider';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
-function getStatusVariant(status: EmployeeStatus) {
+function getStatusVariant(status: EmployeeStatus | string) {
   switch (status) {
     case 'Disponível':
       return 'secondary';
@@ -23,6 +24,7 @@ function getStatusVariant(status: EmployeeStatus) {
     case 'Em Viagem':
       return 'default';
     case 'Afastado':
+    case 'Desativado':
       return 'destructive';
     default:
       return 'outline';
@@ -30,17 +32,22 @@ function getStatusVariant(status: EmployeeStatus) {
 }
 
 export default function EmployeesPage() {
-  const { employees, userRole, selectedSector, updateEmployee, addEmployee } = useApp();
+  const { employees, userRole, selectedSector, updateEmployee, addEmployee, deleteEmployee } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'register' | 'details' | 'edit'>('register');
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   
   const visibleEmployees = useMemo(() => {
+    // Desenvolvedores veem todos, inclusive desativados
+    if (userRole === 'dev') return employees;
+    
+    // Gestores e Admins veem apenas os ativos (ou do seu setor)
+    let list = employees.filter(e => e.status !== 'Desativado');
     if (userRole === 'manager' && selectedSector) {
-      return employees.filter(d => d.sector.includes(selectedSector));
+      return list.filter(d => d.sector.includes(selectedSector));
     }
-    return employees;
+    return list;
   }, [employees, userRole, selectedSector]);
 
 
@@ -83,6 +90,16 @@ export default function EmployeesPage() {
         setSelectedEmployee(null);
     } catch (e) {
         console.error("Falha ao salvar funcionário");
+    } finally {
+        setIsProcessing(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setIsProcessing(true);
+    try {
+        await deleteEmployee(id);
+        setIsModalOpen(false);
     } finally {
         setIsProcessing(false);
     }
@@ -149,32 +166,36 @@ export default function EmployeesPage() {
                         {selectedEmployee && <Badge variant={getStatusVariant(selectedEmployee.status)}>{selectedEmployee.status}</Badge>}
                     </div>
                 </div>
-                {(selectedEmployee?.idPhoto || selectedEmployee?.cnhPhoto) && (
-                  <>
-                    <Separator className="bg-border/30" />
-                    <div>
-                      <h3 className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center text-muted-foreground">
-                        <FileText className="mr-2 h-4 w-4" />
-                        Documentos
-                      </h3>
-                      <div className="space-y-2 text-sm">
-                        {selectedEmployee.idPhoto && (
-                          <Link href="#" className="flex items-center text-primary hover:underline" onClick={(e) => e.preventDefault()}>
-                            <LinkIcon className="mr-2 h-4 w-4" />
-                            <span>Foto 3x4: {selectedEmployee.idPhoto}</span>
-                          </Link>
-                        )}
-                        {selectedEmployee.cnhPhoto && (
-                          <Link href="#" className="flex items-center text-primary hover:underline" onClick={(e) => e.preventDefault()}>
-                            <LinkIcon className="mr-2 h-4 w-4" />
-                            <span>CNH: {selectedEmployee.cnhPhoto}</span>
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                )}
-                <div className="flex justify-end pt-4">
+
+                <div className="flex justify-between items-center pt-8">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs font-bold uppercase tracking-widest">
+                                <Trash2 className="mr-2 h-3.5 w-3.5"/>
+                                {userRole === 'dev' ? 'Remover Definitivo' : 'Desativar Registro'}
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="bg-sidebar border-border/50">
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    {userRole === 'dev' 
+                                        ? "Esta ação removerá permanentemente o funcionário do banco de dados SQLite. Esta ação não pode ser desfeita." 
+                                        : "O funcionário será marcado como 'Desativado' e não aparecerá mais nas listagens operacionais, mas o histórico será preservado."}
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel className="border-border/50">Cancelar</AlertDialogCancel>
+                                <AlertDialogAction 
+                                    onClick={() => selectedEmployee && handleDelete(selectedEmployee.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                    Confirmar
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+
                     <Button variant="outline" size="sm" onClick={() => handleOpenEditModal(selectedEmployee!)} className="text-xs uppercase font-bold tracking-widest">
                         <Edit className="mr-2 h-3.5 w-3.5"/>
                         Editar Registro
@@ -215,7 +236,10 @@ export default function EmployeesPage() {
         {visibleEmployees.map((employee) => (
           <Card 
             key={employee.id} 
-            className="cursor-pointer hover:border-primary transition-all duration-300 bg-sidebar/50 border-border/50 overflow-hidden group"
+            className={cn(
+                "cursor-pointer hover:border-primary transition-all duration-300 bg-sidebar/50 border-border/50 overflow-hidden group",
+                employee.status === 'Desativado' && "opacity-60 grayscale border-destructive/20"
+            )}
           >
             <div onClick={() => handleCardClick(employee)} className="p-6">
                 <CardHeader className="p-0 mb-4">
