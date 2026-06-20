@@ -1,34 +1,35 @@
-# Estágio Único para Desenvolvimento e Testes
-FROM node:18-slim
 
-# Instala dependências do sistema necessárias para compilar módulos nativos (sqlite3)
+# Estágio de construção e execução otimizado para economia de espaço
+FROM node:20-slim AS builder
+
+# Instala dependências de compilação necessárias para o SQLite3 no Linux
 RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
-    sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copia arquivos de definição de pacotes
-COPY package*.json ./
-COPY backend/package*.json ./backend/
+# Copia apenas os arquivos de dependências primeiro
+COPY package.json package-lock.json ./
+COPY backend/package.json ./backend/
 
-# Instala dependências (Frontend e Backend)
+# Instala dependências (incluindo as de build para o sqlite)
 RUN npm install
 RUN cd backend && npm install
 
 # Copia o restante do código
 COPY . .
 
-# Expõe as portas do Frontend (9002) e Backend (3001)
+# Gera o build do Next.js
+RUN npm run build
+
+# Remove dependências de desenvolvimento para economizar espaço
+RUN npm prune --production
+
 EXPOSE 9002
 EXPOSE 3001
 
-# Variáveis de Ambiente padrão
-ENV JWT_SECRET=citymotion-dev-secret-token-2024
-ENV NODE_ENV=development
-
-# Script de inicialização: inicializa o banco e sobe os dois serviços
-CMD ["sh", "-c", "cd backend && npm run db:init && cd .. && npm run dev"]
+# Script de inicialização para rodar ambos os serviços
+CMD ["sh", "-c", "cd backend && npm start & npm start"]
