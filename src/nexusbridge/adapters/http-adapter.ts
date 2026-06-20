@@ -72,7 +72,10 @@ export class HttpAdapter {
         };
       }
       
-      throw error;
+      return {
+        status: 500,
+        data: { error: "Erro Interno", message: error.message }
+      };
     }
   }
 }

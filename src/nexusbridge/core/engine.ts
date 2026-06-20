@@ -54,6 +54,7 @@ export class NexusBridge {
       return {
         status: 404,
         data: { 
+            status: 404,
             message: `NexusBridge: Route not found for "${normalizedPath}"`,
             availableRoutes: config.routes.map(r => r.path)
         }
@@ -63,7 +64,10 @@ export class NexusBridge {
     // 2. Resolver o Backend
     const backend = (config.backends as any)[route.backendId];
     if (!backend) {
-      throw new Error(`NexusBridge: Backend ${route.backendId} not configured.`);
+      return {
+        status: 500,
+        data: { status: 500, message: `NexusBridge: Backend ${route.backendId} not configured.` }
+      };
     }
 
     // Monta a URL alvo, anexando o ID dinâmico se houver
@@ -93,7 +97,7 @@ export class NexusBridge {
       console.error(`[NexusBridge] Error executing request:`, error);
       return {
         status: 500,
-        data: { message: "NexusBridge internal execution error.", detail: error.message }
+        data: { status: 500, message: "NexusBridge internal execution error.", detail: error.message }
       };
     }
   }
