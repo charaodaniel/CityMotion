@@ -1,7 +1,7 @@
-# Usando uma imagem Node.js leve e estável
-FROM node:20-slim
+# Estágio Único para Desenvolvimento e Testes
+FROM node:18-slim
 
-# Instala dependências de sistema necessárias para o SQLite3 e compilação de módulos nativos
+# Instala dependências do sistema necessárias para compilar módulos nativos (sqlite3)
 RUN apt-get update && apt-get install -y \
     python3 \
     make \
@@ -9,32 +9,26 @@ RUN apt-get update && apt-get install -y \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Define o diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos de definição de dependências primeiro (otimização de cache)
+# Copia arquivos de definição de pacotes
 COPY package*.json ./
 COPY backend/package*.json ./backend/
 
-# Instala as dependências do root (frontend) e do backend
+# Instala dependências (Frontend e Backend)
 RUN npm install
 RUN cd backend && npm install
 
-# Copia o restante do código fonte
+# Copia o restante do código
 COPY . .
 
-# Garante que o banco de dados seja inicializado no build ou na primeira execução
-# Nota: O banco SQLite será persistido dentro do container ou via volume
-RUN cd backend && npm run db:init
-
-# Expõe as portas do Frontend (9002) e do Backend (3001)
+# Expõe as portas do Frontend (9002) e Backend (3001)
 EXPOSE 9002
 EXPOSE 3001
 
-# Define variáveis de ambiente padrão
+# Variáveis de Ambiente padrão
+ENV JWT_SECRET=citymotion-dev-secret-token-2024
 ENV NODE_ENV=development
-ENV JWT_SECRET=citymotion_secret_key_dev_123
 
-# Comando para iniciar o ecossistema completo (Frontend + Backend)
-# Utiliza o script 'dev' já configurado com concurrently no package.json
-CMD ["npm", "run", "dev"]
+# Script de inicialização: inicializa o banco e sobe os dois serviços
+CMD ["sh", "-c", "cd backend && npm run db:init && cd .. && npm run dev"]
