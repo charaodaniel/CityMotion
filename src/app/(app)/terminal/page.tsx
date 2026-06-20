@@ -9,7 +9,7 @@ import { useApp } from '@/contexts/app-provider';
 type LoginStep = 'username' | 'password' | 'authenticating' | 'authenticated';
 
 export default function TerminalPage() {
-  const { login, currentUser } = useApp();
+  const { login, currentUser, isLoading: contextLoading } = useApp();
   const [step, setStep] = useState<LoginStep>('username');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -22,6 +22,13 @@ export default function TerminalPage() {
     }
   }, [step]);
 
+  // Se o usuário já estiver logado (talvez por outra aba ou reconexão) e for root, pula direto
+  useEffect(() => {
+    if (currentUser && ['dev', 'ti', 'admin'].includes(currentUser.role.toLowerCase()) && step !== 'authenticated') {
+        setStep('authenticated');
+    }
+  }, [currentUser, step]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 'username') {
@@ -31,18 +38,8 @@ export default function TerminalPage() {
       
       try {
         await login(username, password, false);
-        
-        // O login do AppProvider agora valida de verdade via backend
-        // Se chegamos aqui sem erro, verificamos se o usuário logado tem permissão
-        const checkRes = await fetch('/api/nexus/system/resources', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('citymotion_token')}` }
-        });
-
-        if (checkRes.ok) {
-            setStep('authenticated');
-        } else {
-            throw new Error('Acesso negado: privilégios insuficientes no kernel.');
-        }
+        // O login do AppProvider atualiza o estado global. 
+        // O useEffect acima cuidará de passar para 'authenticated'
       } catch (err: any) {
         setError(err.message || 'Login incorrect');
         setStep('username');
@@ -81,7 +78,7 @@ export default function TerminalPage() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  disabled={step !== 'username'}
+                  disabled={step !== 'username' && step !== 'authenticating'}
                   className="bg-transparent border-none outline-none text-white flex-1 focus:ring-0 p-0"
                   autoComplete="off"
                   spellCheck="false"
@@ -102,7 +99,7 @@ export default function TerminalPage() {
                 </div>
               )}
 
-              {step === 'authenticating' && (
+              {(step === 'authenticating' || contextLoading) && (
                 <div className="flex items-center gap-2 pt-2 text-primary text-xs italic">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   <span>Validando token de segurança no backend...</span>

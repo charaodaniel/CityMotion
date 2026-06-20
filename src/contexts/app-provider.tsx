@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus, UserRole, AppNotification, Organization } from '@/lib/types';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
 interface AppContextType {
@@ -62,6 +62,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -156,7 +157,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!isSilent) {
           toast({
               title: "Erro de Sincronização",
-              description: "Verifique se o servidor backend está rodando em http://localhost:3001",
+              description: "O sistema não conseguiu conectar ao backend central.",
               variant: "destructive"
           });
       }
@@ -174,6 +175,110 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const login = useCallback(async (identifier: string, password = '123456', shouldRedirect = false) => {
+    setIsLoading(true);
+    
+    try {
+        const res = await fetch('/api/nexus/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: identifier, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.token && data.user) {
+            localStorage.setItem('citymotion_token', data.token);
+            localStorage.setItem('userEmailForSimulation', identifier);
+            localStorage.setItem('userPassForSimulation', password);
+            
+            const roleString = data.user.role.toLowerCase();
+            let determinedRole: UserRole = 'employee';
+            const devKeywords = ['dev', 'developer', 'desenvolvedor', 'root', 'global'];
+            const tiKeywords = ['ti', 'suporte técnico', 'sysadmin'];
+            const adminKeywords = ['administrador', 'diretor', 'ceo', 'admin'];
+            const managerKeywords = ['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico'];
+
+            if (devKeywords.some(r => roleString.includes(r))) determinedRole = 'dev';
+            else if (tiKeywords.some(r => roleString.includes(r))) determinedRole = 'ti';
+            else if (adminKeywords.some(r => roleString.includes(r))) determinedRole = 'admin';
+            else if (managerKeywords.some(r => roleString.includes(r))) determinedRole = 'manager';
+            
+            // Define o estado antes de qualquer redirecionamento
+            setCurrentUser(data.user);
+            setUserRole(determinedRole);
+            
+            // Sincroniza dados com o novo token agora no localStorage
+            await fetchData(true);
+
+            if (shouldRedirect) {
+                if (determinedRole === 'dev') router.push('/dev-global');
+                else if (['ti', 'admin'].includes(determinedRole)) router.push('/dashboard');
+                else if (determinedRole === 'manager' && Array.isArray(data.user.sector) && data.user.sector.length > 1) {
+                    router.push('/select-sector');
+                } else if (determinedRole === 'manager' && Array.isArray(data.user.sector) && data.user.sector.length === 1) {
+                    setSelectedSector(data.user.sector[0]);
+                    router.push('/dashboard');
+                } else {
+                    router.push('/dashboard');
+                }
+            }
+        } else {
+            throw new Error(data.message || 'Credenciais inválidas.');
+        }
+    } catch (error: any) {
+        if (shouldRedirect) {
+            toast({ title: "Falha na Autenticação", description: error.message, variant: "destructive" });
+        }
+        throw error;
+    } finally {
+        setIsLoading(false);
+    }
+  }, [fetchData, router, setSelectedSector, toast]);
+
+  const logout = useCallback(() => {
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem('userEmailForSimulation');
+        localStorage.removeItem('userPassForSimulation');
+        localStorage.removeItem('citymotion_token');
+        localStorage.removeItem('selectedSector');
+        localStorage.removeItem('activeOrganization');
+    }
+    setCurrentUser(null);
+    setActiveOrganizationState(null);
+    setSelectedSectorState(null);
+    setUserRole('employee'); 
+    router.push('/login');
+  }, [router]);
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      const storedIdentifier = typeof window !== 'undefined' ? localStorage.getItem('userEmailForSimulation') : null;
+      const storedPass = typeof window !== 'undefined' ? localStorage.getItem('userPassForSimulation') : null;
+      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('citymotion_token') : null;
+      
+      // Permitir acesso ao terminal e home sem redirecionar para login imediatamente
+      const publicRoutes = ['/home', '/cracha', '/docs', '/terminal', '/login'];
+      const isPublic = publicRoutes.some(r => pathname.startsWith(r));
+
+      if (storedIdentifier && storedToken) {
+          try {
+              await login(storedIdentifier, storedPass || '123456', false);
+          } catch (e) {
+              if (!isPublic) logout();
+              else setIsLoading(false);
+          }
+      } else {
+          setIsLoading(false);
+          if (!isPublic) {
+            router.push('/login');
+          }
+      }
+    };
+    initializeApp();
+  }, [pathname, login, logout, router]);
+
+  // Funções de mutação (addEmployee, updateEmployee, etc) omitidas para brevidade, mas devem permanecer as mesmas
   const addEmployee = async (employee: Partial<Employee>) => {
     try {
       const res = await fetch('/api/nexus/test/db-employees', {
@@ -347,107 +452,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('app_notifications');
     }
   };
-
-  const login = useCallback(async (identifier: string, password = '123456', shouldRedirect = false) => {
-    setIsLoading(true);
-    
-    try {
-        const res = await fetch('/api/nexus/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: identifier, password })
-        });
-
-        const data = await res.json();
-
-        if (res.ok && data.token && data.user) {
-            localStorage.setItem('citymotion_token', data.token);
-            localStorage.setItem('userEmailForSimulation', identifier);
-            localStorage.setItem('userPassForSimulation', password);
-            
-            setCurrentUser(data.user);
-            const roleString = data.user.role.toLowerCase();
-            
-            let determinedRole: UserRole = 'employee';
-            const devKeywords = ['dev', 'developer', 'desenvolvedor', 'root', 'global'];
-            const tiKeywords = ['ti', 'suporte técnico', 'sysadmin'];
-            const adminKeywords = ['administrador', 'diretor', 'ceo', 'admin'];
-            const managerKeywords = ['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico'];
-
-            if (devKeywords.some(r => roleString.includes(r))) determinedRole = 'dev';
-            else if (tiKeywords.some(r => roleString.includes(r))) determinedRole = 'ti';
-            else if (adminKeywords.some(r => roleString.includes(r))) determinedRole = 'admin';
-            else if (managerKeywords.some(r => roleString.includes(r))) determinedRole = 'manager';
-            
-            setUserRole(determinedRole);
-            
-            // Sincroniza os dados antes de redirecionar
-            await fetchData(true);
-
-            if (shouldRedirect) {
-                if (determinedRole === 'dev') router.push('/dev-global');
-                else if (['ti', 'admin'].includes(determinedRole)) router.push('/dashboard');
-                else if (determinedRole === 'manager' && Array.isArray(data.user.sector) && data.user.sector.length > 1) {
-                    router.push('/select-sector');
-                } else if (determinedRole === 'manager' && Array.isArray(data.user.sector) && data.user.sector.length === 1) {
-                    setSelectedSector(data.user.sector[0]);
-                    router.push('/dashboard');
-                } else {
-                    router.push('/dashboard');
-                }
-            }
-        } else {
-            throw new Error(data.message || 'Credenciais inválidas ou erro no servidor.');
-        }
-    } catch (error: any) {
-        if (shouldRedirect) {
-            toast({ title: "Erro de Acesso", description: error.message, variant: "destructive" });
-        }
-        throw error;
-    } finally {
-        setIsLoading(false);
-    }
-  }, [fetchData, router, setSelectedSector, toast]);
-
-  const logout = () => {
-    if (typeof window !== 'undefined') {
-        localStorage.removeItem('userEmailForSimulation');
-        localStorage.removeItem('userPassForSimulation');
-        localStorage.removeItem('citymotion_token');
-        localStorage.removeItem('selectedSector');
-        localStorage.removeItem('activeOrganization');
-    }
-    setCurrentUser(null);
-    setActiveOrganizationState(null);
-    setSelectedSectorState(null);
-    setUserRole('employee'); 
-    router.push('/login');
-  };
-
-  useEffect(() => {
-    const initializeApp = async () => {
-      const storedIdentifier = typeof window !== 'undefined' ? localStorage.getItem('userEmailForSimulation') : null;
-      const storedPass = typeof window !== 'undefined' ? localStorage.getItem('userPassForSimulation') : null;
-      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('citymotion_token') : null;
-      
-      if (storedIdentifier && storedToken) {
-          try {
-              await login(storedIdentifier, storedPass || '123456', false);
-          } catch (e) {
-              logout();
-          }
-      } else {
-          setIsLoading(false);
-          // Só redireciona para login se não estiver em rotas públicas
-          const publicRoutes = ['/home', '/cracha', '/docs'];
-          const isPublic = publicRoutes.some(r => window.location.pathname.startsWith(r));
-          if (!isPublic && window.location.pathname !== '/login') {
-            router.push('/login');
-          }
-      }
-    };
-    initializeApp();
-  }, []);
 
   return (
     <AppContext.Provider value={{ 
