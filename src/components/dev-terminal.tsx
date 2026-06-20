@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity, Save, ArrowLeft, Coffee, Sparkles, Loader2, History } from 'lucide-react';
+import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity, Save, ArrowLeft, Coffee, Sparkles, Loader2, History, FileText } from 'lucide-react';
 import { useApp } from '@/contexts/app-provider';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -21,6 +21,16 @@ interface SystemStats {
   cpu: { model: string; cores: number; load: string };
   platform: string;
   nodeVersion: string;
+}
+
+interface AuditLogEntry {
+  id: number;
+  action: string;
+  table_name: string;
+  record_id: string;
+  details: string;
+  user_identity: string;
+  timestamp: string;
 }
 
 const AVAILABLE_ROLES = [
@@ -44,9 +54,11 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   const [input, setInput] = useState('');
   const [stats, setStats] = useState<SystemStats | null>(null);
   
-  const [tuiMode, setTuiMode] = useState<'edit' | null>(null);
+  const [tuiMode, setTuiMode] = useState<'edit' | 'logs' | null>(null);
   const [editingUser, setEditingUser] = useState<Employee | null>(null);
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingLogs, setIsLoadingLogs] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -107,7 +119,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         addLine('nexus-ping          - Testa comunicação com API/DB.');
         addLine('nexus-resources     - Monitor de hardware (btop).');
         addLine('nexus-db-stats      - Estatísticas de registros no banco.');
-        addLine('nexus-logdb         - Log de Auditoria (Data, Quem, O quê).');
+        addLine('nexus-logdb         - Visualizador de Auditoria (Janela TUI).');
         addLine('nexus-db-reset      - Hard reset no banco de dados.');
         addLine('nexus-employees     - Lista todos os funcionários.');
         addLine('nexus-employee-info - Detalhes/Edição de um funcionário (nexus-employee-info <id>).');
@@ -161,29 +173,20 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         break;
 
       case 'nexus-logdb':
-        addLine('Recuperando logs de auditoria do banco...', 'system');
+        addLine('Acessando logs de auditoria...', 'system');
+        setIsLoadingLogs(true);
         try {
             const res = await fetch('/api/nexus/system/audit-logs');
             const data = await res.json();
             if (res.ok && Array.isArray(data)) {
-                if (data.length === 0) {
-                    addLine('Nenhum registro de auditoria encontrado.');
-                } else {
-                    addLine('HORÁRIO  | QUEM                 | AÇÃO   | TABELA       | ALTERAÇÃO', 'system');
-                    addLine('--------------------------------------------------------------------------------', 'system');
-                    data.slice(0, 15).forEach((log: any) => {
-                        const time = new Date(log.timestamp).toLocaleTimeString('pt-BR');
-                        const who = String(log.user_identity || 'Sistema').substring(0, 20).padEnd(20);
-                        const action = String(log.action).padEnd(6);
-                        const table = String(log.table_name).padEnd(12);
-                        const details = String(log.details).substring(0, 40) + '...';
-                        addLine(`${time} | ${who} | ${action} | ${table} | ${details}`);
-                    });
-                }
+                setAuditLogs(data);
+                setTuiMode('logs');
+                addLine('Visualizador de Auditoria iniciado.', 'success');
             } else {
-                addLine('Erro ao obter logs. O banco pode estar vazio ou a tabela não existe.', 'error');
+                addLine('Erro ao obter logs. O banco pode estar vazio.', 'error');
             }
         } catch (e) { addLine('Falha crítica de conexão com o sistema de auditoria.', 'error'); }
+        finally { setIsLoadingLogs(false); }
         break;
 
       case 'nexus-db-reset':
@@ -292,7 +295,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] w-full max-w-3xl h-[550px] bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl flex flex-col font-mono text-sm overflow-hidden animate-in slide-in-from-bottom-4">
+    <div className="fixed bottom-6 right-6 z-[100] w-full max-w-4xl h-[600px] bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl flex flex-col font-mono text-sm overflow-hidden animate-in slide-in-from-bottom-4">
       {/* Terminal Header */}
       <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800">
         <div className="flex items-center gap-2 text-zinc-400">
@@ -300,6 +303,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
           <span className="text-xs font-bold uppercase tracking-wider">Console Dev NexusBridge</span>
         </div>
         <div className="flex gap-2">
+            {isLoadingLogs && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
             <button onClick={() => setHistory([])} className="text-zinc-600 hover:text-zinc-400" title="Limpar Histórico"><Sparkles className="h-3 w-3" /></button>
             <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors">
             <X className="h-4 w-4" />
@@ -357,7 +361,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
             </div>
         </ScrollArea>
 
-        {/* INTERACTIVE TUI OVERLAY */}
+        {/* INTERACTIVE TUI OVERLAY (EDIT USER) */}
         {tuiMode === 'edit' && editingUser && (
             <div className="absolute inset-0 bg-black/70 flex items-center justify-center p-6 backdrop-blur-[1px] z-[60]">
                 <form 
@@ -412,6 +416,81 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                         </div>
                     </div>
                 </form>
+            </div>
+        )}
+
+        {/* INTERACTIVE TUI OVERLAY (AUDIT LOGS) */}
+        {tuiMode === 'logs' && (
+            <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-4 backdrop-blur-[2px] z-[60]">
+                <div className="w-full max-w-4xl bg-zinc-200 border-4 border-double border-zinc-400 shadow-[10px_10px_0px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden">
+                    <div className="bg-[#0000AA] text-white px-4 py-1.5 font-bold flex justify-between items-center select-none shrink-0">
+                        <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            <span>VISUALIZADOR DE AUDITORIA // NEXUS-LOGDB</span>
+                        </div>
+                        <button onClick={() => setTuiMode(null)} className="hover:bg-red-600 px-2">X</button>
+                    </div>
+
+                    <div className="flex-1 overflow-hidden flex flex-col p-4 text-black">
+                        <div className="bg-white border-2 border-zinc-400 flex-1 flex flex-col overflow-hidden">
+                            {/* Table Header */}
+                            <div className="grid grid-cols-12 gap-2 bg-zinc-300 p-2 font-bold text-[10px] uppercase border-b-2 border-zinc-400 shrink-0">
+                                <div className="col-span-2">HORÁRIO</div>
+                                <div className="col-span-2">OPERADOR</div>
+                                <div className="col-span-2">AÇÃO</div>
+                                <div className="col-span-2">TABELA</div>
+                                <div className="col-span-4">DETALHES DA ALTERAÇÃO</div>
+                            </div>
+                            
+                            {/* Table Body */}
+                            <ScrollArea className="flex-1">
+                                <div className="divide-y divide-zinc-200">
+                                    {auditLogs.length > 0 ? auditLogs.map((log) => (
+                                        <div key={log.id} className="grid grid-cols-12 gap-2 p-2 text-[10px] hover:bg-zinc-100 transition-colors">
+                                            <div className="col-span-2 text-zinc-500 font-mono">
+                                                {new Date(log.timestamp).toLocaleTimeString('pt-BR')}
+                                                <br/>
+                                                {new Date(log.timestamp).toLocaleDateString('pt-BR')}
+                                            </div>
+                                            <div className="col-span-2 font-bold truncate" title={log.user_identity}>{log.user_identity || 'Sistema'}</div>
+                                            <div className="col-span-2">
+                                                <span className={cn(
+                                                    "px-1.5 py-0.5 rounded text-white font-bold",
+                                                    log.action === 'INSERT' && "bg-emerald-600",
+                                                    log.action === 'UPDATE' && "bg-blue-600",
+                                                    log.action === 'DELETE' && "bg-red-600",
+                                                    log.action === 'SOFT_DELETE' && "bg-amber-600",
+                                                )}>
+                                                    {log.action}
+                                                </span>
+                                            </div>
+                                            <div className="col-span-2 font-mono">{log.table_name}</div>
+                                            <div className="col-span-4 break-words text-zinc-700 italic">
+                                                {log.details}
+                                            </div>
+                                        </div>
+                                    )) : (
+                                        <div className="p-12 text-center text-zinc-400 italic uppercase tracking-widest">
+                                            Nenhum registro encontrado no banco.
+                                        </div>
+                                    )}
+                                </div>
+                            </ScrollArea>
+                        </div>
+                        
+                        <div className="mt-4 flex justify-between items-end shrink-0">
+                            <div className="text-[9px] text-zinc-600 font-bold uppercase">
+                                Total de registros: {auditLogs.length} | Database: SQLITE3
+                            </div>
+                            <button 
+                                onClick={() => setTuiMode(null)} 
+                                className="px-8 py-1.5 bg-zinc-300 border-2 border-zinc-500 active:translate-y-0.5 shadow-[3px_3px_0px_rgba(0,0,0,0.8)] hover:bg-zinc-400 font-bold text-xs"
+                            >
+                                [ FECHAR JANELA ]
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         )}
       </div>
