@@ -6,17 +6,18 @@ const router = express.Router();
 const JWT_SECRET = 'seu-segredo-super-secreto-para-jwt'; // Em produção, use uma variável de ambiente!
 
 module.exports = function(db) {
-    // Rota de Login
+    // Rota de Login - Suporta Email ou Matrícula
     router.post('/login', (req, res) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.status(400).json({ message: 'Email e senha são obrigatórios.' });
+            return res.status(400).json({ message: 'Identificador e senha são obrigatórios.' });
         }
 
-        const sql = `SELECT * FROM employees WHERE email = ?`;
+        // Busca por email OU matrícula
+        const sql = `SELECT * FROM employees WHERE email = ? OR matricula = ?`;
 
-        db.get(sql, [email], (err, user) => {
+        db.get(sql, [email, email], (err, user) => {
             if (err) {
                 console.error('Erro no banco de dados:', err);
                 return res.status(500).json({ message: 'Erro no servidor.' });
@@ -25,29 +26,25 @@ module.exports = function(db) {
                 return res.status(404).json({ message: 'Usuário não encontrado.' });
             }
 
-            // AVISO: A comparação de senha está simplificada para o protótipo.
-            // Em produção, use uma biblioteca como bcrypt para comparar senhas com hash.
+            // Comparação simplificada para o protótipo
             if (password !== user.password) {
                  return res.status(401).json({ message: 'Credenciais inválidas.' });
             }
 
-            // Tenta fazer o parse do campo 'sector', que agora é um array em JSON string
+            // Tenta fazer o parse do campo 'sector' (JSON array)
             try {
                 user.sector = JSON.parse(user.sector);
             } catch (e) {
-                // Se falhar (ex: string simples), coloca a string dentro de um array
                 user.sector = [user.sector];
             }
-
 
             // Gera o Token JWT
             const token = jwt.sign(
                 { id: user.id, name: user.name, role: user.role, sector: user.sector },
                 JWT_SECRET,
-                { expiresIn: '8h' } // Token expira em 8 horas
+                { expiresIn: '8h' }
             );
 
-            // Remove a senha do objeto de usuário antes de enviar a resposta
             const { password: _, ...userWithoutPassword } = user;
 
             res.status(200).json({
