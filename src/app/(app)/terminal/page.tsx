@@ -9,12 +9,11 @@ import { useApp } from '@/contexts/app-provider';
 type LoginStep = 'username' | 'password' | 'authenticating' | 'authenticated';
 
 export default function TerminalPage() {
-  const { login } = useApp();
+  const { login, currentUser } = useApp();
   const [step, setStep] = useState<LoginStep>('username');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [systemInfo, setSystemInfo] = useState<any>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -31,38 +30,18 @@ export default function TerminalPage() {
       setStep('authenticating');
       
       try {
-        // Validação Real via API do Sistema
-        const res = await fetch('/api/nexus/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: username, password: password })
+        await login(username, password, false);
+        
+        // O login do AppProvider agora valida de verdade via backend
+        // Se chegamos aqui sem erro, verificamos se o usuário logado tem permissão
+        const checkRes = await fetch('/api/nexus/system/resources', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('citymotion_token')}` }
         });
 
-        const data = await res.json();
-
-        if (res.ok && data.user) {
-            const roleStr = data.user.role.toLowerCase();
-            // Verifica se o usuário tem cargo técnico ou administrativo (incluindo global/root)
-            const isAuthorized = roleStr.includes('dev') || 
-                               roleStr.includes('ti') || 
-                               roleStr.includes('admin') || 
-                               roleStr.includes('global') ||
-                               roleStr.includes('root');
-
-            if (isAuthorized) {
-                // Sucesso: Carrega info do sistema para o boot
-                const sysRes = await fetch('/api/nexus/system/resources');
-                const sysData = await sysRes.json().catch(() => ({}));
-                setSystemInfo(sysData);
-                
-                // Loga no contexto global também
-                await login(username, false);
-                setStep('authenticated');
-            } else {
-                throw new Error('Acesso negado: privilégios insuficientes.');
-            }
+        if (checkRes.ok) {
+            setStep('authenticated');
         } else {
-            throw new Error(data.message || 'Login incorrect');
+            throw new Error('Acesso negado: privilégios insuficientes no kernel.');
         }
       } catch (err: any) {
         setError(err.message || 'Login incorrect');
@@ -84,7 +63,7 @@ export default function TerminalPage() {
           <div className="w-full max-w-md space-y-4 animate-in fade-in duration-500">
             <div className="space-y-1 mb-8 border-l-2 border-primary pl-4">
               <p className="text-primary font-bold text-sm sm:text-base">CityMotion(tm) NexusOS v2.4.0 (tty1)</p>
-              <p className="text-zinc-500 text-[10px] uppercase tracking-widest">Kernel 6.1.0-21-nexus-x86_64</p>
+              <p className="text-zinc-500 text-[10px] uppercase tracking-widest">Security Mode: JWT RBAC ACTIVE</p>
             </div>
 
             {error && (
@@ -126,7 +105,7 @@ export default function TerminalPage() {
               {step === 'authenticating' && (
                 <div className="flex items-center gap-2 pt-2 text-primary text-xs italic">
                   <Loader2 className="h-3 w-3 animate-spin" />
-                  <span>Validando credenciais no banco SQLite...</span>
+                  <span>Validando token de segurança no backend...</span>
                 </div>
               )}
               
@@ -134,7 +113,7 @@ export default function TerminalPage() {
             </form>
             
             <div className="pt-10 opacity-20 text-[9px] uppercase tracking-[0.3em] text-center">
-                Secure Terminal Session // Auth Required
+                Secure Terminal Session // RBAC Protection
             </div>
           </div>
         </div>

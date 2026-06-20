@@ -3,7 +3,6 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
 import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus, UserRole, AppNotification, Organization } from '@/lib/types';
-import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,7 +15,7 @@ interface AppContextType {
   setActiveOrganization: (org: Organization | null) => void;
   selectedSector: string | null;
   setSelectedSector: (sector: string | null) => void;
-  login: (identifier: string, shouldRedirect?: boolean) => Promise<void>;
+  login: (identifier: string, password?: string, shouldRedirect?: boolean) => Promise<void>;
   logout: () => void;
   refreshData: () => Promise<void>;
   
@@ -81,15 +80,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
-  const prevRequestsLength = useRef<number>(0);
-  const prevSchedulesLength = useRef<number>(0);
-
   const getHeaders = useCallback(() => {
-    return {
-      'Content-Type': 'application/json',
-      'X-Nexus-User': currentUser?.name || 'Sistema/Terminal'
+    const token = typeof window !== 'undefined' ? localStorage.getItem('citymotion_token') : null;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
     };
-  }, [currentUser]);
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }, []);
 
   const setActiveOrganization = (org: Organization | null) => {
     if (typeof window !== 'undefined') {
@@ -112,12 +112,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     else setIsRefreshing(true);
 
     try {
-      const response = await fetch('/api/nexus/sync-all');
+      const response = await fetch('/api/nexus/sync-all', {
+        headers: getHeaders()
+      });
+      
+      if (response.status === 401 || response.status === 403) {
+          // Token expirado ou inválido
+          if (currentUser) logout();
+          return null;
+      }
+
       if (!response.ok) throw new Error('Falha ao sincronizar com o banco.');
       
       const data = await response.json();
       
-      setSchedules(data.schedules || []);
+      setSchedules(data.trips || []);
       setVehicleRequests(data.requests || []);
       setVehicles(data.vehicles || []);
       setEmployees(data.employees || []);
@@ -135,9 +144,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
               if (savedOrg) setActiveOrganizationState(JSON.parse(savedOrg));
           }
       }
-      
-      prevRequestsLength.current = data.requests?.length || 0;
-      prevSchedulesLength.current = data.schedules?.length || 0;
 
       if (typeof window !== 'undefined') {
           const savedNotifications = localStorage.getItem('app_notifications');
@@ -151,7 +157,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [getHeaders, currentUser]);
 
   const refreshData = async () => {
     await fetchData(true);
@@ -236,7 +242,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // --- Trips (Schedules) Persistance ---
   const updateScheduleStatus = async (id: string, status: ScheduleStatus, details?: any) => {
     try {
       const res = await fetch(`/api/nexus/trips/${id}`, {
@@ -253,16 +258,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // --- Requests Persistance ---
   const addVehicleRequest = async (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => {
     try {
         const res = await fetch('/api/nexus/requests', {
           method: 'POST',
           headers: getHeaders(),
-          body: JSON.stringify({
-            ...request,
-            requester: currentUser?.name || 'Usuário',
-          })
+          body: JSON.stringify(request)
         });
         if (res.ok) await fetchData(true);
       } catch (e) {
@@ -283,16 +284,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // --- Maintenance Persistance ---
   const addMaintenanceRequest = async (request: Omit<MaintenanceRequest, 'id' | 'status' | 'requestDate' | 'requesterName'>) => {
     try {
         const res = await fetch('/api/nexus/maintenance', {
           method: 'POST',
           headers: getHeaders(),
-          body: JSON.stringify({
-            ...request,
-            requesterName: currentUser?.name || 'Usuário',
-          })
+          body: JSON.stringify(request)
         });
         if (res.ok) await fetchData(true);
       } catch (e) {
@@ -307,9 +304,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         headers: getHeaders(),
         body: JSON.stringify({ status })
       });
-      if (res.ok) {
-        await fetchData(true);
-      }
+      if (res.ok) await fetchData(true);
     } catch (e) {
       console.error("Error updating maintenance status", e);
     }
@@ -350,58 +345,65 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = useCallback(async (identifier: string, shouldRedirect = false) => {
+  const login = useCallback(async (identifier: string, password = '123456', shouldRedirect = false) => {
     setIsLoading(true);
-    if (typeof window !== 'undefined') {
-        localStorage.setItem('userEmailForSimulation', identifier);
-    }
     
-    const data = await fetchData();
-    if (!data) {
+    try {
+        const res = await fetch('/api/nexus/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: identifier, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.token && data.user) {
+            localStorage.setItem('citymotion_token', data.token);
+            localStorage.setItem('userEmailForSimulation', identifier);
+            
+            setCurrentUser(data.user);
+            const roleString = data.user.role.toLowerCase();
+            
+            let determinedRole: UserRole = 'employee';
+            const devKeywords = ['dev', 'developer', 'desenvolvedor', 'root', 'global'];
+            const tiKeywords = ['ti', 'suporte técnico', 'sysadmin'];
+            const adminKeywords = ['administrador', 'diretor', 'ceo', 'admin'];
+            const managerKeywords = ['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico'];
+
+            if (devKeywords.some(r => roleString.includes(r))) determinedRole = 'dev';
+            else if (tiKeywords.some(r => roleString.includes(r))) determinedRole = 'ti';
+            else if (adminKeywords.some(r => roleString.includes(r))) determinedRole = 'admin';
+            else if (managerKeywords.some(r => roleString.includes(r))) determinedRole = 'manager';
+            
+            setUserRole(determinedRole);
+            
+            // Carregar dados restantes após login bem-sucedido
+            await fetchData(true);
+
+            if (shouldRedirect) {
+                if (determinedRole === 'dev') router.push('/dev-global');
+                else if (['ti', 'admin'].includes(determinedRole)) router.push('/dashboard');
+                else if (determinedRole === 'manager' && Array.isArray(data.user.sector) && data.user.sector.length > 1) router.push('/select-sector');
+                else if (determinedRole === 'manager' && Array.isArray(data.user.sector) && data.user.sector.length === 1) {
+                    setSelectedSector(data.user.sector[0]);
+                    router.push('/dashboard');
+                } else router.push('/dashboard');
+            }
+        } else {
+            throw new Error(data.message || 'Falha na autenticação');
+        }
+    } catch (error: any) {
+        toast({ title: "Erro de Acesso", description: error.message, variant: "destructive" });
+        logout();
+    } finally {
         setIsLoading(false);
-        return;
     }
-    
-    // Procura o usuário por e-mail ou matrícula no banco carregado
-    const user = data.employees.find((emp: Employee) => 
-        emp.email.toLowerCase() === identifier.toLowerCase() || 
-        emp.matricula?.toLowerCase() === identifier.toLowerCase()
-    );
-
-    if (user) {
-      setCurrentUser(user);
-      const roleString = user.role.toLowerCase();
-      
-      let determinedRole: UserRole = 'employee';
-      
-      const devKeywords = ['dev', 'developer', 'desenvolvedor', 'root', 'global'];
-      const tiKeywords = ['ti', 'suporte técnico', 'sysadmin'];
-      const adminKeywords = ['administrador', 'diretor', 'ceo', 'admin'];
-      const managerKeywords = ['gestor', 'chefe', 'gerente', 'coordenador', 'mecanico', 'mecânico'];
-
-      if (devKeywords.some(r => roleString.includes(r))) determinedRole = 'dev';
-      else if (tiKeywords.some(r => roleString.includes(r))) determinedRole = 'ti';
-      else if (adminKeywords.some(r => roleString.includes(r))) determinedRole = 'admin';
-      else if (managerKeywords.some(r => roleString.includes(r))) determinedRole = 'manager';
-      
-      setUserRole(determinedRole);
-      
-      if (shouldRedirect) {
-          if (determinedRole === 'dev') router.push('/dev-global');
-          else if (['ti', 'admin'].includes(determinedRole)) router.push('/dashboard');
-          else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length > 1) router.push('/select-sector');
-          else if (determinedRole === 'manager' && Array.isArray(user.sector) && user.sector.length === 1) {
-              setSelectedSector(user.sector[0]);
-              router.push('/dashboard');
-          } else router.push('/dashboard');
-      }
-    }
-    setIsLoading(false);
-  }, [fetchData, router, setSelectedSector]);
+  }, [fetchData, router, setSelectedSector, toast]);
 
   const logout = () => {
     if (typeof window !== 'undefined') {
         localStorage.removeItem('userEmailForSimulation');
+        localStorage.removeItem('citymotion_token');
         localStorage.removeItem('selectedSector');
         localStorage.removeItem('activeOrganization');
     }
@@ -415,8 +417,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initializeApp = async () => {
       const storedIdentifier = typeof window !== 'undefined' ? localStorage.getItem('userEmailForSimulation') : null;
-      if (storedIdentifier) await login(storedIdentifier, false);
-      else await fetchData();
+      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('citymotion_token') : null;
+      
+      if (storedIdentifier && storedToken) {
+          // Tenta re-validar a sessão
+          await login(storedIdentifier, '123456', false);
+      } else {
+          setIsLoading(false);
+          router.push('/login');
+      }
     };
     initializeApp();
   }, []);

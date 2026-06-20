@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
@@ -13,12 +14,23 @@ const db = new sqlite3.Database(dbPath, (err) => {
         console.error("Erro ao conectar ao banco de dados:", err.message);
     } else {
         console.log("Conexão com o banco de dados SQLite estabelecida.");
+        
+        // Garantir que a tabela de auditoria exista
+        db.run(`CREATE TABLE IF NOT EXISTS audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action TEXT NOT NULL,
+            table_name TEXT NOT NULL,
+            record_id TEXT,
+            details TEXT,
+            user_identity TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`);
     }
 });
 
 // Middlewares
-app.use(cors()); // Permite requisições de outras origens (seu front-end)
-app.use(express.json()); // Permite que o servidor entenda JSON
+app.use(cors()); 
+app.use(express.json());
 
 // Rotas da API
 const authRoutes = require('./routes/auth');
@@ -29,7 +41,7 @@ app.use('/api', dataRoutes(db));
 
 // Rota de teste
 app.get('/', (req, res) => {
-    res.send('Servidor do CityMotion está no ar!');
+    res.send('Servidor do CityMotion está no ar! Camada de segurança JWT ativa.');
 });
 
 app.listen(PORT, () => {
