@@ -1,129 +1,80 @@
 
-# 📊 Diagramas de Arquitetura e UML - CityMotion
+# 📊 Diagramas de Arquitetura e Fluxo - CityMotion
 
-Este documento detalha a estrutura técnica do sistema CityMotion utilizando UML (via Mermaid.js).
-
----
-
-## 1. Diagrama de Entidade-Relacionamento (ERD)
-Este diagrama representa a estrutura lógica do banco de dados SQLite e as relações entre as entidades do sistema.
-
-```mermaid
-erDiagram
-    ORGANIZATION ||--o{ EMPLOYEE : possui
-    ORGANIZATION ||--o{ VEHICLE : gerencia
-    ORGANIZATION ||--o{ SECTOR : define
-    
-    SECTOR ||--o{ EMPLOYEE : lotacao
-    SECTOR ||--o{ VEHICLE : alocacao
-    
-    EMPLOYEE ||--o{ TRIP : conduz
-    VEHICLE ||--o{ TRIP : utilizado_em
-    
-    EMPLOYEE ||--o{ VEHICLE_REQUEST : solicita
-    SECTOR ||--o{ VEHICLE_REQUEST : destino_setor
-    
-    VEHICLE ||--o{ MAINTENANCE_REQUEST : requer
-    EMPLOYEE ||--o{ MAINTENANCE_REQUEST : abre_chamado
-```
+Este documento detalha a estrutura técnica do sistema utilizando UML (Mermaid.js).
 
 ---
 
-## 2. Diagrama de Sequência (NexusBridge Flow)
-Representa o ciclo de vida de uma requisição de atualização de dados, passando pela camada de adaptação.
+## 1. Fluxo de Autenticação e Autorização (JWT)
+Representa como o sistema valida a identidade sem confiar cegamente no frontend.
 
 ```mermaid
 sequenceDiagram
-    participant UI as Interface (React)
-    participant Provider as AppProvider (Context)
-    participant Bridge as NexusBridge (Next.js Route)
+    participant User as Usuário (Browser)
+    participant Bridge as NexusBridge (Next.js)
     participant Node as Backend (Express)
     participant DB as SQLite (citymotion.db)
-    participant Backup as Backup System (.bak)
 
-    UI->>Provider: updateEmployee(id, data)
-    Provider->>Bridge: PUT /api/nexus/test/db-employees/:id
-    Bridge->>Bridge: Resolve path & backendId
-    Bridge->>Node: PUT http://localhost:3001/api/employees/:id
+    User->>Bridge: POST /api/nexus/auth/login {user, pass}
+    Bridge->>Node: POST /api/login {user, pass}
+    Node->>DB: SELECT * FROM employees WHERE...
+    DB-->>Node: user_data (hashed_pass)
+    Node->>Node: Bcrypt.compare(pass, hashed_pass)
+    Note over Node: Se válido, gera JWT com Role inclusa
+    Node-->>Bridge: 200 OK {token, user}
+    Bridge-->>User: Armazena Token no LocalStorage
     
-    Note over Node,DB: Backend logic
-    Node->>Backup: createCopy(citymotion.db)
-    Node->>DB: UPDATE employees SET ... WHERE id = :id
-    DB-->>Node: changes: 1
-    
-    Node-->>Bridge: 200 OK (JSON)
-    Bridge-->>Provider: 200 OK
-    Provider->>Provider: refreshData() (Silent Sync)
-    Provider-->>UI: Update Local State
+    Note over User,DB: Requisição Protegida (Ex: Reset Banco)
+    User->>Bridge: POST /api/nexus/maintenance/db-reset (Header: Bearer JWT)
+    Bridge->>Node: Repassa Header Authorization
+    Node->>Node: JWT.verify(token)
+    Note over Node: Valida se Role === 'Desenvolvedor Global'
+    Node->>DB: Executa Script de Reset
+    DB-->>Node: Sucesso
+    Node-->>Bridge: 200 OK
+    Bridge-->>User: "Sistema Reiniciado"
 ```
 
 ---
 
-## 3. Diagrama de Estados (Vehicle Lifecycle)
-Representa as mudanças de estado de um ativo de frota dentro do sistema.
+## 2. Diagrama de Entidade-Relacionamento (ERD)
+Estrutura lógica das tabelas no SQLite.
+
+```mermaid
+erDiagram
+    EMPLOYEES ||--o{ AUDIT_LOGS : gera
+    EMPLOYEES ||--o{ TRIPS : conduz
+    VEHICLES ||--o{ TRIPS : utilizado_em
+    VEHICLES ||--o{ MAINTENANCE_REQUESTS : requer
+    SECTORS ||--o{ EMPLOYEES : possui
+    SECTORS ||--o{ VEHICLES : aloca
+```
+
+---
+
+## 3. Arquitetura NexusBridge
+Visão de componentes da camada de adaptação.
+
+```mermaid
+graph TD
+    A[Frontend React] -->|Request Virtual| B[NexusBridge Engine]
+    B -->|Match Route| C{Router Resolver}
+    C -->|Adapter HTTP| D[Node.js Backend]
+    D -->|SQL| E[(SQLite Database)]
+    C -->|Mock| F[JSON Local Files]
+    D -->|Backup| G[.bak Files]
+```
+
+---
+
+## 4. Estados do Veículo (Telemetria)
+Ciclo de vida de um ativo na frota.
 
 ```mermaid
 stateDiagram-v2
     [*] --> Disponivel
-    Disponivel --> Agendada : Criar Missão
-    Agendada --> EmViagem : Iniciar Missão (Checklist)
-    EmViagem --> Disponivel : Finalizar Missão (Checklist)
+    Disponivel --> EmViagem : Iniciar Missão
+    EmViagem --> Disponivel : Finalizar Checklist
     Disponivel --> Manutencao : Relatar Defeito
-    Manutencao --> Disponivel : Concluir Reparo
-    
-    state Manutencao {
-        [*] --> Pendente
-        Pendente --> EmAndamento : Iniciar OS
-        EmAndamento --> Concluida : Finalizar OS
-        Concluida --> [*]
-    }
-```
-
----
-
-## 4. Diagrama de Atividade (Agendamento de Viagem)
-Representa o processo de negócio desde o pedido até a execução.
-
-```mermaid
-flowchart TD
-    A[Início: Colaborador solicita transporte] --> B{Gestor aprova?}
-    B -- Não --> C[Notificar Colaborador]
-    C --> D[Fim]
-    B -- Sim --> E[Sistema gera Trip ID]
-    E --> F[Alocar Motorista e Veículo]
-    F --> G[Notificar Motorista via App]
-    G --> H[Checklist de Saída]
-    H --> I[Executar Viagem]
-    I --> J[Checklist de Chegada]
-    J --> K[Atualizar KM no SQLite]
-    K --> D
-```
-
----
-
-## 5. Diagrama de Componentes (SaaS Layer)
-Visão de alto nível da separação de responsabilidades.
-
-```mermaid
-graph TD
-    subgraph "Frontend Layer (Vercel/Next.js)"
-        A[Dashboard UI] --> B[AppProvider Context]
-    end
-
-    subgraph "NexusBridge Integration"
-        B --> C{Routing Engine}
-        C -->|Match| D[HTTP Adapter]
-        D --> E[Data Transformers]
-    end
-
-    subgraph "Infrastructure Layer (On-Premise/Cloud)"
-        E --> F[Node.js Express Server]
-        F --> G[(SQLite Database)]
-        F --> H[File Storage]
-    end
-
-    subgraph "Developer Tools"
-        I[Nexus CLI] --> C
-        J[TUI Terminal] --> B
-    end
+    Manutencao --> Disponivel : Concluir OS
 ```

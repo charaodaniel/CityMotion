@@ -1,56 +1,56 @@
 
 # 🛠️ Ferramentas de Administração e Manutenção - CityMotion
 
-Este guia detalha os recursos avançados para administradores e desenvolvedores.
+O CityMotion oferece uma suite de ferramentas avançadas para usuários de nível técnico (**Desenvolvedores, TI e Administradores**).
 
 ---
 
-## 🖥️ Terminal de Desenvolvedor (NexusBridge Console)
+## 🖥️ NexusOS Terminal (Kernel Shell)
 
-Acessível pelo ícone `>_` no cabeçalho. Todos os comandos seguem o padrão `nexus-*`.
+O console do CityMotion não é apenas um simulador visual, mas uma interface de comando real conectada ao backend. 
 
-### Monitor de Recursos (estilo btop)
-O terminal exibe em tempo real:
-- **CPU Load:** Carga de processamento do backend Node.js.
-- **Memory:** Uso real da memória RAM (GB/Porcentagem).
-- **Uptime:** Tempo de atividade ininterrupta do servidor.
+### Como Acessar
+- Clique no ícone `>_` no cabeçalho (apenas visível para Admin/Dev).
+- Ou acesse diretamente via `/terminal`.
 
-### Comandos Principais
+### Comandos de Manutenção
 
-| Comando | Descrição |
-| :--- | :--- |
-| `nexus-help` | Lista todos os comandos e aliases. |
-| `nexus-info` | Exibe dados de ambiente e hardware do servidor. |
-| `nexus-status` | Testa conectividade da Engine e do Banco SQLite. |
-| `nexus-resources` | Força a atualização do monitor btop. |
-| `nexus-db-stats` | Mostra contagem de registros por tabela no SQLite. |
-| `nexus-employees` | Lista todos os funcionários diretamente do banco. |
-| `nexus-employee-info <id>` | Abre o editor interativo (TUI) para um funcionário. |
-| `nexus-db-reset` | **Hard Reset:** Reinicia o backend e restaura o banco de fábrica. |
-| `nexus-terminal-clear` | Limpa o histórico de comandos. |
+| Comando | Nível | Descrição |
+| :--- | :--- | :--- |
+| `nexus-info` | Público | Exibe dados do kernel, arquitetura e operador logado. |
+| `nexus-health` | Público | Roda diagnósticos de integridade na Bridge e Banco. |
+| `nexus-db-stats` | Público | Mostra a contagem de registros em cada tabela SQLite. |
+| `nexus-logdb` | TI/Admin | Lista a trilha de auditoria em tempo real. |
+| `nexus-db-reset` | **ROOT** | **Operação Crítica:** Apaga o banco e restaura dados de fábrica. |
+
+### Protocolo de Segurança "sudo"
+Comandos destrutivos exigem:
+1. Confirmação explícita (`y/n`).
+2. Digitação da senha do usuário logado no próprio terminal (validação via Bcrypt no backend).
+
+---
+
+## 📊 Auditoria Inviolável
+
+Cada vez que um registro de funcionário, veículo ou viagem é alterado, o backend registra uma entrada na tabela `audit_logs`:
+- **Timestamp:** Data e hora exata.
+- **Identidade:** Nome e cargo (extraído do JWT).
+- **Ação:** INSERT, UPDATE, SOFT_DELETE, etc.
+- **Detalhes:** JSON contendo os dados alterados.
 
 ---
 
 ## 🌉 NexusBridge Control
 
-Localizado no menu lateral (acesso restrito a DEV e TI).
-- **Visualização de Backends:** Monitora serviços conectados.
-- **Mapa de Rotas:** Visualiza mapeamentos virtuais em tempo real.
-- **Transformers:** Verifica normalização de payloads (ex: Auth).
+Interface visual para monitorar a saúde da ponte entre sistemas:
+- **Traffic Analyzer:** Monitora latência e status HTTP de cada chamada.
+- **Mapeamento de Rotas:** Visualiza quais endpoints virtuais apontam para quais serviços reais.
+- **Console de Teste:** Permite executar requisições manuais para debugar o backend.
 
 ---
 
-## ☕ Easter Eggs e Segurança
+## 🗄️ Gerenciamento do Banco (SQLite)
 
-O terminal inclui funções especiais para testes de curiosidade (Honeypots):
-- `nexus-coffee`: Pausa para o café.
-- `nexus-konami`: Ativa segredos do sistema.
-- `nexus-root`: Comando monitorado para detecção de acesso indevido.
-- `nexus-hack`: Registra tentativas de manipulação não autorizada.
-
----
-
-## 🗄️ Manutenção do Banco (SQLite)
-
-Localização: `backend/database/citymotion.db`.
-O banco pode ser manipulado via TUI no terminal ou através do comando `nexus-db-reset` para restauração rápida em ambiente de homologação.
+O banco de dados reside em `backend/database/citymotion.db`. 
+- **Auto-Backup:** O sistema cria um arquivo `.bak` antes de qualquer alteração estrutural.
+- **Portabilidade:** Ideal para instalações locais e totens sem dependência de internet constante.

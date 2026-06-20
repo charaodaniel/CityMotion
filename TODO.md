@@ -6,29 +6,29 @@ Este arquivo organiza as funcionalidades construídas e os próximos passos do p
 ## ✅ Funcionalidades Implementadas
 
 ### **Arquitetura e Backend**
-- [x] **NexusBridge:** Camada de adaptação de rotas para multi-backend via JSON.
+- [x] **NexusBridge Core:** Camada de adaptação de rotas para multi-backend via JSON.
 - [x] **SQLite3 Integration:** Banco de dados real configurado para persistência de dados.
-- [x] **Backend Node.js:** Servidor Express robusto servindo dados e autenticação.
-- [x] **Auto-Start:** Configuração para iniciar Frontend e Backend simultaneamente com `npm run dev`.
-- [x] **Admin Console:** Terminal visual com monitor de recursos CPU/RAM (estilo btop).
+- [x] **Segurança Profissional:** Hashing de senhas com **Bcrypt** e autenticação via **JWT**.
+- [x] **RBAC no Servidor:** Backend valida privilégios de usuário diretamente no Token, não dependendo apenas do frontend.
+- [x] **Admin Console (TTY):** Terminal textual interativo com logs de sistema e comandos root.
 
 ### **Gestão e Operações**
-- [x] **Módulo de Mecânica:** Fluxo completo de manutenção e compra de peças.
-- [x] **SaaS Generalization:** Interface e termos adaptados para qualquer tipo de organização.
-- [x] **Multi-setor para Gestores:** Seleção de unidade para usuários com múltiplas responsabilidades.
-- [x] **Sistema de Notificações:** Alertas em tempo real para novos pedidos e viagens.
+- [x] **Módulo de Manutenção:** Fluxo completo de oficina, OS e pedido de peças.
+- [x] **SaaS Multitenancy:** Painel global para gerenciamento de múltiplas organizações clientes.
+- [x] **Gestão de Missões:** Ciclo de vida completo da viagem com checklists de saída/chegada.
+- [x] **Crachá Virtual:** Identificação funcional com QR Code dinâmico e validação online.
 
 ### **Segurança e Identidade**
-- [x] **LGPD:** Banner de consentimento e política de privacidade.
-- [x] **Crachá Virtual:** Identificação funcional com QR Code dinâmico.
-- [x] **Perfis SaaS:** Hierarquia de permissões para Admin, Gestor, Motorista e Mecânico.
+- [x] **LGPD:** Banner de consentimento persistente e central de privacidade de dados.
+- [x] **Auditoria:** Registro automático de todas as alterações (INSERT/UPDATE/DELETE) no banco de dados.
+- [x] **Proteção Root:** Desafios de senha (sudo) para comandos destrutivos no terminal.
 
 ## 🛠️ Próximos Passos Sugeridos
 
-- [ ] **Migrar Frontend Progressivamente:** Alterar gradualmente as funções de mutação no `AppProvider` para usarem a ponte `/api/nexus/*`.
-- [ ] **Mapeamento Dinâmico de IDs:** Implementar suporte a parâmetros `:id` na engine do NexusBridge.
-- [ ] **CLI Avançado:** Adicionar comando para gerar relatórios de viagem diretamente via terminal.
-- [ ] **Upload de Arquivos Real:** Conectar os campos de foto do frontend para salvar arquivos físicos no servidor.
+- [ ] **Módulo de Abastecimento:** Integração com sensores de bomba e controle de média de consumo.
+- [ ] **WebSockets:** Notificações em tempo real para gestores quando novos pedidos de viagem são criados.
+- [ ] **Build Desktop (Electron):** Empacotamento da aplicação para uso em totens de garagem.
+- [ ] **Relatórios Avançados:** Gráficos de telemetria de longo prazo usando Recharts com dados reais do SQLite.
 
 ---
 **CityMotion — Mobilidade, transparência e eficiência para a gestão moderna.**

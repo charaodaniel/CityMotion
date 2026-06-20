@@ -1,86 +1,44 @@
 
-# 🎨 Guia de Layout e Componentes UI - CityMotion
+# 🎨 Guia de Design System e UI - NexusOS V2
 
-Este documento descreve a arquitetura visual, o sistema de design e os componentes fundamentais que compõem a interface do CityMotion.
-
----
-
-## 🏗️ Arquitetura do Layout
-
-O sistema utiliza uma estrutura de **Sidebar Inset**, garantindo que a navegação principal esteja sempre acessível enquanto o conteúdo se adapta dinamicamente.
-
-### 1. Sidebar (Navegação Inteligente)
-- **Componente:** `Sidebar` e `SidebarProvider`.
-- **Lógica de Renderização:** O menu é filtrado dinamicamente com base no `userRole`.
-- **Seções:**
-    - **Plataforma (Dev/TI):** Ferramentas de infraestrutura e gestão SaaS.
-    - **Operação (Geral):** Módulos do dia a dia da frota (Veículos, Viagens, etc).
-    - **Perfil e Suporte:** Ações de conta e documentação.
-
-### 2. Header (Barra de Ações Rápidas)
-- **Funcionalidades:**
-    - Botão de **Refresh Global** (sincronização com SQLite).
-    - Gatilho do **NexusOS Terminal** (visível para Admin/Dev).
-    - Central de Notificações.
-    - Menu do Usuário (Avatar e Logout).
+O CityMotion utiliza o **NexusOS**, um sistema de design focado em interfaces de monitoramento e telemetria logística.
 
 ---
 
-## 🎨 Sistema de Design
+## 📐 Princípios de Layout
 
-### Cores e Temas
-O sistema utiliza variáveis CSS HSL definidas em `globals.css` para permitir a personalização total (White Label).
-- **Primary:** Azul vibrante para ações principais e identidade.
-- **Background:** Escuro profundo (`zinc-950`) para a versão moderna/dark.
-- **Accent:** Cores de destaque para badges de status (Verde para disponível, Vermelho para manutenção).
-
-### Tipografia
-- **Fonte Principal:** Inter (Sans-serif) para legibilidade de dados.
-- **Headlines:** Variantes com `font-headline` para títulos de páginas, garantindo hierarquia visual clara.
+### Sidebar Inset
+A navegação lateral é a âncora do sistema. Ela adapta-se dinamicamente ao cargo do usuário:
+- **Root/TI:** Menu "Plataforma" liberado (Nexus, Terminal, Gestão Global).
+- **Gestores:** Foco em "Equipe" e "Aprovações".
+- **Motoristas:** Visão simplificada de "Missões" e "Checklists".
 
 ---
 
-## 🧩 Componentes Core (ShadCN UI)
+## 🌑 Paleta de Cores (Dark Tech)
 
-Utilizamos a biblioteca **ShadCN UI** (Tailwind + Radix UI) para componentes acessíveis e performáticos:
-
-| Componente | Uso Principal |
-| :--- | :--- |
-| **Card** | Container base para métricas, listas e itens de frota. |
-| **Dialog** | Formulários de cadastro, checklists de viagem e editores TUI. |
-| **Table** | Relatórios de faturamento, gestão de funcionários e logs de auditoria. |
-| **Tabs** | Separação de visões (ex: Viagens Gerais vs. Escolares). |
-| **Badge** | Indicadores visuais de status e prioridade. |
-| **Progress** | Monitor de recursos do sistema (CPU/RAM) no terminal. |
+Utilizamos variáveis HSL para permitir personalização (White Label):
+- **Background:** `zinc-950` (Profundidade e foco).
+- **Primary:** Azul Elétrico (Ações principais e telemetria).
+- **Accent:** Cores de status (Esmeralda para Disponível, Destrutivo para Manutenção).
 
 ---
 
-## 🚀 Componentes Especializados
+## 🧩 Componentes Especializados
 
-### 1. DevTerminal (`dev-terminal.tsx`)
-Um terminal interativo estilizado em "Retro TUI" que permite:
-- Monitoramento de hardware em tempo real.
-- Edição de banco de dados via interface de comando.
-- Diagnósticos de rede NexusBridge.
+### 1. Scanlines e CRT Effects
+Adicionados via CSS em componentes de Terminal e Cards de Telemetria para evocar uma estética de hardware industrial.
 
-### 2. Gráficos de Monitoramento
-- **Módulos:** `OverviewChart` e `DriverActivityChart`.
-- **Tecnologia:** Recharts integrado com o tema do sistema.
-- **Uso:** Dashboards de Admin e Relatórios de Faturamento.
+### 2. TUI (Text User Interface)
+O Terminal utiliza fontes monoespaçadas (`font-mono`) e prompts interativos para simular um kernel Unix real.
 
-### 3. Crachá Virtual (`BadgePage`)
-- **Foco:** Mobile-first e Acesso Público.
-- **Componentes:** `QRCodeSVG` dinâmico para validação online instantânea.
-- **Layout:** Card vertical otimizado para impressão e compartilhamento.
-
-### 4. LGPDBanner
-- Componente de consentimento persistente em `localStorage`.
-- Estilizado com `backdrop-blur` para não obstruir a navegação inicial.
+### 3. Crachá Dinâmico
+Componente mobile-first com QR Code gerado em tempo real, validado contra a Bridge para identificação instantânea.
 
 ---
 
-## 📱 Responsividade
-O layout é construído com **Tailwind CSS**, utilizando uma abordagem mobile-first:
-- Em telas pequenas, a Sidebar é convertida em um **Drawer** lateral.
-- Grades de cards (Veículos/Funcionários) adaptam-se de 1 a 4 colunas automaticamente.
-- Tabelas possuem scroll horizontal protegido para não quebrar o layout.
+## 📱 Responsividade SaaS
+
+- **Desktop:** Dashboard estendido com grids de 4 colunas.
+- **Tablet:** Tabelas com scroll horizontal protegido.
+- **Mobile:** Sidebar recolhida em Drawer e cards empilhados para operação de campo por motoristas.
