@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus, UserRole, AppNotification, Organization } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -117,14 +117,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
       
       if (response.status === 401 || response.status === 403) {
-          // Token expirado ou inválido
           if (currentUser) logout();
           return null;
       }
 
-      if (!response.ok) throw new Error('Falha ao sincronizar com o banco.');
-      
       const data = await response.json();
+
+      if (!response.ok) {
+          throw new Error(data.message || 'Falha na comunicação com o backend.');
+      }
       
       setSchedules(data.trips || []);
       setVehicleRequests(data.requests || []);
@@ -151,13 +152,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro na sincronização de dados:", error);
+      if (!isSilent) {
+          toast({
+              title: "Erro de Conexão",
+              description: "Não foi possível sincronizar os dados. Verifique se o servidor backend está rodando.",
+              variant: "destructive"
+          });
+      }
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [getHeaders, currentUser]);
+  }, [getHeaders, currentUser, toast]);
 
   const refreshData = async () => {
     await fetchData(true);
@@ -167,7 +175,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // --- CRUD Employees ---
   const addEmployee = async (employee: Partial<Employee>) => {
     try {
       const res = await fetch('/api/nexus/test/db-employees', {
@@ -211,11 +218,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     } catch (e) {
       console.error("Error deleting employee", e);
-      toast({ title: "Erro na Deleção", description: "Não foi possível completar a ação.", variant: "destructive" });
     }
   };
 
-  // --- CRUD Vehicles ---
   const addVehicle = async (vehicle: Partial<Vehicle>) => {
     try {
       const res = await fetch('/api/nexus/test/db-vehicles', {
@@ -251,7 +256,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
       if (res.ok) {
         await fetchData(true);
-        toast({ title: "Status Atualizado", description: `A missão agora está: ${status}.` });
       }
     } catch (e) {
       console.error("Error updating trip", e);
@@ -377,7 +381,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
             
             setUserRole(determinedRole);
             
-            // Carregar dados restantes após login bem-sucedido
             await fetchData(true);
 
             if (shouldRedirect) {
@@ -393,7 +396,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
             throw new Error(data.message || 'Falha na autenticação');
         }
     } catch (error: any) {
-        toast({ title: "Erro de Acesso", description: error.message, variant: "destructive" });
+        if (shouldRedirect) {
+            toast({ title: "Erro de Acesso", description: error.message, variant: "destructive" });
+        }
         logout();
     } finally {
         setIsLoading(false);
@@ -420,7 +425,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const storedToken = typeof window !== 'undefined' ? localStorage.getItem('citymotion_token') : null;
       
       if (storedIdentifier && storedToken) {
-          // Tenta re-validar a sessão
           await login(storedIdentifier, '123456', false);
       } else {
           setIsLoading(false);
