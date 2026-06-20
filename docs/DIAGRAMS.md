@@ -59,7 +59,49 @@ sequenceDiagram
 
 ---
 
-## 3. Diagrama de Componentes (SaaS Layer)
+## 3. Diagrama de Estados (Vehicle Lifecycle)
+Representa as mudanças de estado de um ativo de frota dentro do sistema.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Disponivel
+    Disponivel --> Agendada : Criar Missão
+    Agendada --> EmViagem : Iniciar Missão (Checklist)
+    EmViagem --> Disponivel : Finalizar Missão (Checklist)
+    Disponivel --> Manutencao : Relatar Defeito
+    Manutencao --> Disponivel : Concluir Reparo
+    
+    state Manutencao {
+        [*] --> Pendente
+        Pendente --> EmAndamento : Iniciar OS
+        EmAndamento --> Concluida : Finalizar OS
+        Concluida --> [*]
+    }
+```
+
+---
+
+## 4. Diagrama de Atividade (Agendamento de Viagem)
+Representa o processo de negócio desde o pedido até a execução.
+
+```mermaid
+flowchart TD
+    A[Início: Colaborador solicita transporte] --> B{Gestor aprova?}
+    B -- Não --> C[Notificar Colaborador]
+    C --> D[Fim]
+    B -- Sim --> E[Sistema gera Trip ID]
+    E --> F[Alocar Motorista e Veículo]
+    F --> G[Notificar Motorista via App]
+    G --> H[Checklist de Saída]
+    H --> I[Executar Viagem]
+    I --> J[Checklist de Chegada]
+    J --> K[Atualizar KM no SQLite]
+    K --> D
+```
+
+---
+
+## 5. Diagrama de Componentes (SaaS Layer)
 Visão de alto nível da separação de responsabilidades.
 
 ```mermaid
@@ -84,28 +126,4 @@ graph TD
         I[Nexus CLI] --> C
         J[TUI Terminal] --> B
     end
-```
-
----
-
-## 4. Hierarquia de Permissões (State Chart)
-Estados possíveis de um usuário dentro do ecossistema.
-
-```mermaid
-stateDiagram-v2
-    [*] --> Guest
-    Guest --> Authenticated : Login
-    
-    state Authenticated {
-        [*] --> Employee
-        Employee --> Driver : Se cargo == 'Motorista'
-        Employee --> Manager : Se cargo == 'Gestor'
-        Manager --> Admin : Acesso total unidade
-    }
-    
-    Authenticated --> DevGlobal : Perfil Root
-    
-    DevGlobal --> HardDelete : Permissão Exclusiva
-    Admin --> SoftDelete : Apenas desativação
-    Manager --> SoftDelete
 ```

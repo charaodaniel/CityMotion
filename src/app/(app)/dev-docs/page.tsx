@@ -4,7 +4,7 @@
 import { useApp } from "@/contexts/app-provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck, Database, Code2, Network, Lock, FileCode, GitBranch, Terminal, Book, UserCircle, Car, Route, HelpCircle, Activity, AlertCircle } from "lucide-react";
+import { ShieldCheck, Database, Code2, Network, Lock, FileCode, GitBranch, Book, UserCircle, Car, Route, HelpCircle, Activity, AlertCircle, AlertTriangle, RefreshCw, ServerOff, Terminal } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -54,6 +54,9 @@ export default function DevDocsPage() {
           </TabsTrigger>
           <TabsTrigger value="nexus" className="text-[10px] font-bold uppercase tracking-widest gap-2">
             <Network className="h-3 w-3" /> NexusBridge
+          </TabsTrigger>
+          <TabsTrigger value="troubleshooting" className="text-[10px] font-bold uppercase tracking-widest gap-2 text-amber-500">
+            <AlertTriangle className="h-3 w-3" /> Resolução de Problemas
           </TabsTrigger>
           <TabsTrigger value="security" className="text-[10px] font-bold uppercase tracking-widest gap-2">
             <Lock className="h-3 w-3" /> Segurança e LGPD
@@ -108,13 +111,13 @@ export default function DevDocsPage() {
 
         {/* 1. ARCHITECTURE / UML */}
         <TabsContent value="architecture">
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="bg-sidebar/50 border-border/50">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Code2 className="h-5 w-5 text-primary" />Entity-Relationship Diagram (ERD)</CardTitle>
-                <CardDescription>Relacionamentos lógicos no banco de dados SQLite.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Code2 className="h-5 w-5 text-primary" />Entidade-Relacionamento (ERD)</CardTitle>
+                <CardDescription>Estrutura lógica do banco SQLite.</CardDescription>
               </CardHeader>
-              <CardContent className="bg-black/40 rounded-lg p-6 font-mono text-xs text-primary/80 overflow-x-auto">
+              <CardContent className="bg-black/40 rounded-lg p-6 font-mono text-[10px] text-primary/80 overflow-x-auto">
                 <pre>{`
   [EMPLOYEES] 1---N [TRIPS]
   [VEHICLES]  1---N [TRIPS]
@@ -128,20 +131,36 @@ export default function DevDocsPage() {
 
             <Card className="bg-sidebar/50 border-border/50">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><GitBranch className="h-5 w-5 text-primary" />Logic Flow: Mutation Persistence</CardTitle>
-                <CardDescription>Caminho de uma atualização de dados (Request Flow).</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Activity className="h-5 w-5 text-primary" />Ciclo de Vida do Ativo (State)</CardTitle>
+                <CardDescription>Estados possíveis de um veículo na frota.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 bg-accent/10 border border-primary/20 rounded-lg">
-                  <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                    <li><strong className="text-foreground">UI (React/Client):</strong> Usuário clica em "Salvar".</li>
-                    <li><strong className="text-foreground">AppProvider:</strong> Dispara função asíncrona via NexusBridge.</li>
-                    <li><strong className="text-foreground">NexusBridge (Proxy):</strong> Resolve alvo, limpa headers e executa chamada real.</li>
-                    <li><strong className="text-foreground">Express Server:</strong> Executa `backupDb()` gerando o arquivo .bak preventivo.</li>
-                    <li><strong className="text-foreground">SQLite Driver:</strong> Persiste dados no arquivo físico `citymotion.db`.</li>
-                    <li><strong className="text-foreground">Feedback & Sync:</strong> Frontend recebe código HTTP e força reload silencioso do estado global.</li>
-                  </ol>
-                </div>
+              <CardContent className="bg-black/40 rounded-lg p-6 font-mono text-[10px] text-emerald-500/80 overflow-x-auto leading-relaxed">
+                <pre>{`
+  (*) --> [Disponível]
+  [Disponível] -- Agendar Missão --> [Agendada]
+  [Agendada] -- Iniciar Checklist --> [Em Viagem]
+  [Em Viagem] -- Finalizar Missão --> [Disponível]
+  [Disponível] -- Relatar Defeito --> [Manutenção]
+  [Manutenção] -- Concluir Reparo --> [Disponível]
+                `}</pre>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-sidebar/50 border-border/50 col-span-1 md:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><GitBranch className="h-5 w-5 text-primary" />Fluxo de Atividade: Agendamento</CardTitle>
+                <CardDescription>Caminho lógico desde o pedido até a execução.</CardDescription>
+              </CardHeader>
+              <CardContent className="bg-black/40 rounded-lg p-6 font-mono text-[10px] text-amber-500/80 overflow-x-auto leading-relaxed">
+                <pre>{`
+  1. [Colaborador] -> Solicita Transporte
+  2. [Gestor] -> Analisa Prioridade {Alta, Média, Baixa}
+  3. [Gestor] -> SE Aprovado? (Sim/Não)
+  4.   IF Não -> [Notifica Rejeição] -> Termina
+  5.   IF Sim -> [Cria Trip ID] -> [Aloca Motorista/Veículo]
+  6. [Motorista] -> Notificado no App -> [Executa Missão]
+  7. [Sistema] -> Atualiza KM do Veículo no SQLite
+                `}</pre>
               </CardContent>
             </Card>
           </div>
@@ -152,7 +171,7 @@ export default function DevDocsPage() {
           <Card className="bg-sidebar/50 border-border/50">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2"><Database className="h-5 w-5 text-primary" />Database Schema (DDL)</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Database className="h-5 w-5 text-primary" />Esquema do Banco (DDL)</CardTitle>
                 <CardDescription>Definições de tabelas para o CityMotion SQLite.</CardDescription>
               </div>
               <ShieldCheck className="h-10 w-10 text-emerald-500 opacity-20" />
@@ -171,8 +190,6 @@ CREATE TABLE IF NOT EXISTS employees (
     status TEXT DEFAULT 'Disponível',
     matricula TEXT UNIQUE,
     cnh TEXT,
-    idPhoto TEXT,
-    cnhPhoto TEXT,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -184,7 +201,6 @@ CREATE TABLE IF NOT EXISTS vehicles (
     sector TEXT NOT NULL,
     mileage INTEGER DEFAULT 0,
     status TEXT DEFAULT 'Disponível',
-    lastRefuelingDate DATETIME,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -202,24 +218,8 @@ CREATE TABLE IF NOT EXISTS trips (
     endMileage INTEGER,
     status TEXT DEFAULT 'Agendada',
     category TEXT,
-    passengers TEXT, -- Armazenado como JSON string
-    startChecklist TEXT,
-    endChecklist TEXT,
-    startNotes TEXT,
-    endNotes TEXT
-);
-
---- TABELA DE MANUTENÇÃO
-CREATE TABLE IF NOT EXISTS maintenance_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId INTEGER,
-    vehicleModel TEXT,
-    licensePlate TEXT,
-    requesterName TEXT,
-    requestDate DATETIME,
-    type TEXT,
-    description TEXT,
-    status TEXT DEFAULT 'Pendente'
+    startChecklist TEXT, -- JSON Array
+    endChecklist TEXT -- JSON Array
 );`}
                 </pre>
               </ScrollArea>
@@ -232,22 +232,15 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
              <Card className="bg-sidebar/50 border-border/50">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Network className="h-5 w-5 text-primary" />Engine: Protocolos de Diagnóstico</CardTitle>
-                <CardDescription>Tratamento de tráfego e códigos de status HTTP.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Network className="h-5 w-5 text-primary" />Protocolos de Resposta</CardTitle>
+                <CardDescription>Tratamento de tráfego e códigos HTTP.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 text-sm text-muted-foreground">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3"><Badge className="bg-emerald-500/20 text-emerald-500 font-mono">200 OK</Badge> <span>Operação concluída com sucesso.</span></div>
                   <div className="flex items-center gap-3"><Badge className="bg-amber-500/20 text-amber-500 font-mono">404 NOT FOUND</Badge> <span>Rota virtual ou recurso não localizado.</span></div>
-                  <div className="flex items-center gap-3"><Badge className="bg-destructive/20 text-destructive font-mono">503 UNAVAILABLE</Badge> <span>Backend Node.js offline ou porta 3001 fechada.</span></div>
-                  <div className="flex items-center gap-3"><Badge className="bg-destructive/40 text-destructive font-mono">500 ERROR</Badge> <span>Falha interna na execução do script SQLite.</span></div>
-                </div>
-                
-                <Separator className="bg-border/30" />
-                
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold uppercase text-primary">Traffic Analyzer</h4>
-                  <p className="text-xs">A aba de Logs no Painel Nexus agora exibe a duração real das chamadas em milissegundos, permitindo identificar gargalos de hardware.</p>
+                  <div className="flex items-center gap-3"><Badge className="bg-destructive/20 text-destructive font-mono">503 UNAVAILABLE</Badge> <span>Backend Node.js offline (Porta 3001).</span></div>
+                  <div className="flex items-center gap-3"><Badge className="bg-destructive/40 text-destructive font-mono">500 ERROR</Badge> <span>Falha de escrita no arquivo .db.</span></div>
                 </div>
               </CardContent>
             </Card>
@@ -255,25 +248,111 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
             <Card className="bg-sidebar/50 border-border/50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Activity className="h-5 w-5 text-primary" />Adapters & Sanitização</CardTitle>
-                <CardDescription>Normalização de payloads entre sistemas.</CardDescription>
+                <CardDescription>Normalização de payloads.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 text-sm text-muted-foreground">
                 <ul className="list-disc list-inside space-y-2">
-                  <li><strong className="text-foreground">Header Cleaning:</strong> Removemos automaticamente `host` e `content-length` do navegador para evitar corrupção de body no proxy.</li>
-                  <li><strong className="text-foreground">CORS Adapter:</strong> Gerencia permissões entre o frontend (Next) e o backend (Express).</li>
-                  <li><strong className="text-foreground">Dynamic IDs:</strong> Suporte a mapeamento de parâmetros `:id` na URL para operações de CRUD direto no SQLite.</li>
+                  <li><strong className="text-foreground">Header Cleaning:</strong> Remoção de `content-length` original para evitar erros de proxy.</li>
+                  <li><strong className="text-foreground">Dynamic Routing:</strong> Suporte a parâmetros `:id` na URL para CRUD via Terminal.</li>
                 </ul>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        {/* 4. SECURITY */}
+        {/* 4. TROUBLESHOOTING */}
+        <TabsContent value="troubleshooting">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="bg-sidebar/50 border-border/50">
+              <CardHeader>
+                <CardTitle className="text-amber-500 flex items-center gap-2">
+                    <ServerOff className="h-5 w-5" />
+                    Erro 503: Backend Indisponível
+                </CardTitle>
+                <CardDescription>A interface carrega mas os dados não aparecem.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-black/40 border border-amber-500/20 rounded-lg space-y-3">
+                    <p className="text-xs font-bold text-foreground">SINTOMA:</p>
+                    <p className="text-[11px] text-muted-foreground italic">"Falha ao conectar ao servidor em http://localhost:3001"</p>
+                    <Separator className="bg-border/20" />
+                    <p className="text-xs font-bold text-foreground">SOLUÇÃO:</p>
+                    <ol className="text-[11px] text-muted-foreground list-decimal list-inside space-y-1">
+                        <li>Verifique se o terminal do backend está rodando.</li>
+                        <li>Execute <code className="bg-zinc-800 px-1 rounded text-primary">npm run dev</code> na pasta raiz.</li>
+                        <li>Certifique-se de que a porta 3001 não está em uso por outro serviço.</li>
+                    </ol>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-sidebar/50 border-border/50">
+              <CardHeader>
+                <CardTitle className="text-destructive flex items-center gap-2">
+                    <Database className="h-5 w-5" />
+                    Erro 500: Erro de Escrita SQLite
+                </CardTitle>
+                <CardDescription>O sistema não salva alterações de motoristas ou veículos.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-black/40 border border-destructive/20 rounded-lg space-y-3">
+                    <p className="text-xs font-bold text-foreground">SINTOMA:</p>
+                    <p className="text-[11px] text-muted-foreground italic">"SQLITE_BUSY: database is locked" ou "EACCES: permission denied"</p>
+                    <Separator className="bg-border/20" />
+                    <p className="text-xs font-bold text-foreground">SOLUÇÃO:</p>
+                    <ol className="text-[11px] text-muted-foreground list-decimal list-inside space-y-1">
+                        <li>Feche qualquer editor de banco externo (DBeaver, DB Browser) que esteja acessando o arquivo <code className="text-primary">citymotion.db</code>.</li>
+                        <li>Verifique as permissões de escrita na pasta <code className="text-primary">backend/database/</code>.</li>
+                        <li>Se o arquivo estiver corrompido, use o comando <code className="text-amber-500">nexus-db-reset</code> no terminal de dev.</li>
+                    </ol>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-sidebar/50 border-border/50">
+              <CardHeader>
+                <CardTitle className="text-primary flex items-center gap-2">
+                    <RefreshCw className="h-5 w-5" />
+                    Interface Dessincronizada
+                </CardTitle>
+                <CardDescription>Você alterou algo no Terminal mas a página não mudou.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-black/40 border border-primary/20 rounded-lg space-y-3">
+                    <p className="text-xs font-bold text-foreground">SINTOMA:</p>
+                    <p className="text-[11px] text-muted-foreground italic">"O Terminal mostra Sucesso, mas a tabela continua com os dados antigos."</p>
+                    <Separator className="bg-border/20" />
+                    <p className="text-xs font-bold text-foreground">SOLUÇÃO:</p>
+                    <ol className="text-[11px] text-muted-foreground list-decimal list-inside space-y-1">
+                        <li>Clique no botão <strong className="text-primary">Sincronizar</strong> (ícone de recarregar) no topo do cabeçalho.</li>
+                        <li>O Terminal executa alterações atômicas; o frontend precisa de um gatilho de re-fetch para atualizar o cache local.</li>
+                        <li>Verifique se o seu perfil tem permissão para visualizar o setor alterado.</li>
+                    </ol>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-zinc-950 border-border/50 border-dashed relative overflow-hidden">
+               <div className="absolute inset-0 scanlines opacity-5 pointer-events-none" />
+               <CardHeader>
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                     <Terminal className="h-4 w-4" />
+                     Dica de Diagnóstico
+                  </CardTitle>
+               </CardHeader>
+               <CardContent className="text-[10px] text-muted-foreground leading-relaxed font-mono">
+                  Sempre mantenha a aba <strong className="text-primary">Traffic Logs</strong> aberta no Console NexusBridge durante testes de integração. Ela exibe a duração real em <span className="text-emerald-500">ms</span> e identifica se o gargalo é de rede ou de processamento do banco.
+               </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* 5. SECURITY */}
         <TabsContent value="security">
           <Card className="bg-sidebar/50 border-border/50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-primary" />Data Resiliency & Permissions</CardTitle>
-              <CardDescription>Políticas de redundância e controle de exclusão profissional.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-primary" />Redundância e Permissões</CardTitle>
+              <CardDescription>Políticas de proteção de dados.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="p-4 border border-zinc-800 rounded-lg bg-zinc-950/50">
@@ -282,7 +361,7 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
                   Auto-Backup
                 </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Toda operação de escrita (POST/PUT/DELETE) aciona o trigger `backupDb()` no servidor Node. Uma cópia do arquivo de produção `citymotion.db` é rotacionada como `citymotion.db.bak` instantaneamente.
+                  Toda operação de escrita (POST/PUT/DELETE) aciona o trigger `backupDb()`. Uma cópia `citymotion.db.bak` é gerada instantaneamente.
                 </p>
               </div>
               <div className="p-4 border border-zinc-800 rounded-lg bg-zinc-950/50">
@@ -291,16 +370,16 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
                   Exclusão Lógica
                 </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Para manter a integridade referencial, o sistema prioriza o Soft-Delete. O registro é marcado com o status `Desativado` e removido dos loops de UI, mas preservado no banco para auditoria histórica.
+                  Registros deletados são apenas marcados como `Desativado`. O registro físico permanece para auditoria histórica.
                 </p>
               </div>
               <div className="p-4 border border-zinc-800 rounded-lg bg-zinc-950/50">
                 <h4 className="font-bold text-sm mb-2 text-emerald-500 uppercase flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4" />
-                  Hierarquia ROOT
+                  Privilégio ROOT
                 </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Apenas usuários com a role exata `Desenvolvedor Global` podem ignorar os triggers de Soft-Delete e realizar um `Hard Delete` direto no banco de dados SQLite através do Terminal ou API.
+                  Apenas usuários com a role exata `Desenvolvedor Global` podem ignorar o Soft-Delete e realizar um `Hard Delete`.
                 </p>
               </div>
             </CardContent>
