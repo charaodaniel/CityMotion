@@ -16,6 +16,11 @@ import {
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import { 
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { 
   LayoutDashboard, 
   Car, 
   Route, 
@@ -30,7 +35,8 @@ import {
   ShieldCheck, 
   DollarSign,
   LogOut,
-  ArrowLeft
+  ArrowLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/app-provider';
@@ -99,72 +105,86 @@ export function AppSidebar() {
       
       <SidebarContent className="px-2 py-4">
         {filteredPlatformItems.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-widest text-primary/60 mb-2 px-2">
-              Plataforma
-            </SidebarGroupLabel>
-            <SidebarMenu>
-              {filteredPlatformItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={pathname.startsWith(item.href)} 
-                    className={cn(
-                      "rounded-sm transition-all duration-200",
-                      pathname.startsWith(item.href) && "border-r-2 border-primary bg-accent/50 text-primary font-bold"
-                    )}
-                  >
-                    <Link href={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
+          <Collapsible defaultOpen className="group/collapsible">
+            <SidebarGroup>
+              <SidebarGroupLabel asChild className="text-[10px] font-bold uppercase tracking-widest text-primary/60 mb-2 px-2 hover:text-primary transition-colors cursor-pointer select-none">
+                <CollapsibleTrigger className="flex w-full items-center justify-between">
+                  Plataforma
+                  <ChevronRight className="ml-auto h-3 w-3 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarMenu>
+                  {filteredPlatformItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton 
+                        asChild 
+                        isActive={pathname.startsWith(item.href)} 
+                        className={cn(
+                          "rounded-sm transition-all duration-200",
+                          pathname.startsWith(item.href) && "border-r-2 border-primary bg-accent/50 text-primary font-bold"
+                        )}
+                      >
+                        <Link href={item.href}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
         )}
 
         {filteredOperationalItems.length > 0 && (
-          <SidebarGroup className="mt-4">
-            <div className="flex items-center justify-between px-2 mb-2">
-                <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-0">
-                Operação {activeOrganization && `(${activeOrganization.name})`}
-                </SidebarGroupLabel>
-                {activeOrganization && ['dev', 'ti'].includes(userRole) && (
-                    <button 
-                        onClick={handleExitOrganization}
-                        className="text-[9px] font-bold text-primary hover:underline flex items-center gap-1"
-                        title="Sair da visão da empresa"
-                    >
-                        <ArrowLeft className="h-2 w-2" /> VOLTAR
-                    </button>
-                )}
-            </div>
-            <SidebarMenu>
-                {isLoading ? (
-                <SidebarMenuSkeleton showIcon />
-                ) : (
-                filteredOperationalItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton 
-                        asChild 
-                        isActive={pathname === item.href}
-                        className={cn(
-                        "rounded-sm transition-all duration-200",
-                        pathname === item.href && "border-r-2 border-primary bg-accent/50 text-primary font-bold"
-                        )}
-                    >
-                        <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                        </Link>
-                    </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))
-                )}
-            </SidebarMenu>
-          </SidebarGroup>
+          <Collapsible defaultOpen className="group/collapsible-op mt-4">
+            <SidebarGroup>
+              <div className="flex items-center justify-between px-2 mb-2">
+                  <SidebarGroupLabel asChild className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-0 hover:text-on-surface transition-colors cursor-pointer select-none">
+                    <CollapsibleTrigger className="flex w-full items-center justify-between">
+                      <span>Operação {activeOrganization && `(${activeOrganization.name})`}</span>
+                      <ChevronRight className="ml-auto h-3 w-3 transition-transform duration-200 group-data-[state=open]/collapsible-op:rotate-90" />
+                    </CollapsibleTrigger>
+                  </SidebarGroupLabel>
+                  {activeOrganization && ['dev', 'ti'].includes(userRole) && (
+                      <button 
+                          onClick={handleExitOrganization}
+                          className="text-[9px] font-bold text-primary hover:underline flex items-center gap-1 ml-2"
+                          title="Sair da visão da empresa"
+                      >
+                          <ArrowLeft className="h-2 w-2" /> VOLTAR
+                      </button>
+                  )}
+              </div>
+              <CollapsibleContent>
+                <SidebarMenu>
+                    {isLoading ? (
+                    <SidebarMenuSkeleton showIcon />
+                    ) : (
+                    filteredOperationalItems.map((item) => (
+                        <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton 
+                            asChild 
+                            isActive={pathname === item.href}
+                            className={cn(
+                            "rounded-sm transition-all duration-200",
+                            pathname === item.href && "border-r-2 border-primary bg-accent/50 text-primary font-bold"
+                            )}
+                        >
+                            <Link href={item.href}>
+                            <item.icon className="h-4 w-4" />
+                            <span>{item.label}</span>
+                            </Link>
+                        </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ))
+                    )}
+                </SidebarMenu>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
         )}
       </SidebarContent>
 
