@@ -38,6 +38,7 @@ import {
   LogOut,
   ArrowLeft,
   ChevronRight,
+  Terminal,
   FileCode
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,7 @@ const platformNavItems = [
   { href: '/dev-docs', label: 'Documentação Central', icon: FileCode, roles: ['dev', 'ti', 'admin'] },
   { href: '/faturamento', label: 'Faturamento', icon: DollarSign, roles: ['dev', 'ti'] },
   { href: '/nexus', label: 'NexusBridge', icon: Network, roles: ['dev', 'ti'] },
+  { href: '/terminal', label: 'Console TTY', icon: Terminal, roles: ['dev', 'ti'] },
   { href: '/perfis', label: 'Gerenciar Perfis', icon: UserCog, roles: ['dev', 'ti', 'admin'] },
 ];
 
@@ -68,7 +70,7 @@ export function AppSidebar() {
   const router = useRouter();
   const { userRole, logout, currentUser, isLoading, activeOrganization, setActiveOrganization } = useApp();
 
-  const isCurrentUserDriver = useMemo(() => currentUser?.role.toLowerCase().includes('motorista'), [currentUser]);
+  const isCurrentUserDriver = useMemo(() => currentUser?.role?.toLowerCase().includes('motorista'), [currentUser]);
 
   const filteredPlatformItems = useMemo(() => platformNavItems.filter(item => item.roles.includes(userRole)), [userRole]);
   
@@ -144,7 +146,7 @@ export function AppSidebar() {
           <Collapsible defaultOpen className="group/collapsible-op mt-4">
             <SidebarGroup>
               <div className="flex items-center justify-between px-2 mb-2">
-                  <SidebarGroupLabel asChild className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-0 hover:text-on-surface transition-colors cursor-pointer select-none">
+                  <SidebarGroupLabel asChild className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground p-0 hover:text-foreground transition-colors cursor-pointer select-none">
                     <CollapsibleTrigger className="flex w-full items-center justify-between">
                       <span>Operação {activeOrganization && `(${activeOrganization.name})`}</span>
                       <ChevronRight className="ml-auto h-3 w-3 transition-transform duration-200 group-data-[state=open]/collapsible-op:rotate-90" />
@@ -193,11 +195,11 @@ export function AppSidebar() {
       <SidebarFooter className='mt-auto p-4 border-t border-border/50'>
          <div className="flex items-center gap-2 p-2 bg-accent/30 rounded border border-border/50">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-mono text-emerald-500 font-bold uppercase tracking-tight">Status do Sistema: Ativo</span>
+            <span className="text-[10px] font-mono text-emerald-500 font-bold uppercase tracking-tight">Status: Ativo</span>
          </div>
          <div className="flex flex-col gap-1 mt-4">
             <Button variant="ghost" size="sm" className="justify-start h-8 px-2 text-muted-foreground hover:text-foreground text-xs" asChild>
-                <Link href="/docs"><BookOpen className="mr-2 h-3.5 w-3.5" /> Documentação</Link>
+                <Link href="/dev-docs"><BookOpen className="mr-2 h-3.5 w-3.5" /> Documentação</Link>
             </Button>
             <Button variant="ghost" size="sm" className="justify-start h-8 px-2 text-muted-foreground hover:text-foreground text-xs" onClick={logout}>
                 <LogOut className="mr-2 h-3.5 w-3.5" /> Sair

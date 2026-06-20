@@ -10,7 +10,7 @@ module.exports = function(db) {
     const dbFilePath = path.resolve(__dirname, '../database/citymotion.db');
     const backupFilePath = path.resolve(__dirname, '../database/citymotion.db.bak');
 
-    // Garantir que a tabela de auditoria exista
+    // Garantir que a tabela de auditoria exista com campos detalhados
     db.run(`CREATE TABLE IF NOT EXISTS audit_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         action TEXT NOT NULL,
@@ -118,7 +118,7 @@ module.exports = function(db) {
         
         db.run(sql, params, function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('INSERT', 'employees', this.lastID, { name, role }, identity);
+            logChange('INSERT', 'employees', this.lastID, { name, role, matricula }, identity);
             res.json({ id: this.lastID });
         });
     });
@@ -153,7 +153,7 @@ module.exports = function(db) {
             req.params.id
         ], function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('UPDATE', 'employees', req.params.id, { name, role, status, matricula }, identity);
+            logChange('UPDATE', 'employees', req.params.id, { name, role, status, matricula, cnh }, identity);
             res.json({ updated: this.changes });
         });
     });
@@ -216,7 +216,6 @@ module.exports = function(db) {
         Promise.all(promises).then(() => res.json({ counts: stats, database: 'SQLite3', status: 'Healthy' }));
     });
 
-    // [NOVA ROTA] Integridade do Banco
     router.get('/system/db-integrity', (req, res) => {
         db.get('PRAGMA integrity_check', (err, row) => {
             if (err) return res.status(500).json({ status: 'Error', message: err.message });
@@ -224,7 +223,6 @@ module.exports = function(db) {
         });
     });
 
-    // [NOVA ROTA] Status de Backup
     router.get('/system/backup-status', (req, res) => {
         const stats = { exists: false, size: '0 KB', lastModified: 'N/A' };
         if (fs.existsSync(backupFilePath)) {

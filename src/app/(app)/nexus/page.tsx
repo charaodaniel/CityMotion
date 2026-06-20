@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Network, Server, Route as RouteIcon, Play, Code, CheckCircle2, RefreshCw, X, Search, FileText, Activity, Clock } from 'lucide-react';
+import { Network, Server, Route as RouteIcon, Play, Code, CheckCircle2, X, Search, FileText, Activity, Clock } from 'lucide-react';
 import nexusConfig from '@/nexusbridge/config/nexus-settings.json';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -28,7 +28,6 @@ export default function NexusControlPage() {
   const [isTesting, setIsTesting] = useState(false);
   const [logs, setLogs] = useState<BridgeLog[]>([]);
 
-  // Carrega logs do localStorage para persistência na sessão
   useEffect(() => {
     const saved = localStorage.getItem('nexus_bridge_logs');
     if (saved) {
@@ -37,9 +36,6 @@ export default function NexusControlPage() {
         } catch (e) {
             localStorage.removeItem('nexus_bridge_logs');
         }
-    } else {
-        // Inicializa com logs vazios ou simulados se preferir
-        setLogs([]);
     }
   }, []);
 
@@ -83,25 +79,11 @@ export default function NexusControlPage() {
       
     } catch (error: any) {
       const duration = Date.now() - startTime;
-      setTestResult({ 
-          status: 500, 
-          error: "Falha Crítica de Comunicação", 
-          message: error.message 
-      });
+      setTestResult({ status: 500, error: "Falha Crítica", message: error.message });
       addLog('GET', `/api/nexus/${cleanPath}`, 500, duration);
     } finally {
       setIsTesting(false);
     }
-  };
-
-  const clearTest = () => {
-    setTestTestPath('');
-    setTestResult(null);
-  };
-
-  const clearLogs = () => {
-    setLogs([]);
-    localStorage.removeItem('nexus_bridge_logs');
   };
 
   return (
@@ -112,9 +94,7 @@ export default function NexusControlPage() {
             <Network className="h-8 w-8 text-primary" />
             NexusBridge Control
           </h1>
-          <p className="text-muted-foreground">
-            Monitoramento de tráfego, roteamento virtual e diagnóstico de backends.
-          </p>
+          <p className="text-muted-foreground">Monitoramento de tráfego e diagnóstico de backends.</p>
         </div>
         <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 py-1.5 px-4">
           <div className="h-2 w-2 rounded-full bg-green-500 mr-2 animate-pulse" />
@@ -125,10 +105,9 @@ export default function NexusControlPage() {
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="bg-sidebar border border-border/50 p-1 w-full lg:w-fit justify-start overflow-x-auto h-auto gap-1">
           <TabsTrigger value="overview" className="text-[10px] font-bold uppercase tracking-widest px-6 py-2">Visão Geral</TabsTrigger>
-          <TabsTrigger value="backends" className="text-[10px] font-bold uppercase tracking-widest px-6 py-2">Backends</TabsTrigger>
-          <TabsTrigger value="routes" className="text-[10px] font-bold uppercase tracking-widest px-6 py-2">Rotas</TabsTrigger>
+          <TabsTrigger value="routes" className="text-[10px] font-bold uppercase tracking-widest px-6 py-2">Dicionário de Rotas</TabsTrigger>
           <TabsTrigger value="logs" className="text-[10px] font-bold uppercase tracking-widest px-6 py-2">Traffic Logs</TabsTrigger>
-          <TabsTrigger value="console" className="text-[10px] font-bold uppercase tracking-widest px-6 py-2">Dev Console</TabsTrigger>
+          <TabsTrigger value="console" className="text-[10px] font-bold uppercase tracking-widest px-6 py-2">Test Console</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -136,8 +115,7 @@ export default function NexusControlPage() {
             <Card className="bg-sidebar/50 border-border/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <Server className="h-3 w-3" />
-                  Serviços Conectados
+                  <Server className="h-3 w-3" /> Serviços Conectados
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -150,8 +128,7 @@ export default function NexusControlPage() {
             <Card className="bg-sidebar/50 border-border/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <RouteIcon className="h-3 w-3" />
-                  Endpoints Ativos
+                  <RouteIcon className="h-3 w-3" /> Endpoints Ativos
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -162,8 +139,7 @@ export default function NexusControlPage() {
             <Card className="bg-sidebar/50 border-border/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <Activity className="h-3 w-3" />
-                  Taxa de Sucesso
+                  <Activity className="h-3 w-3" /> Taxa de Sucesso
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -172,11 +148,9 @@ export default function NexusControlPage() {
               </CardContent>
             </Card>
           </div>
-
           <Card className="bg-sidebar/50 border-border/50 overflow-hidden">
             <CardHeader className="border-b border-border/30 bg-accent/10">
               <CardTitle className="text-sm font-bold uppercase tracking-widest">Configuração de Roteamento (JSON)</CardTitle>
-              <CardDescription className="text-xs">Estado atual da Engine NexusBridge.</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <ScrollArea className="h-[300px]">
@@ -188,54 +162,19 @@ export default function NexusControlPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="backends">
-          <Card className="bg-sidebar/50 border-border/50">
-            <CardHeader>
-              <CardTitle className="text-sm font-bold uppercase tracking-widest">Backends Gerenciados</CardTitle>
-              <CardDescription>Fontes de dados autorizadas no ecossistema.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader className="bg-accent/20">
-                  <TableRow className="border-border/30 hover:bg-transparent">
-                    <TableHead className="text-[10px] uppercase font-black tracking-widest h-10">Backend ID</TableHead>
-                    <TableHead className="text-[10px] uppercase font-black tracking-widest h-10">Target Base URL</TableHead>
-                    <TableHead className="text-[10px] uppercase font-black tracking-widest h-10">Descrição</TableHead>
-                    <TableHead className="text-[10px] uppercase font-black tracking-widest h-10 text-right">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="font-mono text-xs">
-                  {Object.entries(nexusConfig.backends).map(([id, backend]: [string, any]) => (
-                    <TableRow key={id} className="border-border/30">
-                      <TableCell className="font-bold text-primary">{id}</TableCell>
-                      <TableCell className="text-muted-foreground">{backend.baseUrl}</TableCell>
-                      <TableCell className="font-sans text-muted-foreground">{backend.description}</TableCell>
-                      <TableCell className="text-right">
-                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30 text-[9px] font-bold">ONLINE</Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="routes">
           <Card className="bg-sidebar/50 border-border/50">
             <CardHeader>
-              <CardTitle className="text-sm font-bold uppercase tracking-widest">Dicionário de Rotas</CardTitle>
-              <CardDescription>Mapeamento de caminhos virtuais (frontend) para alvos (backend).</CardDescription>
+              <CardTitle className="text-sm font-bold uppercase tracking-widest">Mapeamento de Rotas</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader className="bg-accent/20">
-                  <TableRow className="border-border/30 hover:bg-transparent">
-                    <TableHead className="text-[10px] uppercase font-black tracking-widest h-10">Path (Virtual)</TableHead>
-                    <TableHead className="text-[10px] uppercase font-black tracking-widest h-10">Método</TableHead>
-                    <TableHead className="text-[10px] uppercase font-black tracking-widest h-10">Backend Alvo</TableHead>
-                    <TableHead className="text-[10px] uppercase font-black tracking-widest h-10">Target Path</TableHead>
-                    <TableHead className="text-[10px] uppercase font-black tracking-widest h-10">Transformer</TableHead>
+                  <TableRow className="border-border/30">
+                    <TableHead className="text-[10px] uppercase font-black h-10">Path (Virtual)</TableHead>
+                    <TableHead className="text-[10px] uppercase font-black h-10">Método</TableHead>
+                    <TableHead className="text-[10px] uppercase font-black h-10">Target Path</TableHead>
+                    <TableHead className="text-[10px] uppercase font-black h-10">Transformer</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="font-mono text-xs">
@@ -243,14 +182,8 @@ export default function NexusControlPage() {
                     <TableRow key={idx} className="border-border/30">
                       <TableCell className="text-primary">/api/nexus/{route.path}</TableCell>
                       <TableCell><Badge variant="outline" className="text-[9px] font-bold h-5">{route.method}</Badge></TableCell>
-                      <TableCell className="text-muted-foreground">{route.backendId}</TableCell>
                       <TableCell className="text-muted-foreground">{route.target}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="flex items-center w-fit gap-1 text-[9px] font-bold bg-primary/10 text-primary border-primary/20">
-                          <Code className="h-2 w-2" />
-                          {route.transformer}
-                        </Badge>
-                      </TableCell>
+                      <TableCell><Badge variant="secondary" className="text-[9px] bg-primary/10 text-primary border-primary/20">{route.transformer}</Badge></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -261,32 +194,26 @@ export default function NexusControlPage() {
 
         <TabsContent value="logs">
           <Card className="bg-sidebar/50 border-border/50">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border/30 pb-4">
-              <div>
-                <CardTitle className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Traffic Analyzer
-                </CardTitle>
-                <CardDescription className="text-xs">Registro em tempo real das chamadas processadas pela Engine.</CardDescription>
-              </div>
-              <Button variant="outline" size="sm" onClick={clearLogs} className="text-[10px] font-bold uppercase tracking-widest h-8 border-border/50">
-                Limpar Histórico
-              </Button>
+            <CardHeader className="border-b border-border/30">
+              <CardTitle className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                <FileText className="h-4 w-4" /> Traffic Analyzer
+              </CardTitle>
+              <CardDescription className="text-xs">Histórico em tempo real das chamadas processadas.</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
                 <TableHeader className="bg-accent/20">
-                  <TableRow className="border-border/30 hover:bg-transparent">
-                    <TableHead className="w-[100px] text-[10px] uppercase font-black tracking-widest h-10 text-center">Status</TableHead>
-                    <TableHead className="w-[80px] text-[10px] uppercase font-black tracking-widest h-10">Método</TableHead>
-                    <TableHead className="text-[10px] uppercase font-black tracking-widest h-10">Path Virtual</TableHead>
-                    <TableHead className="w-[100px] text-right text-[10px] uppercase font-black tracking-widest h-10">Duração</TableHead>
-                    <TableHead className="w-[180px] text-right text-[10px] uppercase font-black tracking-widest h-10 pr-6">Horário</TableHead>
+                  <TableRow className="border-border/30">
+                    <TableHead className="w-[100px] text-[10px] uppercase font-black text-center h-10">Status</TableHead>
+                    <TableHead className="w-[80px] text-[10px] uppercase font-black h-10">Método</TableHead>
+                    <TableHead className="text-[10px] uppercase font-black h-10">Path Virtual</TableHead>
+                    <TableHead className="w-[100px] text-right text-[10px] uppercase font-black h-10">Duração</TableHead>
+                    <TableHead className="w-[150px] text-right text-[10px] uppercase font-black h-10 pr-6">Horário</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="font-mono text-[11px]">
                   {logs.length > 0 ? logs.map((log) => (
-                    <TableRow key={log.id} className="border-border/20 hover:bg-accent/10 transition-colors">
+                    <TableRow key={log.id} className="border-border/20 hover:bg-accent/10">
                       <TableCell className="text-center">
                         <Badge 
                           variant={log.type === 'error' ? 'destructive' : log.type === 'warning' ? 'secondary' : 'default'} 
@@ -299,20 +226,16 @@ export default function NexusControlPage() {
                           {log.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-black text-foreground/80">{log.method}</TableCell>
+                      <TableCell className="font-black">{log.method}</TableCell>
                       <TableCell className="text-primary/70">{log.path}</TableCell>
-                      <TableCell className="text-right text-muted-foreground tabular-nums">{log.duration}ms</TableCell>
+                      <TableCell className="text-right text-muted-foreground">{log.duration}ms</TableCell>
                       <TableCell className="text-right text-muted-foreground pr-6 flex items-center justify-end gap-1.5 h-12">
                         <Clock className="h-3 w-3 opacity-50" />
                         {new Date(log.timestamp).toLocaleTimeString('pt-BR')}
                       </TableCell>
                     </TableRow>
                   )) : (
-                    <TableRow>
-                      <TableCell colSpan={5} className="h-40 text-center italic text-muted-foreground uppercase text-[10px] tracking-widest opacity-40">
-                        Nenhuma atividade de tráfego detectada na sessão.
-                      </TableCell>
-                    </TableRow>
+                    <TableRow><TableCell colSpan={5} className="h-40 text-center italic text-muted-foreground uppercase text-[10px] tracking-widest opacity-40">Sem atividade.</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
@@ -325,14 +248,12 @@ export default function NexusControlPage() {
             <Card className="bg-sidebar/50 border-border/50">
               <CardHeader className="border-b border-border/30">
                 <CardTitle className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
-                    <Activity className="h-4 w-4" />
-                    Requisição Manual
+                    <Activity className="h-4 w-4" /> Requisição Manual
                 </CardTitle>
-                <CardDescription className="text-xs">Execute testes diretos contra a ponte de integração.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Endpoint Virtual (Next.js Proxy)</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Endpoint Virtual</label>
                   <div className="flex gap-2">
                     <div className="flex-1 flex items-center px-4 border border-border/50 rounded-md bg-black/40 text-muted-foreground text-xs font-mono overflow-hidden">
                       <span className="shrink-0 select-none opacity-50">/api/nexus/</span>
@@ -343,53 +264,22 @@ export default function NexusControlPage() {
                         placeholder="ex: users"
                         onKeyDown={(e) => e.key === 'Enter' && runTest()}
                       />
-                      {testPath && (
-                         <button onClick={clearTest} className="ml-2 hover:text-foreground opacity-50 hover:opacity-100">
-                            <X className="h-4 w-4" />
-                         </button>
-                      )}
+                      {testPath && <button onClick={() => setTestTestPath('')} className="ml-2 opacity-50 hover:opacity-100"><X className="h-4 w-4" /></button>}
                     </div>
                     <Button onClick={runTest} disabled={isTesting || !testPath.trim()} className="h-10 bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] px-6">
-                      {isTesting ? "BUSCANDO..." : "EXECUTAR"}
+                      {isTesting ? "AGUARDE..." : "EXECUTAR"}
                       <Play className="ml-2 h-3 w-3" />
                     </Button>
                   </div>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <span className="text-[9px] text-muted-foreground uppercase font-bold">Sugestões:</span>
-                    {['users', 'fleet', 'sync-all', 'system/resources'].map(s => (
-                        <button 
-                            key={s} 
-                            onClick={() => setTestTestPath(s)}
-                            className="text-[9px] font-mono bg-accent/20 hover:bg-accent/40 border border-border/30 px-1.5 py-0.5 rounded text-primary/70 transition-colors"
-                        >
-                            {s}
-                        </button>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="p-4 rounded-lg bg-blue-500/5 border border-blue-500/20 scanlines">
-                   <h4 className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 mb-3 text-blue-400">
-                     Protocolo de Execução:
-                   </h4>
-                   <ul className="text-[10px] text-muted-foreground space-y-2 list-none font-mono">
-                     <li className="flex gap-2"><span className="text-primary shrink-0">01.</span> Chamada interceptada pela Camada de Roteamento Virtual.</li>
-                     <li className="flex gap-2"><span className="text-primary shrink-0">02.</span> Resolução de alvo no NexusBridge Engine via JSON.</li>
-                     <li className="flex gap-2"><span className="text-primary shrink-0">03.</span> Execução de fetch via HttpAdapter com limpeza de headers.</li>
-                     <li className="flex gap-2"><span className="text-primary shrink-0">04.</span> Normalização de resposta via DataTransformer V1.</li>
-                   </ul>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-zinc-950 border-border/50 flex flex-col tui-scanline">
               <CardHeader className="border-b border-border/30 flex flex-row items-center justify-between">
-                <div>
-                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                        <Code className="h-4 w-4" />
-                        Network Response
-                    </CardTitle>
-                </div>
+                <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                    <Code className="h-4 w-4" /> Network Response
+                </CardTitle>
                 {testResult && (
                     <Badge variant="outline" className={cn(
                         "text-[9px] font-black",
@@ -400,28 +290,22 @@ export default function NexusControlPage() {
                 )}
               </CardHeader>
               <CardContent className="flex-1 p-0 overflow-hidden">
-                <ScrollArea className="h-[450px] w-full">
+                <ScrollArea className="h-[400px] w-full">
                   <div className="p-6">
                     {testResult ? (
                         <div className="space-y-4">
-                             <div className="p-3 bg-black/40 rounded border border-border/20">
-                                <div className="text-[9px] font-bold text-muted-foreground uppercase mb-2">Metrics:</div>
-                                <div className="grid grid-cols-2 gap-4 text-[10px] font-mono">
-                                    <div className="flex justify-between"><span>Status:</span> <span className="text-primary">{testResult.status}</span></div>
-                                    <div className="flex justify-between"><span>Duration:</span> <span className="text-emerald-500">{testResult.duration}</span></div>
-                                </div>
+                             <div className="p-3 bg-black/40 rounded border border-border/20 text-[10px] font-mono grid grid-cols-2 gap-4">
+                                <div className="flex justify-between"><span>Status:</span> <span className="text-primary">{testResult.status}</span></div>
+                                <div className="flex justify-between"><span>Tempo:</span> <span className="text-emerald-500">{testResult.duration}</span></div>
                             </div>
-                            <div className="p-3 bg-black/40 rounded border border-border/20">
-                                <div className="text-[9px] font-bold text-muted-foreground uppercase mb-2">JSON Body:</div>
-                                <pre className="text-[11px] font-mono text-primary/80">
-                                    {JSON.stringify(testResult.payload || testResult, null, 2)}
-                                </pre>
-                            </div>
+                            <pre className="text-[11px] font-mono text-primary/80 bg-black/40 p-4 rounded border border-border/20">
+                                {JSON.stringify(testResult.payload || testResult, null, 2)}
+                            </pre>
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-[380px] text-zinc-700 italic text-sm gap-4">
-                        <Search className="h-10 w-10 opacity-20" />
-                        <span className="uppercase text-[10px] font-bold tracking-[0.2em] opacity-30">Aguardando Execução...</span>
+                        <div className="flex flex-col items-center justify-center h-[300px] text-zinc-700 italic text-sm gap-4">
+                            <Search className="h-10 w-10 opacity-20" />
+                            <span className="uppercase text-[10px] font-bold tracking-[0.2em] opacity-30">Aguardando Execução...</span>
                         </div>
                     )}
                   </div>
