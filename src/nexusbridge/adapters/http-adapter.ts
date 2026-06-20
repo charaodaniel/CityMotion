@@ -15,7 +15,6 @@ export class HttpAdapter {
     const { url, method, body, headers } = options;
 
     // Filtramos headers problemáticos que podem corromper o body no proxy
-    // O Next.js Route Handler repassa headers que fazem o fetch do servidor falhar ao recalcular o body
     const { 
         host, 
         connection, 
@@ -30,12 +29,10 @@ export class HttpAdapter {
         'Content-Type': 'application/json',
         ...safeHeaders
       },
-      // Cache: 'no-store' para garantir dados frescos do backend
       cache: 'no-store'
     };
 
     if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-      // Garantimos que o corpo é enviado como uma string JSON limpa
       fetchOptions.body = JSON.stringify(body);
     }
 
@@ -60,21 +57,14 @@ export class HttpAdapter {
     } catch (error: any) {
       console.error(`[NexusBridge Adapter] Fetch error for ${url}:`, error.message);
       
-      // Se falhar a conexão (ex: backend desligado), retornamos um erro amigável
-      if (error.message.includes('fetch failed') || error.message.includes('ECONNREFUSED')) {
-        return {
-          status: 503,
-          data: { 
-            error: "Backend indisponível", 
-            message: "Não foi possível conectar ao servidor em " + url,
-            hint: "Verifique se o backend Node está rodando na porta correta (3001)."
-          }
-        };
-      }
-      
+      // Se falhar a conexão, retornamos 503 para que o frontend saiba que o backend caiu
       return {
-        status: 500,
-        data: { error: "Erro Interno", message: error.message }
+        status: 503,
+        data: { 
+          error: "Backend indisponível", 
+          message: `Não foi possível conectar ao servidor em ${url}`,
+          hint: "Verifique se o backend Node está rodando na porta correta (3001) e se o binding está em 0.0.0.0."
+        }
       };
     }
   }

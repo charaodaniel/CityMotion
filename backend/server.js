@@ -45,8 +45,9 @@ app.get('/', (req, res) => {
     res.send('Servidor do CityMotion está no ar! Camada de segurança JWT e Bcrypt ativa.');
 });
 
-app.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+// Escuta explicitamente em 0.0.0.0 para ser acessível dentro de containers/workstations
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[CityMotion Backend] Rodando em http://0.0.0.0:${PORT}`);
     if (!process.env.JWT_SECRET) {
         console.warn('AVISO: JWT_SECRET não configurado no .env! Usando fallback inseguro.');
     }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
@@ -22,7 +23,7 @@ interface AppContextType {
   updateScheduleStatus: (id: string, status: ScheduleStatus, details?: any) => Promise<void>;
   
   vehicleRequests: VehicleRequest[];
-  addVehicleRequest: (request: Omit<VehicleRequest, 'id' | 'status' | 'requestDate'>) => Promise<void>;
+  addVehicleRequest: (request: Partial<VehicleRequest>) => Promise<void>;
   updateVehicleRequestStatus: (id: string, status: VehicleRequestStatus) => Promise<void>;
   
   employees: Employee[];
@@ -39,7 +40,7 @@ interface AppContextType {
   maintenanceRequests: MaintenanceRequest[];
   
   refuelings: Refueling[];
-  addRefueling: (data: Omit<Refueling, 'id' | 'date' | 'totalValue' | 'driverName'>) => Promise<void>;
+  addRefueling: (data: Partial<Refueling>) => Promise<void>;
 
   organizations: Organization[];
   notifications: AppNotification[];
@@ -88,7 +89,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (response.status === 401 || response.status === 403) return null;
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Falha no sync.');
+      if (!response.ok) {
+          if (response.status === 503) {
+              toast({ title: "Backend Indisponível", description: "O servidor backend (porta 3001) não está respondendo. Verifique se o processo está rodando.", variant: "destructive" });
+          }
+          throw new Error(data.message || 'Falha no sync.');
+      }
       
       setSchedules(data.trips || []);
       setVehicleRequests(data.requests || []);
@@ -106,7 +112,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [getHeaders]);
+  }, [getHeaders, toast]);
 
   const login = useCallback(async (identifier: string, password = '123456', shouldRedirect = false) => {
     setIsLoading(true);
@@ -139,7 +145,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             }
         } else throw new Error(data.message || 'Erro no login.');
     } catch (error: any) {
-        if (shouldRedirect) toast({ title: "Erro", description: error.message, variant: "destructive" });
+        if (shouldRedirect) toast({ title: "Erro de Acesso", description: error.message, variant: "destructive" });
         throw error;
     } finally { setIsLoading(false); }
   }, [fetchData, router, toast]);
@@ -155,14 +161,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const init = async () => {
       const email = localStorage.getItem('userEmailForSimulation');
       const pass = localStorage.getItem('userPassForSimulation');
-      if (email && localStorage.getItem('citymotion_token')) {
-          try { await login(email, pass || '123456', false); } catch (e) { if (!['/home', '/docs', '/login'].some(r => pathname.startsWith(r))) logout(); }
-      } else { setIsLoading(false); }
+      const token = localStorage.getItem('citymotion_token');
+      
+      const publicRoutes = ['/home', '/docs', '/login'];
+      const isPublic = publicRoutes.some(r => pathname.startsWith(r));
+
+      if (email && token) {
+          try { 
+              await login(email, pass || '123456', false); 
+          } catch (e) { 
+              if (!isPublic) logout(); 
+          }
+      } else { 
+          setIsLoading(false); 
+      }
     };
     init();
   }, [pathname, login, logout]);
 
-  // MUTAÇÕES
+  // MUTAÇÕES REAIS VIA NEXUSBRIDGE
   const addRefueling = async (data: any) => {
     try {
       const res = await fetch('/api/nexus/refuelings', {
@@ -171,29 +188,111 @@ export function AppProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(data)
       });
       if (res.ok) {
-          toast({ title: "Abastecimento Registrado", description: "O registro foi persistido e o odômetro atualizado." });
+          toast({ title: "Sucesso", description: "Abastecimento registrado no SQLite." });
           await fetchData(true);
       }
     } catch (e) { console.error(e); }
   };
 
-  const updateScheduleStatus = async (id: string, status: any, details: any) => { /* logic */ };
-  const addEmployee = async (employee: any) => { /* logic */ };
-  const updateEmployee = async (id: string, data: any) => { /* logic */ };
-  const deleteEmployee = async (id: string) => { /* logic */ };
-  const addVehicle = async (vehicle: any) => { /* logic */ };
-  const updateVehicle = async (id: string, data: any) => { /* logic */ };
-  const addVehicleRequest = async (request: any) => { /* logic */ };
-  const updateVehicleRequestStatus = async (id: string, status: any) => { /* logic */ };
+  const addEmployee = async (data: any) => {
+      try {
+        const res = await fetch('/api/nexus/test/db-employees', {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (res.ok) {
+            toast({ title: "Colaborador Criado", description: "Registro persistido com hash Bcrypt." });
+            await fetchData(true);
+        }
+      } catch (e) { console.error(e); }
+  };
+
+  const updateEmployee = async (id: string, data: any) => {
+    try {
+      const res = await fetch(`/api/nexus/test/db-employees/${id}`, {
+          method: 'PUT',
+          headers: getHeaders(),
+          body: JSON.stringify(data)
+      });
+      if (res.ok) {
+          toast({ title: "Perfil Atualizado", description: "Alterações salvas no banco de dados." });
+          await fetchData(true);
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  const deleteEmployee = async (id: string) => {
+    try {
+      const res = await fetch(`/api/nexus/test/db-employees/${id}`, {
+          method: 'DELETE',
+          headers: getHeaders()
+      });
+      if (res.ok) {
+          toast({ title: "Registro Removido", description: "O funcionário foi excluído do sistema." });
+          await fetchData(true);
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  const addVehicle = async (data: any) => {
+      try {
+        const res = await fetch('/api/nexus/test/db-vehicles', {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (res.ok) {
+            toast({ title: "Veículo Adicionado", description: "Ativo registrado na frota." });
+            await fetchData(true);
+        }
+      } catch (e) { console.error(e); }
+  };
+
+  const updateScheduleStatus = async (id: string, status: ScheduleStatus, details: any) => {
+      // Implementação futura conforme novas rotas de trips no backend
+      console.log("Update Trip:", id, status, details);
+  };
+
+  const addVehicleRequest = async (request: any) => {
+      // Implementação futura
+      console.log("Add Request:", request);
+  };
+
+  const updateVehicleRequestStatus = async (id: string, status: any) => {
+      // Implementação futura
+      console.log("Update Request Status:", id, status);
+  };
+
+  const updateMaintenanceRequestStatus = async (id: string, status: any) => {
+    // Implementação futura
+    console.log("Update Maintenance Status:", id, status);
+  };
+
+  const addMaintenanceRequest = async (request: any) => {
+    // Implementação futura
+    console.log("Add Maintenance Request:", request);
+  };
+
+  const addNotification = (n: any) => {
+    const newNotif = { ...n, id: Math.random().toString(36).substr(2, 9), date: new Date().toISOString(), read: false };
+    setNotifications(prev => [newNotif, ...prev]);
+  };
+
+  const markNotificationAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const clearNotifications = () => setNotifications([]);
 
   return (
     <AppContext.Provider value={{ 
         isLoading, isRefreshing, userRole, currentUser, activeOrganization, setActiveOrganization: setActiveOrganizationState,
         selectedSector, setSelectedSector: setSelectedSectorState, login, logout, refreshData: () => fetchData(true),
         schedules, updateScheduleStatus, vehicleRequests, addVehicleRequest, updateVehicleRequestStatus,
-        employees, addEmployee, updateEmployee, deleteEmployee, vehicles, addVehicle, updateVehicle,
+        employees, addEmployee, updateEmployee, deleteEmployee, vehicles, addVehicle, updateVehicle: (id: string, data: any) => Promise.resolve(),
         sectors, workSchedules, maintenanceRequests, refuelings, addRefueling,
-        organizations, notifications, addNotification: (n: any) => {}, markNotificationAsRead: (id: any) => {}, clearNotifications: () => {}
+        organizations, notifications, addNotification, markNotificationAsRead, clearNotifications
     }}>
       {children}
     </AppContext.Provider>
