@@ -16,7 +16,7 @@ interface AppContextType {
   setActiveOrganization: (org: Organization | null) => void;
   selectedSector: string | null;
   setSelectedSector: (sector: string | null) => void;
-  login: (email: string, shouldRedirect?: boolean) => Promise<void>;
+  login: (identifier: string, shouldRedirect?: boolean) => Promise<void>;
   logout: () => void;
   refreshData: () => Promise<void>;
   
@@ -60,15 +60,6 @@ interface AppContextType {
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
-
-const emailToIdMap: Record<string, string> = {
-    'dev@dev.com': '0',
-    'admin@citymotion.com': '11', 
-    'manager@citymotion.com': '12', 
-    'driver@citymotion.com': '9', 
-    'employee@citymotion.com': '4', 
-    'mecanico@citymotion.com': '17',
-};
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -316,7 +307,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         headers: getHeaders(),
         body: JSON.stringify({ status })
       });
-      if (res.ok) await fetchData(true);
+      if (res.ok) {
+        await fetchData(true);
+      }
     } catch (e) {
       console.error("Error updating maintenance status", e);
     }
@@ -357,10 +350,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = useCallback(async (email: string, shouldRedirect = false) => {
+  const login = useCallback(async (identifier: string, shouldRedirect = false) => {
     setIsLoading(true);
     if (typeof window !== 'undefined') {
-        localStorage.setItem('userEmailForSimulation', email);
+        localStorage.setItem('userEmailForSimulation', identifier);
     }
     
     const data = await fetchData();
@@ -369,8 +362,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return;
     }
     
-    const userId = emailToIdMap[email];
-    const user = data.employees.find((emp: Employee) => String(emp.id) === String(userId));
+    // Procura o usuário por e-mail ou matrícula no banco carregado
+    const user = data.employees.find((emp: Employee) => 
+        emp.email.toLowerCase() === identifier.toLowerCase() || 
+        emp.matricula?.toLowerCase() === identifier.toLowerCase()
+    );
 
     if (user) {
       setCurrentUser(user);
@@ -418,8 +414,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initializeApp = async () => {
-      const storedEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmailForSimulation') : null;
-      if (storedEmail) await login(storedEmail, false);
+      const storedIdentifier = typeof window !== 'undefined' ? localStorage.getItem('userEmailForSimulation') : null;
+      if (storedIdentifier) await login(storedIdentifier, false);
       else await fetchData();
     };
     initializeApp();

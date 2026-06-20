@@ -40,17 +40,28 @@ export default function TerminalPage() {
 
         const data = await res.json();
 
-        if (res.ok && ['dev', 'ti', 'admin'].includes(data.user.role.toLowerCase() || '')) {
-            // Sucesso: Carrega info do sistema para o boot
-            const sysRes = await fetch('/api/nexus/system/resources');
-            const sysData = await sysRes.json();
-            setSystemInfo(sysData);
-            
-            // Loga no contexto global também
-            await login(username, false);
-            setStep('authenticated');
+        if (res.ok && data.user) {
+            const userRole = data.user.role.toLowerCase();
+            // Verifica se o usuário tem cargo técnico ou administrativo
+            const isAuthorized = userRole.includes('dev') || 
+                               userRole.includes('ti') || 
+                               userRole.includes('admin') || 
+                               userRole.includes('infra');
+
+            if (isAuthorized) {
+                // Sucesso: Carrega info do sistema para o boot
+                const sysRes = await fetch('/api/nexus/system/resources');
+                const sysData = await sysRes.json();
+                setSystemInfo(sysData);
+                
+                // Loga no contexto global também usando o e-mail ou matrícula fornecidos
+                await login(username, false);
+                setStep('authenticated');
+            } else {
+                throw new Error('Acesso negado: privilégios insuficientes.');
+            }
         } else {
-            throw new Error(data.message || 'Acesso negado: privilégios insuficientes.');
+            throw new Error(data.message || 'Login incorrect');
         }
       } catch (err: any) {
         setError(err.message || 'Login incorrect');
