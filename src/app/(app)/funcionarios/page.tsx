@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useApp } from '@/contexts/app-provider';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { cn } from '@/lib/utils';
 
 function getStatusVariant(status: EmployeeStatus | string) {
   switch (status) {
@@ -178,11 +179,11 @@ export default function EmployeesPage() {
                         <AlertDialogContent className="bg-sidebar border-border/50">
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                                <AlertDialogDescription>
+                                <AlertDialogHeader>
                                     {userRole === 'dev' 
                                         ? "Esta ação removerá permanentemente o funcionário do banco de dados SQLite. Esta ação não pode ser desfeita." 
                                         : "O funcionário será marcado como 'Desativado' e não aparecerá mais nas listagens operacionais, mas o histórico será preservado."}
-                                </AlertDialogDescription>
+                                </AlertDialogHeader>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel className="border-border/50">Cancelar</AlertDialogCancel>
