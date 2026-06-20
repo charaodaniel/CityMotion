@@ -1,9 +1,10 @@
 
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const router = express.Router();
-const JWT_SECRET = 'seu-segredo-super-secreto-para-jwt'; // Em produção, use uma variável de ambiente!
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-insecure-secret';
 
 module.exports = function(db) {
     // Rota de Login - Suporta Email ou Matrícula
@@ -20,25 +21,27 @@ module.exports = function(db) {
         db.get(sql, [email, email], (err, user) => {
             if (err) {
                 console.error('Erro no banco de dados:', err);
-                return res.status(500).json({ message: 'Erro no servidor.' });
+                return res.status(500).json({ message: 'Erro interno no servidor.' });
             }
             if (!user) {
-                return res.status(404).json({ message: 'Usuário não encontrado.' });
+                return res.status(404).json({ message: 'Usuário não encontrado no sistema.' });
             }
 
-            // Comparação simplificada para o protótipo
-            if (password !== user.password) {
-                 return res.status(401).json({ message: 'Credenciais inválidas.' });
+            // Comparação segura usando Bcrypt
+            const isPasswordValid = bcrypt.compareSync(password, user.password);
+
+            if (!isPasswordValid) {
+                 return res.status(401).json({ message: 'Senha incorreta para o identificador fornecido.' });
             }
 
-            // Tenta fazer o parse do campo 'sector' (JSON array)
+            // Tenta fazer o parse do campo 'sector' (JSON array no banco)
             try {
                 user.sector = JSON.parse(user.sector);
             } catch (e) {
-                user.sector = [user.sector];
+                user.sector = Array.isArray(user.sector) ? user.sector : [user.sector];
             }
 
-            // Gera o Token JWT
+            // Gera o Token JWT contendo apenas dados necessários (RBAC)
             const token = jwt.sign(
                 { id: user.id, name: user.name, role: user.role, sector: user.sector },
                 JWT_SECRET,
@@ -48,7 +51,7 @@ module.exports = function(db) {
             const { password: _, ...userWithoutPassword } = user;
 
             res.status(200).json({
-                message: 'Login bem-sucedido!',
+                message: 'Autenticação bem-sucedida!',
                 token,
                 user: userWithoutPassword
             });

@@ -1,4 +1,5 @@
 
+require('dotenv').config({ path: '../.env' });
 const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
@@ -41,9 +42,12 @@ app.use('/api', dataRoutes(db));
 
 // Rota de teste
 app.get('/', (req, res) => {
-    res.send('Servidor do CityMotion está no ar! Camada de segurança JWT ativa.');
+    res.send('Servidor do CityMotion está no ar! Camada de segurança JWT e Bcrypt ativa.');
 });
 
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);
+    if (!process.env.JWT_SECRET) {
+        console.warn('AVISO: JWT_SECRET não configurado no .env! Usando fallback inseguro.');
+    }
 });

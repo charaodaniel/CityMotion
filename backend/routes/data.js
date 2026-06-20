@@ -4,6 +4,7 @@ const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const bcrypt = require('bcryptjs');
 const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
@@ -22,7 +23,7 @@ module.exports = function(db) {
         }
     }
 
-    // Função auxiliar para registrar auditoria (Usa a identidade real do Token)
+    // Função auxiliar para registrar auditoria (Extrai identidade do Token)
     function logChange(action, tableName, recordId, details, user) {
         const userIdentity = user ? `${user.name} (${user.role})` : 'Sistema';
         const sql = `INSERT INTO audit_logs (action, table_name, record_id, details, user_identity) VALUES (?, ?, ?, ?, ?)`;
@@ -31,7 +32,7 @@ module.exports = function(db) {
         });
     }
 
-    // Rota consolidada de dados - Protegida
+    // Rota consolidada de dados - Protegida por JWT
     router.get('/data', authMiddleware, (req, res) => {
         const queries = {
             trips: 'SELECT * FROM trips ORDER BY id DESC',
@@ -65,7 +66,7 @@ module.exports = function(db) {
 
         Promise.all(promises)
             .then(() => res.json(results))
-            .catch(err => res.status(500).json({ error: err.message }));
+            .catch(err => res.status(500).json({ error: 'Erro ao carregar ecossistema de dados.' }));
     });
 
     // Listagem individual
@@ -88,66 +89,78 @@ module.exports = function(db) {
         });
     });
 
-    // CRUD Funcionários - Apenas Admin ou Dev
+    // CRUD Funcionários - Apenas Perfis Técnicos ou Administrativos
     router.post('/employees', authMiddleware, (req, res) => {
-        const isAuthorized = req.user.role.toLowerCase().includes('admin') || req.user.role.toLowerCase().includes('dev');
-        if (!isAuthorized) return res.status(403).json({ message: 'Ação não permitida para seu cargo.' });
+        const role = req.user.role.toLowerCase();
+        const isAuthorized = role.includes('admin') || role.includes('dev') || role.includes('ti');
+        
+        if (!isAuthorized) return res.status(403).json({ message: 'Acesso negado: privilégios insuficientes.' });
 
         backupDb();
-        const { name, email, role, sector, status, password, matricula, cnh } = req.body;
+        const { name, email, role: empRole, sector, status, password, matricula, cnh } = req.body;
+        
+        // Hashing da senha antes de inserir no banco
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync(password || '123456', salt);
         
         const sql = `INSERT INTO employees (name, email, role, sector, status, password, matricula, cnh) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-        const params = [name, email, role, JSON.stringify(sector || []), status || 'Disponível', password || '123456', matricula || null, cnh || null];
+        const params = [name, email, empRole, JSON.stringify(sector || []), status || 'Disponível', hashedPassword, matricula || null, cnh || null];
         
         db.run(sql, params, function(err) {
-            if (err) return res.status(500).json({ error: err.message });
-            logChange('INSERT', 'employees', this.lastID, { name, role, matricula }, req.user);
+            if (err) return res.status(500).json({ error: 'Falha ao persistir novo colaborador. Verifique se o e-mail ou matrícula já existem.' });
+            logChange('INSERT', 'employees', this.lastID, { name, role: empRole, matricula }, req.user);
             res.json({ id: this.lastID });
         });
     });
 
     router.put('/employees/:id', authMiddleware, (req, res) => {
-        const isAuthorized = req.user.role.toLowerCase().includes('admin') || req.user.role.toLowerCase().includes('dev');
-        if (!isAuthorized) return res.status(403).json({ message: 'Ação não permitida.' });
+        const userRole = req.user.role.toLowerCase();
+        const isAuthorized = userRole.includes('admin') || userRole.includes('dev') || userRole.includes('ti');
+        
+        if (!isAuthorized) return res.status(403).json({ message: 'Ação não permitida para seu nível de acesso.' });
 
         backupDb();
-        const { name, role, status, email, sector, password, matricula, cnh } = req.body;
+        const { name, role: empRole, status, email, sector, password, matricula, cnh } = req.body;
         
+        let passwordFragment = '';
+        const params = [name || null, empRole || null, status || null, email || null, null, matricula || null, cnh || null];
+
+        // Se uma nova senha foi enviada, hasheamos
+        if (password) {
+            const salt = bcrypt.genSaltSync(10);
+            const hashedPassword = bcrypt.hashSync(password, salt);
+            params.push(hashedPassword);
+            passwordFragment = ', password = ?';
+        }
+
+        const sectorStr = sector ? (Array.isArray(sector) ? JSON.stringify(sector) : sector) : null;
+        params[4] = sectorStr;
+        params.push(req.params.id);
+
         const sql = `UPDATE employees SET 
             name = COALESCE(?, name), 
             role = COALESCE(?, role), 
             status = COALESCE(?, status), 
             email = COALESCE(?, email), 
             sector = COALESCE(?, sector), 
-            password = COALESCE(?, password),
             matricula = COALESCE(?, matricula),
             cnh = COALESCE(?, cnh)
+            ${passwordFragment}
             WHERE id = ?`;
         
-        const sectorStr = sector ? (Array.isArray(sector) ? JSON.stringify(sector) : sector) : null;
-        
-        db.run(sql, [
-            name || null, 
-            role || null, 
-            status || null, 
-            email || null, 
-            sectorStr, 
-            password || null,
-            matricula || null,
-            cnh || null,
-            req.params.id
-        ], function(err) {
+        db.run(sql, params, function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('UPDATE', 'employees', req.params.id, { name, role, status, matricula, cnh }, req.user);
+            logChange('UPDATE', 'employees', req.params.id, { name, role: empRole, matricula }, req.user);
             res.json({ updated: this.changes });
         });
     });
 
     router.delete('/employees/:id', authMiddleware, (req, res) => {
-        const isRoot = req.user.role.toLowerCase().includes('dev') || req.user.role.toLowerCase().includes('global');
-        const isAdmin = req.user.role.toLowerCase().includes('admin');
+        const role = req.user.role.toLowerCase();
+        const isRoot = role.includes('dev') || role.includes('global');
+        const isAdmin = role.includes('admin');
         
-        if (!isAdmin && !isRoot) return res.status(403).json({ message: 'Apenas administradores podem remover registros.' });
+        if (!isAdmin && !isRoot) return res.status(403).json({ message: 'Apenas administradores de sistema podem remover registros.' });
 
         backupDb();
         const employeeId = req.params.id;
@@ -156,21 +169,22 @@ module.exports = function(db) {
             db.run('DELETE FROM employees WHERE id = ?', [employeeId], function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 logChange('DELETE', 'employees', employeeId, { message: 'Remoção física por ROOT' }, req.user);
-                res.json({ message: 'Removido permanentemente do banco.', deleted: true });
+                res.json({ message: 'Registro removido permanentemente.', deleted: true });
             });
         } else {
             db.run("UPDATE employees SET status = 'Desativado' WHERE id = ?", [employeeId], function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 logChange('SOFT_DELETE', 'employees', employeeId, { status: 'Desativado' }, req.user);
-                res.json({ message: 'Marcado como desativado.', deleted: false });
+                res.json({ message: 'Registro desativado conforme política de auditoria.', deleted: false });
             });
         }
     });
 
     // Auditoria de Sistema - Apenas Dev/TI
     router.get('/system/audit-logs', authMiddleware, (req, res) => {
-        const isAuthorized = req.user.role.toLowerCase().includes('dev') || req.user.role.toLowerCase().includes('ti');
-        if (!isAuthorized) return res.status(403).json({ message: 'Acesso restrito a auditoria técnica.' });
+        const role = req.user.role.toLowerCase();
+        const isAuthorized = role.includes('dev') || role.includes('ti');
+        if (!isAuthorized) return res.status(403).json({ message: 'Acesso restrito à auditoria técnica.' });
 
         db.all('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 100', [], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
@@ -196,14 +210,15 @@ module.exports = function(db) {
     });
 
     router.post('/maintenance/reset', authMiddleware, (req, res) => {
-        const isRoot = req.user.role.toLowerCase().includes('dev') || req.user.role.toLowerCase().includes('global');
-        if (!isRoot) return res.status(403).json({ message: 'Permissão negada. Apenas usuários ROOT podem realizar o reset de fábrica.' });
+        const role = req.user.role.toLowerCase();
+        const isRoot = role.includes('dev') || role.includes('global');
+        if (!isRoot) return res.status(403).json({ message: 'Permissão negada. Apenas usuários ROOT podem realizar o reset total.' });
 
         const initScriptPath = path.resolve(__dirname, '../database/init_db.js');
         exec(`node ${initScriptPath}`, (error) => {
             if (error) return res.status(500).json({ success: false, message: error.message });
-            logChange('SYSTEM_RESET', 'database', '*', { message: 'Reset total de fábrica executado' }, req.user);
-            res.json({ success: true, message: 'Sistema reiniciado e banco restaurado.' });
+            logChange('SYSTEM_RESET', 'database', '*', { message: 'Reset de fábrica executado' }, req.user);
+            res.json({ success: true, message: 'Sistema reiniciado e banco restaurado com sucesso.' });
         });
     });
 
