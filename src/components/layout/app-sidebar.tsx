@@ -37,7 +37,8 @@ import {
   DollarSign,
   LogOut,
   ArrowLeft,
-  ChevronRight
+  ChevronRight,
+  FileCode
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/app-provider';
@@ -45,6 +46,7 @@ import { cn } from '@/lib/utils';
 
 const platformNavItems = [
   { href: '/dev-global', label: 'Gestão Global', icon: ShieldCheck, roles: ['dev'] },
+  { href: '/dev-docs', label: 'Documentação Técnica', icon: FileCode, roles: ['dev'] },
   { href: '/faturamento', label: 'Faturamento', icon: DollarSign, roles: ['dev', 'ti'] },
   { href: '/nexus', label: 'NexusBridge', icon: Network, roles: ['dev', 'ti'] },
   { href: '/perfis', label: 'Gerenciar Perfis', icon: UserCog, roles: ['dev', 'ti', 'admin'] },
