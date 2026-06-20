@@ -110,6 +110,20 @@
       "transformer": "identity"
     },
     {
+      "path": "system/db-integrity",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/system/db-integrity",
+      "transformer": "identity"
+    },
+    {
+      "path": "system/backup-status",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/system/backup-status",
+      "transformer": "identity"
+    },
+    {
       "path": "system/audit-logs",
       "method": "GET",
       "backendId": "node-backend",

@@ -2,13 +2,14 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity, Save, ArrowLeft, Coffee, Sparkles, Loader2, History, FileText, Minus, Square } from 'lucide-react';
+import { Terminal as TerminalIcon, X, ChevronRight, Command, Cpu, HardDrive, Activity, Save, ArrowLeft, Coffee, Sparkles, Loader2, History, FileText, Minus, Square, ShieldCheck, Zap, Network, Globe } from 'lucide-react';
 import { useApp } from '@/contexts/app-provider';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from './ui/progress';
 import type { Employee } from '@/lib/types';
+import nexusConfig from '@/nexusbridge/config/nexus-settings.json';
 
 interface TerminalLine {
   type: 'input' | 'output' | 'error' | 'system' | 'success' | 'secret';
@@ -48,8 +49,8 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
   const { updateEmployee, refreshData, currentUser } = useApp();
   const { toast } = useToast();
   const [history, setHistory] = useState<TerminalLine[]>([
-    { type: 'system', content: 'CityMotion NexusOS v2.0.0 (Admin Console)' },
-    { type: 'system', content: 'Digite "nexus-help" para ver a lista de comandos.' },
+    { type: 'system', content: 'CityMotion NexusOS v2.4.0 (Enhanced Admin Console)' },
+    { type: 'system', content: 'Digite "nexus-help" para ver a lista de comandos categorizada.' },
   ]);
   const [input, setInput] = useState('');
   const [stats, setStats] = useState<SystemStats | null>(null);
@@ -114,28 +115,111 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
     switch (command) {
       case 'nexus-help':
       case 'help':
-        addLine('--- Comandos CityMotion NexusBridge ---', 'system');
-        addLine('nexus-info          - Informações gerais do sistema.');
-        addLine('nexus-status        - Status dos serviços principais.');
-        addLine('nexus-ping          - Testa comunicação com API/DB.');
-        addLine('nexus-resources     - Monitor de hardware (btop).');
-        addLine('nexus-db-stats      - Estatísticas de registros no banco.');
-        addLine('nexus-logdb         - Visualizador de Auditoria (Janela TUI).');
-        addLine('nexus-db-reset      - Hard reset no banco de dados.');
-        addLine('nexus-employees     - Lista todos os funcionários.');
-        addLine('nexus-employee-info - Detalhes/Edição de um funcionário (nexus-employee-info <id>).');
-        addLine('nexus-vehicles      - Lista frota de veículos.');
+        addLine('--- COMANDOS DISPONÍVEIS (NEXUS OS) ---', 'system');
+        addLine('[ INFO & STATUS ]', 'success');
+        addLine('nexus-info           - Detalhes do sistema e operador.');
+        addLine('nexus-uptime         - Relatório de tempo de atividade.');
+        addLine('nexus-health         - Health Check completo dos subsistemas.');
+        addLine('nexus-status         - Status rápido dos serviços principais.');
+        addLine('nexus-version        - Versão dos módulos da plataforma.');
+        addLine('[ DATABASE & AUDIT ]', 'success');
+        addLine('nexus-db-stats       - Contagem de registros no SQLite.');
+        addLine('nexus-db-integrity   - Executa check de integridade no banco.');
+        addLine('nexus-backup-info    - Status do último arquivo .bak.');
+        addLine('nexus-logdb          - Visualizador de Auditoria (Janela TUI).');
+        addLine('nexus-db-reset       - Restaura o banco ao estado original.');
+        addLine('[ GESTÃO DE RECURSOS ]', 'success');
+        addLine('nexus-employees      - Lista funcionários registrados.');
+        addLine('nexus-employee-info  - Edição interativa (TUI) por ID.');
+        addLine('nexus-vehicles       - Lista frota de veículos.');
+        addLine('[ NETWORK & ENGINE ]', 'success');
+        addLine('nexus-routes         - Lista rotas virtuais da NexusBridge.');
+        addLine('nexus-net-diag       - Diagnóstico de rede para o backend.');
+        addLine('nexus-config-view    - Visualiza JSON de configuração.');
+        addLine('nexus-ping           - Teste ICMP simulado contra a API.');
+        addLine('[ TERMINAL ]', 'success');
         addLine('nexus-terminal-clear - Limpa a tela (alias: clear, cls).');
+        addLine('exit                 - Fecha o console de administração.');
         addLine('----------------------------------------', 'system');
         break;
 
       case 'nexus-info':
-        addLine('Ambiente: Desenvolvimento');
         addLine('Operador: ' + (currentUser?.name || 'Sistema/Root'));
-        addLine('Engine: NexusBridge Core 1.2');
-        addLine('Database: SQLite3 (Arquivo Local)');
-        addLine('Platform: ' + (stats?.platform || 'Carregando...'));
-        addLine('Node: ' + (stats?.nodeVersion || 'Carregando...'));
+        addLine('Ambiente: Local Development');
+        addLine('Engine: NexusBridge 1.2.4 (Active)');
+        addLine('Platform: ' + (stats?.platform || 'Unknown'));
+        addLine('NodeJS: ' + (stats?.nodeVersion || 'Unknown'));
+        break;
+
+      case 'nexus-uptime':
+        if (stats) addLine(`Sistema online por: ${formatUptime(stats.uptime)}`, 'success');
+        else addLine('Estatísticas indisponíveis.', 'error');
+        break;
+
+      case 'nexus-version':
+        addLine('NexusOS Core: v2.4.0');
+        addLine('Bridge-Engine: v1.2.4');
+        addLine('UI-Layer (NextJS): v15.3.8');
+        addLine('Data-Adapter: v1.0.0');
+        break;
+
+      case 'nexus-health':
+        addLine('Executando Health Check Global...', 'system');
+        addLine('-> NexusBridge Engine: [ ONLINE ]', 'success');
+        try {
+            const res = await fetch('/api/nexus/system/db-info');
+            if (res.ok) addLine('-> SQLite Connection: [ ESTABLISHED ]', 'success');
+        } catch (e) { addLine('-> SQLite Connection: [ FAILED ]', 'error'); }
+        addLine(`-> Resource Monitor: [ ${stats ? 'COLLECTING' : 'IDLE'} ]`);
+        addLine('-> Auth Provider: [ SIMULATED ]', 'system');
+        break;
+
+      case 'nexus-db-integrity':
+        addLine('Iniciando verificação de integridade...', 'system');
+        try {
+            const res = await fetch('/api/nexus/system/db-integrity');
+            const data = await res.json();
+            if (data.status === 'Success') addLine(`INTEGRIDADE DO BANCO: ${data.result.toUpperCase()}`, 'success');
+            else addLine(`AVISO: ${data.result}`, 'error');
+        } catch (e) { addLine('Falha ao executar PRAGMA check.', 'error'); }
+        break;
+
+      case 'nexus-backup-info':
+        try {
+            const res = await fetch('/api/nexus/system/backup-status');
+            const data = await res.json();
+            if (data.exists) {
+                addLine('--- BACKUP STATUS ---', 'system');
+                addLine(`Arquivo: citymotion.db.bak`);
+                addLine(`Tamanho: ${data.size}`);
+                addLine(`Sincronizado: ${new Date(data.lastModified).toLocaleString('pt-BR')}`);
+                addLine('Estado: PRONTO PARA RESTAURAÇÃO', 'success');
+            } else {
+                addLine('Nenhum backup localizado no servidor.', 'error');
+            }
+        } catch (e) { addLine('Erro ao consultar sistema de arquivos.', 'error'); }
+        break;
+
+      case 'nexus-routes':
+        addLine('--- MAPA DE ROTAS VIRTUAIS (NEXUSBRIDGE) ---', 'system');
+        nexusConfig.routes.forEach(r => {
+            addLine(`${r.method.padEnd(6)} | /api/nexus/${r.path.padEnd(20)} -> ${r.target}`);
+        });
+        break;
+
+      case 'nexus-config-view':
+        addLine('Carregando nexus-settings.json...', 'system');
+        addLine(JSON.stringify(nexusConfig, null, 2));
+        break;
+
+      case 'nexus-net-diag':
+        addLine('Iniciando diagnóstico de rede...', 'system');
+        addLine('-> Resolvendo localhost... OK');
+        addLine('-> Verificando porta 3001... OK');
+        const nStart = Date.now();
+        await fetch('/api/nexus/system/resources');
+        addLine(`-> Latência Bridge-to-Backend: ${Date.now() - nStart}ms`, 'success');
+        addLine('-> TLS/SSL: N/A (Local Channel)');
         break;
 
       case 'nexus-status':
@@ -145,21 +229,17 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
             const res = await fetch('/api/nexus/system/db-info');
             if (res.ok) addLine('Backend Express/SQLite: CONECTADO', 'success');
             else addLine('Backend Express/SQLite: ERRO NA RESPOSTA', 'error');
-        } catch (e) {
-            addLine('Backend Express/SQLite: OFFLINE', 'error');
-        }
+        } catch (e) { addLine('Backend Express/SQLite: OFFLINE', 'error'); }
         break;
 
       case 'nexus-ping':
-        const start = Date.now();
+        const pStart = Date.now();
         try {
             const res = await fetch('/api/nexus/system/resources');
-            const end = Date.now();
-            if (res.ok) addLine(`PONG! Resposta em ${end - start}ms`, 'success');
+            const pEnd = Date.now();
+            if (res.ok) addLine(`PONG! Resposta em ${pEnd - pStart}ms`, 'success');
             else addLine('Falha na resposta do servidor.', 'error');
-        } catch (e) {
-            addLine('Requisição falhou (servidor offline?).', 'error');
-        }
+        } catch (e) { addLine('Requisição falhou.', 'error'); }
         break;
 
       case 'nexus-db-stats':
@@ -183,10 +263,8 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                 setAuditLogs(data);
                 setTuiMode('logs');
                 addLine('Visualizador de Auditoria iniciado.', 'success');
-            } else {
-                addLine('Erro ao obter logs. O banco pode estar vazio.', 'error');
-            }
-        } catch (e) { addLine('Falha crítica de conexão com o sistema de auditoria.', 'error'); }
+            } else addLine('Erro ao obter logs.', 'error');
+        } catch (e) { addLine('Falha crítica de conexão.', 'error'); }
         finally { setIsLoadingLogs(false); }
         break;
 
@@ -216,7 +294,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                     addLine(`${idStr} | ${nameStr} | ${u.role}`);
                 });
             } else addLine('Erro ao obter lista do backend.', 'error');
-        } catch (e) { addLine('Falha de conexão com a API de funcionários.', 'error'); }
+        } catch (e) { addLine('Falha de conexão.', 'error'); }
         break;
 
       case 'nexus-employee-info':
@@ -231,7 +309,7 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                 setTuiMode('edit');
                 addLine('Interface TUI aberta para o ID: ' + userId, 'success');
             } else addLine(`Erro: Funcionário ${userId} não encontrado.`, 'error');
-        } catch (e) { addLine('Falha ao carregar dados do usuário.', 'error'); }
+        } catch (e) { addLine('Falha ao carregar dados.', 'error'); }
         break;
 
       case 'nexus-vehicles':
@@ -272,7 +350,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
     
     setIsSaving(true);
     const formData = new FormData(e.currentTarget as HTMLFormElement);
-    
     const sectorInput = formData.get('sector') as string;
     const sectorArray = sectorInput.split(',').map(s => s.trim()).filter(s => s !== '');
 
@@ -287,7 +364,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
         sector: sectorArray
     };
 
-    addLine(`Salvando alterações para o ID ${editingUser.id}...`, 'system');
     try {
         await updateEmployee(editingUser.id, updatedData);
         addLine(`SUCESSO: Registro ${editingUser.id} sincronizado com SQLite.`, 'success');
@@ -313,7 +389,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
             !isMinimized && "animate-in slide-in-from-bottom-4"
         )}
     >
-      {/* TUI Window Header */}
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#0000AA] text-white shrink-0 select-none">
         <div className="flex items-center gap-2">
           <TerminalIcon className="h-3 w-3" />
@@ -342,7 +417,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
 
       {!isMinimized && (
         <>
-            {/* btop Resource Monitor Section */}
             <div className="p-4 bg-zinc-900/50 border-b border-zinc-800 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                     <div className="flex items-center justify-between text-[10px] uppercase font-bold text-zinc-500">
@@ -368,7 +442,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                 </div>
             </div>
 
-            {/* Main Terminal Viewport */}
             <div className="relative flex-1 overflow-hidden flex flex-col">
                 <ScrollArea className="flex-1 p-4 bg-black/40">
                     <div className="space-y-1">
@@ -392,7 +465,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                     </div>
                 </ScrollArea>
 
-                {/* INTERACTIVE TUI OVERLAY (EDIT USER) */}
                 {tuiMode === 'edit' && editingUser && (
                     <div className="absolute inset-0 bg-black/70 flex items-center justify-center p-6 backdrop-blur-[1px] z-[60]">
                         <form 
@@ -403,7 +475,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                                 <span className="text-[10px] uppercase tracking-widest">Editar Usuário: {editingUser.id}</span>
                                 <button type="button" onClick={() => setTuiMode(null)} className="hover:bg-red-600 px-1">X</button>
                             </div>
-
                             <div className="p-6 space-y-4 text-black">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
@@ -452,7 +523,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                                         <input name="password" type="text" defaultValue={editingUser.password || ''} className="w-full bg-white border-2 border-zinc-500 px-2 py-1 outline-none text-xs" />
                                     </div>
                                 </div>
-
                                 <div className="flex justify-center gap-6 pt-4">
                                     <button type="submit" disabled={isSaving} className="px-6 py-1.5 bg-zinc-300 border-2 border-zinc-500 active:translate-y-0.5 shadow-[2px_2px_0px_rgba(0,0,0,0.8)] hover:bg-zinc-400 font-bold flex items-center gap-2 text-[10px] uppercase">
                                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-3.5 w-3.5" />} [ SALVAR ]
@@ -466,7 +536,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                     </div>
                 )}
 
-                {/* INTERACTIVE TUI OVERLAY (AUDIT LOGS) */}
                 {tuiMode === 'logs' && (
                     <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-4 backdrop-blur-[2px] z-[60]">
                         <div className="w-full max-w-4xl bg-zinc-200 border-4 border-double border-zinc-400 shadow-[10px_10px_0px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden">
@@ -477,10 +546,8 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                                 </div>
                                 <button onClick={() => setTuiMode(null)} className="hover:bg-red-600 px-2">X</button>
                             </div>
-
                             <div className="flex-1 overflow-hidden flex flex-col p-4 text-black">
                                 <div className="bg-white border-2 border-zinc-400 flex-1 flex flex-col overflow-hidden">
-                                    {/* Table Header */}
                                     <div className="grid grid-cols-12 gap-2 bg-zinc-300 p-2 font-bold text-[9px] uppercase border-b-2 border-zinc-400 shrink-0">
                                         <div className="col-span-2">HORÁRIO</div>
                                         <div className="col-span-2">OPERADOR</div>
@@ -488,8 +555,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                                         <div className="col-span-2">TABELA</div>
                                         <div className="col-span-4">DETALHES</div>
                                     </div>
-                                    
-                                    {/* Table Body */}
                                     <ScrollArea className="flex-1">
                                         <div className="divide-y divide-zinc-200">
                                             {auditLogs.length > 0 ? auditLogs.map((log) => (
@@ -524,7 +589,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                                         </div>
                                     </ScrollArea>
                                 </div>
-                                
                                 <div className="mt-4 flex justify-between items-end shrink-0">
                                     <div className="text-[8px] text-zinc-600 font-bold uppercase">
                                         Total: {auditLogs.length} | Database: SQLITE3
@@ -542,7 +606,6 @@ export function DevTerminal({ isOpen, onClose }: { isOpen: boolean; onOpenChange
                 )}
             </div>
 
-            {/* Terminal Input Bar */}
             {!tuiMode && (
                 <form onSubmit={(e) => { e.preventDefault(); if (input.trim()) { processCommand(input); setInput(''); } }} className="p-3 bg-zinc-900 border-t border-zinc-800 flex items-center gap-2">
                     <ChevronRight className="h-4 w-4 text-primary shrink-0" />

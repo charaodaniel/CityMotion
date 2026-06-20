@@ -216,6 +216,26 @@ module.exports = function(db) {
         Promise.all(promises).then(() => res.json({ counts: stats, database: 'SQLite3', status: 'Healthy' }));
     });
 
+    // [NOVA ROTA] Integridade do Banco
+    router.get('/system/db-integrity', (req, res) => {
+        db.get('PRAGMA integrity_check', (err, row) => {
+            if (err) return res.status(500).json({ status: 'Error', message: err.message });
+            res.json({ status: row.integrity_check === 'ok' ? 'Success' : 'Warning', result: row.integrity_check });
+        });
+    });
+
+    // [NOVA ROTA] Status de Backup
+    router.get('/system/backup-status', (req, res) => {
+        const stats = { exists: false, size: '0 KB', lastModified: 'N/A' };
+        if (fs.existsSync(backupFilePath)) {
+            const fStats = fs.statSync(backupFilePath);
+            stats.exists = true;
+            stats.size = (fStats.size / 1024).toFixed(2) + ' KB';
+            stats.lastModified = fStats.mtime.toISOString();
+        }
+        res.json(stats);
+    });
+
     router.post('/maintenance/reset', (req, res) => {
         const initScriptPath = path.resolve(__dirname, '../database/init_db.js');
         exec(`node ${initScriptPath}`, (error) => {
