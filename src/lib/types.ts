@@ -41,12 +41,17 @@ export type Passenger = {
 export type Refueling = {
   id: string;
   vehicleId: string;
-  tripId: string;
+  vehicleModel?: string;
+  licensePlate?: string;
+  tripId?: string;
   date: string;
   mileage: number;
   liters: number;
   price: number;
-  receiptPhoto?: string;
+  totalValue: number;
+  fuelType: string;
+  gasStation?: string;
+  driverName: string;
   notes?: string;
 };
 

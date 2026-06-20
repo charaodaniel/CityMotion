@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo } from 'react';
@@ -39,7 +38,8 @@ import {
   ArrowLeft,
   ChevronRight,
   Terminal,
-  FileCode
+  FileCode,
+  Fuel
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/app-provider';
@@ -60,6 +60,7 @@ const operationalNavItems = [
   { href: '/funcionarios', label: 'Funcionários', icon: Users, roles: ['dev', 'ti', 'admin', 'manager'] },
   { href: '/veiculos', label: 'Frota', icon: Car, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
   { href: '/viagens', label: 'Missões', icon: Route, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/abastecimento', label: 'Abastecimento', icon: Fuel, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
   { href: '/manutencao', label: 'Manutenção', icon: Wrench, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
   { href: '/escalas', label: 'Escalas', icon: CalendarClock, roles: ['dev', 'ti', 'admin', 'manager'] },
   { href: '/relatorios', label: 'Relatórios', icon: ScrollText, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
@@ -75,15 +76,11 @@ export function AppSidebar() {
   const filteredPlatformItems = useMemo(() => platformNavItems.filter(item => item.roles.includes(userRole)), [userRole]);
   
   const filteredOperationalItems = useMemo(() => operationalNavItems.filter(item => {
-    if (['dev', 'ti'].includes(userRole) && !activeOrganization) {
-      return false;
-    }
-
+    if (['dev', 'ti'].includes(userRole) && !activeOrganization) return false;
     if (!item.roles.includes(userRole)) return false;
-    
     if (userRole === 'employee') {
-      const restrictedRoutes = ['/veiculos', '/viagens', '/manutencao', '/relatorios'];
-      if (restrictedRoutes.includes(item.href)) return isCurrentUserDriver;
+      const restricted = ['/veiculos', '/viagens', '/abastecimento', '/manutencao', '/relatorios'];
+      if (restricted.includes(item.href)) return isCurrentUserDriver;
     }
     return true;
   }), [userRole, isCurrentUserDriver, activeOrganization]);
@@ -121,18 +118,8 @@ export function AppSidebar() {
                 <SidebarMenu>
                   {filteredPlatformItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton 
-                        asChild 
-                        isActive={pathname.startsWith(item.href)} 
-                        className={cn(
-                          "rounded-sm transition-all duration-200",
-                          pathname.startsWith(item.href) && "border-r-2 border-primary bg-accent/50 text-primary font-bold"
-                        )}
-                      >
-                        <Link href={item.href}>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.label}</span>
-                        </Link>
+                      <SidebarMenuButton asChild isActive={pathname.startsWith(item.href)} className={cn("rounded-sm", pathname.startsWith(item.href) && "border-r-2 border-primary bg-accent/50 text-primary font-bold")}>
+                        <Link href={item.href}><item.icon className="h-4 w-4" /><span>{item.label}</span></Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -153,38 +140,18 @@ export function AppSidebar() {
                     </CollapsibleTrigger>
                   </SidebarGroupLabel>
                   {activeOrganization && ['dev', 'ti'].includes(userRole) && (
-                      <button 
-                          onClick={handleExitOrganization}
-                          className="text-[9px] font-bold text-primary hover:underline flex items-center gap-1 ml-2"
-                          title="Sair da visão da empresa"
-                      >
-                          <ArrowLeft className="h-2 w-2" /> VOLTAR
-                      </button>
+                      <button onClick={handleExitOrganization} className="text-[9px] font-bold text-primary hover:underline flex items-center gap-1 ml-2"><ArrowLeft className="h-2 w-2" /> VOLTAR</button>
                   )}
               </div>
               <CollapsibleContent>
                 <SidebarMenu>
-                    {isLoading ? (
-                    <SidebarMenuSkeleton showIcon />
-                    ) : (
-                    filteredOperationalItems.map((item) => (
+                    {isLoading ? <SidebarMenuSkeleton showIcon /> : filteredOperationalItems.map((item) => (
                         <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton 
-                            asChild 
-                            isActive={pathname === item.href}
-                            className={cn(
-                            "rounded-sm transition-all duration-200",
-                            pathname === item.href && "border-r-2 border-primary bg-accent/50 text-primary font-bold"
-                            )}
-                        >
-                            <Link href={item.href}>
-                            <item.icon className="h-4 w-4" />
-                            <span>{item.label}</span>
-                            </Link>
+                        <SidebarMenuButton asChild isActive={pathname === item.href} className={cn("rounded-sm", pathname === item.href && "border-r-2 border-primary bg-accent/50 text-primary font-bold")}>
+                            <Link href={item.href}><item.icon className="h-4 w-4" /><span>{item.label}</span></Link>
                         </SidebarMenuButton>
                         </SidebarMenuItem>
-                    ))
-                    )}
+                    ))}
                 </SidebarMenu>
               </CollapsibleContent>
             </SidebarGroup>

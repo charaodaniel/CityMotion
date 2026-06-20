@@ -11,7 +11,6 @@ module.exports = function(db) {
     const dbFilePath = path.resolve(__dirname, '../database/citymotion.db');
     const backupFilePath = path.resolve(__dirname, '../database/citymotion.db.bak');
 
-    // Função auxiliar para criar backup antes de alterações
     function backupDb() {
         try {
             if (fs.existsSync(dbFilePath)) {
@@ -22,7 +21,6 @@ module.exports = function(db) {
         }
     }
 
-    // Função auxiliar para registrar auditoria (Extrai identidade do Token)
     function logChange(action, tableName, recordId, details, user) {
         const userIdentity = user ? `${user.name} (${user.role})` : 'Sistema';
         const sql = `INSERT INTO audit_logs (action, table_name, record_id, details, user_identity) VALUES (?, ?, ?, ?, ?)`;
@@ -31,7 +29,6 @@ module.exports = function(db) {
         });
     }
 
-    // Rota consolidada de dados - Protegida por JWT
     router.get('/data', authMiddleware, (req, res) => {
         const queries = {
             trips: 'SELECT * FROM trips ORDER BY id DESC',
@@ -41,6 +38,7 @@ module.exports = function(db) {
             sectors: 'SELECT * FROM sectors',
             workSchedules: 'SELECT * FROM work_schedules',
             maintenanceRequests: 'SELECT * FROM maintenance_requests ORDER BY id DESC',
+            refuelings: 'SELECT * FROM refuelings ORDER BY date DESC LIMIT 100',
         };
 
         const results = {};
@@ -68,7 +66,6 @@ module.exports = function(db) {
             .catch(err => res.status(500).json({ error: 'Erro ao carregar ecossistema de dados.' }));
     });
 
-    // Listagem individual
     router.get('/employees', authMiddleware, (req, res) => {
         db.all('SELECT * FROM employees', [], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
@@ -88,17 +85,13 @@ module.exports = function(db) {
         });
     });
 
-    // CRUD Funcionários - Apenas Perfis Técnicos ou Administrativos
     router.post('/employees', authMiddleware, (req, res) => {
         const role = req.user.role.toLowerCase();
         const isAuthorized = role.includes('admin') || role.includes('dev') || role.includes('ti');
-        
-        if (!isAuthorized) return res.status(403).json({ message: 'Acesso negado: privilégios insuficientes.' });
+        if (!isAuthorized) return res.status(403).json({ message: 'Acesso negado.' });
 
         backupDb();
         const { name, email, phone, role: empRole, sector, status, password, matricula, cnh } = req.body;
-        
-        // Hashing da senha antes de inserir no banco
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = bcrypt.hashSync(password || '123456', salt);
         
@@ -106,8 +99,8 @@ module.exports = function(db) {
         const params = [name, email, phone || null, empRole, JSON.stringify(sector || []), status || 'Disponível', hashedPassword, matricula || null, cnh || null];
         
         db.run(sql, params, function(err) {
-            if (err) return res.status(500).json({ error: 'Falha ao persistir novo colaborador. Verifique se o e-mail, matrícula ou telefone já existem.' });
-            logChange('INSERT', 'employees', this.lastID, { name, role: empRole, matricula }, req.user);
+            if (err) return res.status(500).json({ error: err.message });
+            logChange('INSERT', 'employees', this.lastID, { name, role: empRole }, req.user);
             res.json({ id: this.lastID });
         });
     });
@@ -115,20 +108,16 @@ module.exports = function(db) {
     router.put('/employees/:id', authMiddleware, (req, res) => {
         const userRole = req.user.role.toLowerCase();
         const isAuthorized = userRole.includes('admin') || userRole.includes('dev') || userRole.includes('ti');
-        
-        if (!isAuthorized) return res.status(403).json({ message: 'Ação não permitida para seu nível de acesso.' });
+        if (!isAuthorized) return res.status(403).json({ message: 'Ação não permitida.' });
 
         backupDb();
         const { name, role: empRole, status, email, phone, sector, password, matricula, cnh } = req.body;
-        
         let passwordFragment = '';
         const params = [name || null, empRole || null, status || null, email || null, phone || null, null, matricula || null, cnh || null];
 
-        // Se uma nova senha foi enviada, hasheamos
         if (password) {
             const salt = bcrypt.genSaltSync(10);
-            const hashedPassword = bcrypt.hashSync(password, salt);
-            params.push(hashedPassword);
+            params.push(bcrypt.hashSync(password, salt));
             passwordFragment = ', password = ?';
         }
 
@@ -136,89 +125,61 @@ module.exports = function(db) {
         params[5] = sectorStr;
         params.push(req.params.id);
 
-        const sql = `UPDATE employees SET 
-            name = COALESCE(?, name), 
-            role = COALESCE(?, role), 
-            status = COALESCE(?, status), 
-            email = COALESCE(?, email), 
-            phone = COALESCE(?, phone),
-            sector = COALESCE(?, sector), 
-            matricula = COALESCE(?, matricula),
-            cnh = COALESCE(?, cnh)
-            ${passwordFragment}
-            WHERE id = ?`;
+        const sql = `UPDATE employees SET name = COALESCE(?, name), role = COALESCE(?, role), status = COALESCE(?, status), email = COALESCE(?, email), phone = COALESCE(?, phone), sector = COALESCE(?, sector), matricula = COALESCE(?, matricula), cnh = COALESCE(?, cnh) ${passwordFragment} WHERE id = ?`;
         
         db.run(sql, params, function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            logChange('UPDATE', 'employees', req.params.id, { name, role: empRole, matricula }, req.user);
+            logChange('UPDATE', 'employees', req.params.id, { name }, req.user);
             res.json({ updated: this.changes });
         });
     });
 
-    router.delete('/employees/:id', authMiddleware, (req, res) => {
-        const role = req.user.role.toLowerCase();
-        const isRoot = role.includes('dev') || role.includes('global');
-        const isAdmin = role.includes('admin');
+    // ABASTECIMENTOS
+    router.post('/refuelings', authMiddleware, (req, res) => {
+        const { vehicleId, vehicleModel, licensePlate, tripId, mileage, liters, price, fuelType, gasStation, notes } = req.body;
+        const totalValue = parseFloat(liters) * parseFloat(price);
         
-        if (!isAdmin && !isRoot) return res.status(403).json({ message: 'Apenas administradores de sistema podem remover registros.' });
-
         backupDb();
-        const employeeId = req.params.id;
+        const sql = `INSERT INTO refuelings (vehicleId, vehicleModel, licensePlate, tripId, mileage, liters, price, totalValue, fuelType, gasStation, driverName, notes) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        const params = [vehicleId, vehicleModel, licensePlate, tripId || null, mileage, liters, price, totalValue, fuelType, gasStation || null, req.user.name, notes || null];
 
-        if (isRoot) {
-            db.run('DELETE FROM employees WHERE id = ?', [employeeId], function(err) {
-                if (err) return res.status(500).json({ error: err.message });
-                logChange('DELETE', 'employees', employeeId, { message: 'Remoção física por ROOT' }, req.user);
-                res.json({ message: 'Registro removido permanentemente.', deleted: true });
-            });
-        } else {
-            db.run("UPDATE employees SET status = 'Desativado' WHERE id = ?", [employeeId], function(err) {
-                if (err) return res.status(500).json({ error: err.message });
-                logChange('SOFT_DELETE', 'employees', employeeId, { status: 'Desativado' }, req.user);
-                res.json({ message: 'Registro desativado conforme política de auditoria.', deleted: false });
-            });
-        }
+        db.run(sql, params, function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            
+            // Atualiza KM do veículo automaticamente
+            db.run('UPDATE vehicles SET mileage = ? WHERE id = ?', [mileage, vehicleId]);
+            
+            logChange('INSERT', 'refuelings', this.lastID, { licensePlate, totalValue }, req.user);
+            res.json({ id: this.lastID });
+        });
     });
 
-    // Auditoria de Sistema - Apenas Dev/TI
+    router.get('/refuelings', authMiddleware, (req, res) => {
+        db.all('SELECT * FROM refuelings ORDER BY date DESC', [], (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(rows);
+        });
+    });
+
+    // SISTEMA
     router.get('/system/audit-logs', authMiddleware, (req, res) => {
         const role = req.user.role.toLowerCase();
-        const isAuthorized = role.includes('dev') || role.includes('ti');
-        if (!isAuthorized) return res.status(403).json({ message: 'Acesso restrito à auditoria técnica.' });
-
+        if (!role.includes('dev') && !role.includes('ti')) return res.status(403).json({ message: 'Acesso negado.' });
         db.all('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 100', [], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json(rows || []);
         });
     });
 
-    router.get('/system/resources', authMiddleware, (req, res) => {
-        const totalMem = os.totalmem();
-        const freeMem = os.freemem();
-        const usedMem = totalMem - freeMem;
-        res.json({
-            uptime: process.uptime(),
-            memory: { 
-                total: (totalMem / 1024 / 1024 / 1024).toFixed(2) + ' GB', 
-                used: (usedMem / 1024 / 1024 / 1024).toFixed(2) + ' GB', 
-                percentage: ((usedMem / totalMem) * 100).toFixed(1) 
-            },
-            cpu: { model: os.cpus()[0].model, cores: os.cpus().length, load: (os.loadavg()[0] * 10).toFixed(1) },
-            platform: process.platform,
-            nodeVersion: process.version
-        });
-    });
-
     router.post('/maintenance/reset', authMiddleware, (req, res) => {
         const role = req.user.role.toLowerCase();
-        const isRoot = role.includes('dev') || role.includes('global');
-        if (!isRoot) return res.status(403).json({ message: 'Permissão negada. Apenas usuários ROOT podem realizar o reset total.' });
-
+        if (!role.includes('dev') && !role.includes('global')) return res.status(403).json({ message: 'Apenas ROOT.' });
         const initScriptPath = path.resolve(__dirname, '../database/init_db.js');
         exec(`node ${initScriptPath}`, (error) => {
             if (error) return res.status(500).json({ success: false, message: error.message });
-            logChange('SYSTEM_RESET', 'database', '*', { message: 'Reset de fábrica executado' }, req.user);
-            res.json({ success: true, message: 'Sistema reiniciado e banco restaurado com sucesso.' });
+            logChange('SYSTEM_RESET', 'database', '*', { message: 'Reset executado' }, req.user);
+            res.json({ success: true, message: 'Sistema restaurado.' });
         });
     });
 
