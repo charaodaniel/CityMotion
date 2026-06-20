@@ -17,10 +17,12 @@ import {
   LayoutDashboard,
   Route,
   Wrench,
-  FileText
+  FileText,
+  CalendarClock
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 export default function DocsPage() {
   return (
@@ -179,6 +181,7 @@ export default function DocsPage() {
                     </div>
                     <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded border border-border/50 bg-accent/5">
                       <h4 className="font-bold text-foreground flex items-center gap-2">
+                        <step.icon className="h-4 w-4 text-primary" />
                         {step.title}
                       </h4>
                       <p className="text-xs text-muted-foreground mt-1">{step.desc}</p>
@@ -261,8 +264,3 @@ export default function DocsPage() {
 // Helper icons for the timeline
 function Play(props: any) { return <ArrowRight {...props} /> }
 function Flag(props: any) { return <CheckCircle2 {...props} /> }
-
-// Helper for className merge
-function cn(...inputs: any[]) {
-    return inputs.filter(Boolean).join(' ');
-}
