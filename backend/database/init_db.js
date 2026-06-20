@@ -10,14 +10,11 @@ console.log('--- CityMotion DB Initialization ---');
 console.log('Database Path:', dbPath);
 console.log('SQL Script Path:', sqlScriptPath);
 
-// Apaga o banco de dados antigo, se existir, para garantir um fresh start
+// Para pendrive persistente, só criamos o banco se ele não existir
+// ou se o usuário passar um comando de reset (opcional no futuro)
 if (fs.existsSync(dbPath)) {
-    try {
-        fs.unlinkSync(dbPath);
-        console.log('Banco de dados antigo removido com sucesso.');
-    } catch (e) {
-        console.error('Erro ao remover banco antigo:', e.message);
-    }
+    console.log('Aviso: Banco de dados já existe. Pulando remoção para preservar persistência.');
+    // Se quiser forçar o reset, o usuário deve usar o comando específico no terminal ou apagar o arquivo .db manualmente
 }
 
 const db = new sqlite3.Database(dbPath, (err) => {
@@ -31,28 +28,26 @@ const db = new sqlite3.Database(dbPath, (err) => {
 function initializeDatabase() {
     if (!fs.existsSync(sqlScriptPath)) {
         console.error(`ERRO CRÍTICO: Arquivo SQL não encontrado em: ${sqlScriptPath}`);
-        console.log('Certifique-se de que o arquivo src/data/database.sql foi criado.');
         db.close();
         return;
     }
 
-    console.log('Lendo script SQL...');
+    console.log('Executando script SQL (CREATE TABLE IF NOT EXISTS)...');
     const sqlScript = fs.readFileSync(sqlScriptPath, 'utf8');
 
-    // Executa o script SQL. O exec pode rodar múltiplas instruções separadas por ;
+    // O script SQL já deve conter CREATE TABLE IF NOT EXISTS para ser resiliente
     db.exec(sqlScript, (err) => {
         if (err) {
             console.error('ERRO ao executar o script SQL:', err.message);
         } else {
-            console.log('SUCESSO: Tabelas criadas e dados iniciais inseridos.');
+            console.log('SUCESSO: Tabelas verificadas/criadas.');
         }
 
         db.close((err) => {
             if (err) {
                 console.error('Erro ao fechar o banco:', err.message);
             } else {
-                console.log('Inicialização concluída. Conexão fechada.');
-                console.log('Agora você pode rodar "npm run dev" na pasta backend.');
+                console.log('Inicialização concluída.');
             }
         });
     });
