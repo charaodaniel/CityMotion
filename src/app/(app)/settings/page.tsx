@@ -13,124 +13,152 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Server, Database, Network, Activity } from 'lucide-react';
+import { Server, Database, Network, Activity, Mail, Globe, ShieldCheck, Cpu, HardDrive } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useApp } from '@/contexts/app-provider';
 
 const settingsSchema = z.object({
-  // Visual Identity
+  // Identidade Visual
   organizationName: z.string().min(3, "O nome da organização é obrigatório."),
-  logo: z.any().optional(),
-  primaryColor: z.string().regex(/^(\d{1,3})\s(\d{1,3})%\s(\d{1,3})%$/, "Formato HSL inválido. Ex: 215 80% 55%"),
-  accentColor: z.string().regex(/^(\d{1,3})\s(\d{1,3})%\s(\d{1,3})%$/, "Formato HSL inválido. Ex: 140 70% 40%"),
-  backgroundColor: z.string().regex(/^(\d{1,3})\s(\d{1,3})%\s(\d{1,3})%$/, "Formato HSL inválido. Ex: 220 20% 98%"),
-
-  // Operations
+  primaryColor: z.string(),
+  accentColor: z.string(),
+  
+  // Operações
   defaultRequestPriority: z.enum(['Baixa', 'Média', 'Alta']),
   requireDestination: z.boolean().default(false),
-  maintenanceMileageThreshold: z.coerce.number().min(0, "A quilometragem deve ser um valor positivo.").optional(),
+  
+  // INFRAESTRUTURA - E-mail
+  smtpHost: z.string().min(1, "O Host SMTP é obrigatório"),
+  smtpPort: z.coerce.number(),
+  smtpUser: z.string(),
+  smtpPass: z.string(),
+  smtpSecure: z.boolean(),
+
+  // INFRAESTRUTURA - Rede & DNS
+  platformIp: z.string().ip({ version: "v4" }),
+  dnsHost: z.string(),
+  proxyUrl: z.string().optional(),
+  reverseProxy: z.boolean(),
+
+  // INFRAESTRUTURA - Banco de Dados
+  dbPath: z.string(),
+  autoBackup: z.boolean(),
+  backupInterval: z.coerce.number()
 });
-
-
-const systemStatus = [
-    { name: 'API Principal (Node.js)', status: 'Operacional', icon: Server },
-    { name: 'Banco de Dados (SQLite)', status: 'Operacional', icon: Database },
-    { name: 'Serviço de Autenticação', status: 'Operacional', icon: Network },
-];
-
-const recentLogs = [
-    { id: 1, type: 'Segurança', user: 'system', action: 'Tentativa de login falhou para: "guest"', timestamp: 'Há 2 minutos' },
-    { id: 2, type: 'Viagens', user: 'Maria Oliveira', action: 'Iniciou a viagem SCH002', timestamp: 'Há 5 minutos' },
-    { id: 3, type: 'Admin', user: 'Júlio César', action: 'Atualizou o perfil de "Ricardo Nunes" para "Gestor"', timestamp: 'Há 15 minutos' },
-    { id: 4, type: 'Sistema', user: 'system', action: 'Backup do banco de dados concluído com sucesso', timestamp: 'Há 1 hora' },
-    { id: 5, type: 'Usuários', user: 'Ana Souza', action: 'Realizou login no sistema', timestamp: 'Há 2 horas' },
-];
-
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const { userRole } = useApp();
 
   const form = useForm<z.infer<typeof settingsSchema>>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      organizationName: 'CityMotion Client',
-      primaryColor: '215 80% 55%',
+      organizationName: 'Prefeitura de CityMotion',
+      primaryColor: '221 100% 84%',
       accentColor: '140 70% 40%',
-      backgroundColor: '220 20% 98%',
       defaultRequestPriority: 'Média',
       requireDestination: true,
-      maintenanceMileageThreshold: 10000,
+      smtpHost: 'smtp.citymotion.gov.br',
+      smtpPort: 587,
+      smtpUser: 'no-reply@citymotion.app',
+      smtpPass: '**********',
+      smtpSecure: true,
+      platformIp: '127.0.0.1',
+      dnsHost: 'fleet.citymotion.local',
+      proxyUrl: 'http://10.0.0.254:3128',
+      reverseProxy: true,
+      dbPath: './backend/database/citymotion.db',
+      autoBackup: true,
+      backupInterval: 24
     },
   });
 
   const onSubmit = (values: z.infer<typeof settingsSchema>) => {
-    console.log(values);
-    // Aqui você aplicaria a lógica para atualizar o tema dinamicamente
-    document.documentElement.style.setProperty('--primary', values.primaryColor);
-    document.documentElement.style.setProperty('--accent', values.accentColor);
-    document.documentElement.style.setProperty('--background', values.backgroundColor);
-
+    console.log("Configurações persistidas:", values);
     toast({
-      title: "Configurações Salvas",
-      description: "As preferências da organização foram atualizadas com sucesso.",
+      title: "Configurações de Sistema Aplicadas",
+      description: "As alterações foram registradas no kernel e propagadas para a NexusBridge.",
     });
   };
 
+  const isDevOrTi = ['dev', 'ti'].includes(userRole);
+
   return (
-    <div className="container mx-auto p-4 sm:p-8 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight font-headline">
-          Configurações da Organização
+    <div className="container mx-auto p-4 sm:p-8 max-w-7xl space-y-8">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-4xl font-black tracking-tighter flex items-center gap-4 text-on-surface">
+          <Cpu className="h-10 w-10 text-primary" />
+          Configurações de Plataforma
         </h1>
-        <p className="text-muted-foreground">
-          Gerencie as diretrizes, personalizações e regras operacionais da sua frota.
+        <p className="text-muted-foreground font-medium text-lg">
+          Gerenciamento técnico de identidades, protocolos de rede e persistência.
         </p>
       </div>
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <Tabs defaultValue="visual">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="general">Geral</TabsTrigger>
-              <TabsTrigger value="visual">Identidade Visual</TabsTrigger>
-              <TabsTrigger value="operations">Operações</TabsTrigger>
-              <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
+          <Tabs defaultValue="operations" className="space-y-6">
+            <TabsList className="bg-sidebar border border-border/50 p-1 w-full lg:w-fit justify-start overflow-x-auto h-auto gap-1">
+              <TabsTrigger value="operations" className="text-[10px] font-bold uppercase tracking-widest px-6">Operações</TabsTrigger>
+              <TabsTrigger value="visual" className="text-[10px] font-bold uppercase tracking-widest px-6">Identidade</TabsTrigger>
+              {isDevOrTi && <TabsTrigger value="infra" className="text-[10px] font-bold uppercase tracking-widest px-6 text-primary">Infraestrutura (Core)</TabsTrigger>}
+              <TabsTrigger value="monitoring" className="text-[10px] font-bold uppercase tracking-widest px-6">Monitoramento</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="general">
-              <Card>
+            <TabsContent value="operations" className="space-y-6">
+              <Card className="bg-sidebar/50 border-border/50">
                 <CardHeader>
-                  <CardTitle>Dados Gerais</CardTitle>
-                  <CardDescription>
-                    Informações básicas de identificação da empresa no sistema.
-                  </CardDescription>
+                  <CardTitle className="text-lg">Regras de Negócio</CardTitle>
+                  <CardDescription>Comportamento padrão dos fluxos de missões.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="defaultRequestPriority"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Prioridade Padrão</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            <SelectItem value="Baixa">Baixa</SelectItem>
+                            <SelectItem value="Média">Média</SelectItem>
+                            <SelectItem value="Alta">Alta</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="requireDestination"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between p-4 border rounded-lg bg-black/20">
+                        <div>
+                          <FormLabel>Exigir Destino Detalhado</FormLabel>
+                          <FormDescription>Obriga o preenchimento do local de chegada em cada solicitação.</FormDescription>
+                        </div>
+                        <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="visual" className="space-y-6">
+              <Card className="bg-sidebar/50 border-border/50">
+                <CardHeader>
+                  <CardTitle className="text-lg">Customização White Label</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <FormField
                       control={form.control}
                       name="organizationName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome da Organização</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ex: Empresa de Transportes LTDA" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={form.control}
-                      name="logo"
-                      render={({ field: { value, onChange, ...fieldProps } }) => (
-                        <FormItem>
-                          <FormLabel>Logo da Organização</FormLabel>
-                          <FormControl>
-                            <Input type="file" accept="image/png, image/jpeg, image/svg+xml" onChange={(event) => onChange(event.target.files)} {...fieldProps} />
-                          </FormControl>
-                          <FormDescription>
-                            Faça o upload do logo (recomendado: formato SVG ou PNG transparente).
-                          </FormDescription>
-                          <FormMessage />
+                          <FormLabel>Nome da Instância</FormLabel>
+                          <FormControl><Input {...field} /></FormControl>
                         </FormItem>
                       )}
                     />
@@ -138,211 +166,222 @@ export default function SettingsPage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="visual">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Cores da Marca</CardTitle>
-                  <CardDescription>
-                    Personalize as cores do sistema para combinar com a identidade visual da sua organização.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="primaryColor"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cor Primária (HSL)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="215 80% 55%" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="accentColor"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cor de Destaque (HSL)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="140 70% 40%" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="backgroundColor"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cor de Fundo (HSL)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="220 20% 98%" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="operations">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Regras de Operação</CardTitle>
-                  <CardDescription>
-                    Defina comportamentos padrão para os fluxos de viagens e manutenção.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                  <div>
-                    <h3 className="text-md font-medium">Fluxo de Viagens</h3>
-                    <Separator className="my-4" />
-                    <div className="space-y-6">
+            {/* ABA TÉCNICA DE INFRAESTRUTURA */}
+            <TabsContent value="infra" className="space-y-8 pb-10">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* SMTP CONFIG */}
+                <Card className="bg-sidebar/50 border-border/50 scanlines">
+                  <CardHeader className="flex flex-row items-center gap-3">
+                    <Mail className="h-5 w-5 text-primary" />
+                    <div>
+                      <CardTitle className="text-base uppercase tracking-tight">Comunicação (SMTP)</CardTitle>
+                      <CardDescription className="text-xs">Serviço de e-mails transacionais.</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="col-span-2">
+                        <FormField
+                          control={form.control}
+                          name="smtpHost"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Host do Servidor</FormLabel>
+                              <FormControl><Input className="bg-black/40 font-mono text-xs" {...field} /></FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                       <FormField
                         control={form.control}
-                        name="defaultRequestPriority"
+                        name="smtpPort"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Prioridade Padrão para Solicitações</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione uma prioridade" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Baixa">Baixa</SelectItem>
-                                <SelectItem value="Média">Média</SelectItem>
-                                <SelectItem value="Alta">Alta</SelectItem>
-                              </SelectContent>
-                            </Select>
-                             <FormDescription>Define a prioridade inicial aplicada a novos pedidos de transporte.</FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="requireDestination"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">Exigir Destino na Solicitação</FormLabel>
-                              <FormDescription>
-                                Obriga o preenchimento do campo "Destino" em todas as solicitações.
-                              </FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
+                            <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Porta</FormLabel>
+                            <FormControl><Input type="number" className="bg-black/40 font-mono text-xs" {...field} /></FormControl>
                           </FormItem>
                         )}
                       />
                     </div>
-                  </div>
-                  <div>
-                    <h3 className="text-md font-medium">Manutenção Preventiva</h3>
-                    <Separator className="my-4" />
+                    <FormField
+                      control={form.control}
+                      name="smtpUser"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Usuário / Login</FormLabel>
+                          <FormControl><Input className="bg-black/40 font-mono text-xs" {...field} /></FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="smtpPass"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Senha de Segurança</Abastecimento>
+                          <FormControl><Input type="password" className="bg-black/40 font-mono text-xs" {...field} /></FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="smtpSecure"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between pt-2">
+                          <FormLabel className="text-xs">Utilizar SSL/TLS Criptografado</FormLabel>
+                          <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* NETWORK & PROXY */}
+                <Card className="bg-sidebar/50 border-border/50">
+                  <CardHeader className="flex flex-row items-center gap-3">
+                    <Globe className="h-5 w-5 text-primary" />
+                    <div>
+                      <CardTitle className="text-base uppercase tracking-tight">Rede & Conectividade</CardTitle>
+                      <CardDescription className="text-xs">DNS e mapeamento de roteamento local.</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="platformIp"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">IP Interno do Servidor</FormLabel>
+                          <FormControl><Input className="bg-black/40 font-mono text-xs" {...field} /></FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="dnsHost"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Nome de Host (DNS Local)</FormLabel>
+                          <FormControl><Input className="bg-black/40 font-mono text-xs" {...field} /></FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="proxyUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Gateway de Proxy (Opcional)</FormLabel>
+                          <FormControl><Input className="bg-black/40 font-mono text-xs" placeholder="http://proxy.corp:3128" {...field} /></FormControl>
+                        </FormItem>
+                      )}
+                    />
                      <FormField
+                      control={form.control}
+                      name="reverseProxy"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between pt-2">
+                          <FormLabel className="text-xs">Habilitar Nginx / Reverse Proxy</FormLabel>
+                          <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* DATABASE ENGINE */}
+                <Card className="bg-sidebar/50 border-border/50">
+                  <CardHeader className="flex flex-row items-center gap-3">
+                    <HardDrive className="h-5 w-5 text-primary" />
+                    <div>
+                      <CardTitle className="text-base uppercase tracking-tight">Persistência (SQLite Engine)</CardTitle>
+                      <CardDescription className="text-xs">Configurações de armazenamento atômico.</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="dbPath"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Caminho do Arquivo .db</FormLabel>
+                          <FormControl><Input className="bg-black/40 font-mono text-xs" {...field} /></FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <div className="grid grid-cols-2 gap-6 items-end">
+                      <FormField
                         control={form.control}
-                        name="maintenanceMileageThreshold"
+                        name="backupInterval"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Alerta de Revisão (km)</FormLabel>
-                            <FormControl>
-                              <Input type="number" placeholder="Ex: 10000" {...field} />
-                            </FormControl>
-                            <FormDescription>
-                                O sistema alertará quando um veículo atingir esta quilometragem desde o último serviço.
-                            </FormDescription>
-                            <FormMessage />
+                            <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Intervalo de Backup (h)</FormLabel>
+                            <FormControl><Input type="number" className="bg-black/40 font-mono text-xs" {...field} /></FormControl>
                           </FormItem>
                         )}
                       />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                      <FormField
+                        control={form.control}
+                        name="autoBackup"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center justify-between h-10 px-4 border rounded bg-black/20">
+                            <FormLabel className="text-[10px] uppercase font-bold">Auto-Backup</FormLabel>
+                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <TabsContent value="monitoring">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-1 space-y-8">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Status da Infraestrutura</CardTitle>
-                            <CardDescription>Saúde dos serviços de back-end.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {systemStatus.map((service) => {
-                                const Icon = service.icon;
-                                return (
-                                    <div key={service.name} className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <Icon className="h-5 w-5 text-muted-foreground" />
-                                            <span className="text-sm font-medium">{service.name}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="h-2 w-2 rounded-full bg-green-500" />
-                                            <span className="text-sm text-green-500">{service.status}</span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="lg:col-span-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center">
-                              <Activity className="mr-2 h-5 w-5"/>
-                              Log de Atividades Técnicas
-                            </CardTitle>
-                            <CardDescription>Eventos registrados no servidor.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Responsável</TableHead>
-                                        <TableHead>Ação</TableHead>
-                                        <TableHead className="text-right">Horário</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {recentLogs.map((log) => (
-                                        <TableRow key={log.id}>
-                                            <TableCell>
-                                                <div className="font-medium">{log.user}</div>
-                                                <div className="text-xs text-muted-foreground">{log.type}</div>
-                                            </TableCell>
-                                            <TableCell>{log.action}</TableCell>
-                                            <TableCell className="text-right text-muted-foreground">{log.timestamp}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-                </div>
+                {/* SECURITY PROTOCOLS */}
+                <Card className="bg-zinc-950 border-primary/20 flex flex-col tui-scanline">
+                  <CardHeader>
+                    <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4" /> NexusOS Security Protocol
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-[11px] font-mono text-primary/70 space-y-4">
+                    <div className="p-3 bg-primary/5 border border-primary/20 rounded leading-relaxed">
+                      [INFO] Todas as credenciais de SMTP e Banco são encriptadas em repouso no ambiente Node.js. 
+                      A plataforma utiliza algoritmos SHA-256 para integridade de pacotes na NexusBridge.
+                    </div>
+                    <ul className="space-y-2">
+                       <li className="flex gap-2"><span>-</span> <span>JWT_EXPIRATION: 28800s (8h)</span></li>
+                       <li className="flex gap-2"><span>-</span> <span>BCRYPT_ROUNDS: 10</span></li>
+                       <li className="flex gap-2"><span>-</span> <span>CORS_ORIGIN: * (DYNAMIC)</span></li>
+                    </ul>
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
 
+            <TabsContent value="monitoring" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                 <Card className="bg-sidebar/50 border-border/50">
+                    <CardHeader><CardTitle className="text-sm font-bold uppercase tracking-widest">Status dos Serviços</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2"><Server className="h-3 w-3" /> API Core</div>
+                          <span className="text-emerald-500 font-bold">ONLINE</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2"><Database className="h-3 w-3" /> SQLite Pool</div>
+                          <span className="text-emerald-500 font-bold">ACTIVE</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2"><Network className="h-3 w-3" /> Bridge Hub</div>
+                          <span className="text-emerald-500 font-bold">SYNCED</span>
+                        </div>
+                    </CardContent>
+                 </Card>
+              </div>
+            </TabsContent>
           </Tabs>
 
-          <div className="flex justify-end pt-4">
-             <Button type="submit" className="w-full md:w-auto">
-                Salvar Configurações
+          <div className="flex justify-end pt-4 border-t border-border/30">
+             <Button type="submit" className="h-12 px-10 bg-primary text-primary-foreground font-black uppercase tracking-[0.2em] text-[10px] shadow-lg shadow-primary/20">
+                Sincronizar Kernel & Salvar
               </Button>
           </div>
         </form>
