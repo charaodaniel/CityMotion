@@ -40,32 +40,43 @@ function initializeDatabase() {
             process.exit(1);
         } else {
             console.log('SUCESSO: Estrutura de tabelas criada.');
-            seedPasswords();
+            seedData();
         }
     });
 }
 
-function seedPasswords() {
-    console.log('Gerando usuários e criptografando credenciais...');
+function seedData() {
+    console.log('Gerando usuários e dados iniciais...');
     
     const users = [
-        { email: 'admin@citymotion.com', pass: '123456', role: 'Administrador', name: 'Júlio César', matricula: 'GP-001', sector: '["Gabinete do Prefeito"]' },
-        { email: 'dev@dev.com', pass: '123456789', role: 'Desenvolvedor Global', name: 'Desenvolvedor Root', matricula: 'root', sector: '["TI - Infraestrutura"]' },
-        { email: 'manager@citymotion.com', pass: '123456', role: 'Gestor de Setor', name: 'Maria Oliveira', matricula: 'M-002', sector: '["Secretaria de Saúde"]' },
-        { email: 'driver@citymotion.com', pass: '123456', role: 'Motorista', name: 'João da Silva', matricula: 'M-001', sector: '["Secretaria de Obras, Viação e Urbanismo"]' }
+        { email: 'admin@citymotion.com', pass: '123456', role: 'Administrador', name: 'Júlio César', matricula: 'GP-001', sector: '["Gabinete do Prefeito"]', phone: '5511999999999' },
+        { email: 'dev@dev.com', pass: '123456789', role: 'Desenvolvedor Global', name: 'Desenvolvedor Root', matricula: 'root', sector: '["TI - Infraestrutura"]', phone: '000000000' },
+        { email: 'manager@citymotion.com', pass: '123456', role: 'Gestor de Setor', name: 'Maria Oliveira', matricula: 'M-002', sector: '["Secretaria de Saúde"]', phone: '5511888888888' },
+        { email: 'driver@citymotion.com', pass: '123456', role: 'Motorista', name: 'João da Silva', matricula: 'M-001', sector: '["Secretaria de Obras, Viação e Urbanismo"]', phone: '5511777777777' }
     ];
 
-    const stmt = db.prepare(`INSERT INTO employees (name, email, password, role, sector, status, matricula) VALUES (?, ?, ?, ?, ?, ?, ?)`);
+    const stmt = db.prepare(`INSERT INTO employees (name, email, password, role, sector, status, matricula, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
 
     users.forEach(u => {
         const hash = bcrypt.hashSync(u.pass, 10);
-        stmt.run(u.name, u.email, hash, u.role, u.sector, 'Disponível', u.matricula);
+        stmt.run(u.name, u.email, hash, u.role, u.sector, 'Disponível', u.matricula, u.phone);
     });
 
     stmt.finalize((err) => {
         if (err) {
             console.error('\x1b[31mErro ao inserir usuários de teste:\x1b[0m', err.message);
         } else {
+            // Seed de Setores
+            const sectors = [
+                ['Gabinete do Prefeito', 'Assessoramento direto.'],
+                ['Secretaria de Saúde', 'Gestão de saúde pública.'],
+                ['Secretaria de Obras, Viação e Urbanismo', 'Manutenção de vias.'],
+                ['TI - Infraestrutura', 'Suporte técnico central.']
+            ];
+            const sectorStmt = db.prepare(`INSERT INTO sectors (name, description) VALUES (?, ?)`);
+            sectors.forEach(s => sectorStmt.run(s[0], s[1]));
+            sectorStmt.finalize();
+
             console.log('\x1b[32mSUCESSO: Banco de dados inicializado e pronto para uso.\x1b[0m');
         }
         db.close();
