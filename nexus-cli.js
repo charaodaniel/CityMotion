@@ -16,7 +16,7 @@ console.log(`Requisição: ${method} /api/nexus/${path}\n`);
 
 const options = {
   hostname: 'localhost',
-  port: 9002,
+  port: 9005,
   path: `/api/nexus/${path}`,
   method: method,
   headers: {
@@ -40,7 +40,7 @@ const req = http.request(options, (res) => {
 
 req.on('error', (error) => {
   console.error(`\x1b[31mErro de conexão: ${error.message}\x1b[0m`);
-  console.log('Certifique-se de que o frontend (Next.js) está rodando na porta 9002.');
+  console.log('Certifique-se de que o frontend (Next.js) está rodando na porta 9005.');
 });
 
 if (body) {

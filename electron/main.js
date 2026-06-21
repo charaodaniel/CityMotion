@@ -30,7 +30,7 @@ function createWindow() {
 
     // Carrega a URL da aplicação Next.js
     const startUrl = isDev
-        ? 'http://localhost:9002' // URL de desenvolvimento do Next.js
+        ? 'http://localhost:9005' // URL de desenvolvimento do Next.js atualizada
         : `file://${path.join(__dirname, '../out/index.html')}`; // Caminho para o build de produção
 
     mainWindow.loadURL(startUrl);
