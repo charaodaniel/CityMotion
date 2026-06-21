@@ -1,23 +1,22 @@
 
---- CityMotion Database Schema v2.5
---- Suporte a Módulo de Chat e Abastecimento
-
---- TABELA DE FUNCIONÁRIOS
+--- TABELA DE FUNCIONÁRIOS (Lotação e Segurança)
 CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    phone TEXT UNIQUE,
-    password TEXT NOT NULL,
+    password TEXT NOT NULL DEFAULT '123456',
     role TEXT NOT NULL,
-    sector TEXT, -- JSON String ["Setor A"]
+    sector TEXT, -- Armazenado como JSON String ["Setor A", "Setor B"]
     status TEXT DEFAULT 'Disponível',
     matricula TEXT UNIQUE,
+    phone TEXT,
     cnh TEXT,
+    reset_token TEXT,
+    reset_expires DATETIME,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
---- TABELA DE VEÍCULOS
+--- TABELA DE VEÍCULOS (Ativos de Frota)
 CREATE TABLE IF NOT EXISTS vehicles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     vehicleModel TEXT NOT NULL,
@@ -28,7 +27,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
---- TABELA DE VIAGENS (MISSÕES)
+--- TABELA DE VIAGENS (Missões Logísticas)
 CREATE TABLE IF NOT EXISTS trips (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -43,38 +42,27 @@ CREATE TABLE IF NOT EXISTS trips (
     status TEXT DEFAULT 'Agendada',
     category TEXT,
     startChecklist TEXT, 
-    endChecklist TEXT
+    endChecklist TEXT,
+    startNotes TEXT,
+    endNotes TEXT
 );
 
 --- TABELA DE ABASTECIMENTOS
 CREATE TABLE IF NOT EXISTS refuelings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId INTEGER NOT NULL,
+    vehicleId TEXT NOT NULL,
     vehicleModel TEXT,
     licensePlate TEXT,
-    tripId INTEGER,
-    date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    mileage INTEGER NOT NULL,
-    liters REAL NOT NULL,
-    price REAL NOT NULL,
-    totalValue REAL NOT NULL,
-    fuelType TEXT NOT NULL,
+    tripId TEXT,
+    mileage INTEGER,
+    liters REAL,
+    price REAL,
+    totalValue REAL,
+    fuelType TEXT,
     gasStation TEXT,
-    driverName TEXT NOT NULL,
+    driverName TEXT,
     notes TEXT,
-    FOREIGN KEY (vehicleId) REFERENCES vehicles (id)
-);
-
---- TABELA DE MENSAGENS (CHAT)
-CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    senderId INTEGER NOT NULL,
-    receiverId INTEGER NOT NULL,
-    content TEXT NOT NULL,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    isRead INTEGER DEFAULT 0,
-    FOREIGN KEY (senderId) REFERENCES employees (id),
-    FOREIGN KEY (receiverId) REFERENCES employees (id)
+    date DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 --- TABELA DE AUDITORIA
@@ -88,48 +76,12 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
---- TABELA DE SETORES
-CREATE TABLE IF NOT EXISTS sectors (
+--- TABELA DE MENSAGENS (CHAT)
+CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL,
-    description TEXT
+    senderId INTEGER NOT NULL,
+    receiverId INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    isRead INTEGER DEFAULT 0
 );
-
---- TABELA DE SOLICITAÇÕES DE VEÍCULOS
-CREATE TABLE IF NOT EXISTS vehicle_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    sector TEXT NOT NULL,
-    details TEXT,
-    priority TEXT DEFAULT 'Média',
-    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-    requester TEXT,
-    status TEXT DEFAULT 'Pendente'
-);
-
---- TABELA DE MANUTENÇÃO
-CREATE TABLE IF NOT EXISTS maintenance_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId INTEGER NOT NULL,
-    vehicleModel TEXT,
-    licensePlate TEXT,
-    requesterName TEXT,
-    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-    type TEXT,
-    description TEXT,
-    status TEXT DEFAULT 'Pendente'
-);
-
---- POPULANDO SETORES BÁSICOS
-INSERT OR IGNORE INTO sectors (name, description) VALUES 
-('Gabinete do Prefeito', 'Assessoramento direto executivo'),
-('Secretaria de Saúde', 'Gestão de saúde pública e vigilância'),
-('Secretaria de Obras, Viação e Urbanismo', 'Manutenção urbana e infraestrutura'),
-('Secretaria de Educação, Cultura, Desporto e Lazer', 'Ensino municipal e eventos'),
-('TI - Infraestrutura', 'Suporte tecnológico e redes');
-
---- POPULANDO VEÍCULOS DE TESTE
-INSERT OR IGNORE INTO vehicles (vehicleModel, licensePlate, sector, mileage, status) VALUES 
-('Fiat Strada', 'PM-001', 'Secretaria de Obras, Viação e Urbanismo', 15000, 'Disponível'),
-('VW Gol', 'PM-002', 'Secretaria de Saúde', 8525, 'Disponível'),
-('Renault Kwid', 'PM-003', 'Secretaria de Educação, Cultura, Desporto e Lazer', 22000, 'Disponível');

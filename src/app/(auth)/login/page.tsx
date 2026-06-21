@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useApp } from '@/contexts/app-provider';
-import { CarFront, LogIn, Users, Loader2, ShieldCheck, Phone } from 'lucide-react';
+import { CarFront, LogIn, Users, Loader2, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -25,7 +26,6 @@ export default function LoginPage() {
 
     try {
       await login(email, password, true);
-
     } catch (error: any) {
         toast({
             title: "Erro no Acesso",
@@ -81,14 +81,13 @@ export default function LoginPage() {
                         <Users className="h-4 w-4" />
                     </div>
                 </div>
-                <p className="text-[10px] text-muted-foreground">Ex: admin@citymotion.com, MAT-123 ou 5511999999999</p>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Senha</Label>
-                   <a href="#" className="text-sm text-primary hover:underline">
+                   <Link href="/forgot-password" size="sm" className="text-sm text-primary hover:underline font-medium">
                     Esqueceu sua senha?
-                  </a>
+                  </Link>
                 </div>
                 <Input 
                     id="password" 
@@ -117,7 +116,6 @@ export default function LoginPage() {
                 <Users className="mr-2 h-4 w-4" />
                 MODO DEMONSTRAÇÃO (Perfis SaaS)
               </CardTitle>
-              <CardDescription className="text-xs">Simule acessos de diferentes cargos em uma organização cliente.</CardDescription>
           </CardHeader>
           <CardContent className="text-xs space-y-1.5 pt-2">
               <p className="flex items-center gap-1">
@@ -126,7 +124,6 @@ export default function LoginPage() {
                 <button onClick={() => handleSimulatedLogin('dev@dev.com', '123456789')} className="text-primary hover:underline ml-1">dev@dev.com</button>
               </p>
               <p><strong>Admin Geral:</strong> <button onClick={() => handleSimulatedLogin('admin@citymotion.com')} className="text-primary hover:underline">admin@citymotion.com</button></p>
-              <p><strong>Gestor (via Telefone):</strong> <button onClick={() => handleSimulatedLogin('5511977777777')} className="text-primary hover:underline">5511977777777</button></p>
               <p><strong>Motorista:</strong> <button onClick={() => handleSimulatedLogin('driver@citymotion.com')} className="text-primary hover:underline">driver@citymotion.com</button></p>
           </CardContent>
         </Card>

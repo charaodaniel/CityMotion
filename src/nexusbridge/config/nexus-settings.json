@@ -33,6 +33,20 @@
       "transformer": "auth"
     },
     {
+      "path": "auth/forgot-password",
+      "method": "POST",
+      "backendId": "node-backend",
+      "target": "/forgot-password",
+      "transformer": "identity"
+    },
+    {
+      "path": "auth/reset-password",
+      "method": "POST",
+      "backendId": "node-backend",
+      "target": "/reset-password",
+      "transformer": "identity"
+    },
+    {
       "path": "test/db-employees",
       "method": "POST",
       "backendId": "node-backend",

@@ -17,6 +17,8 @@ interface AppContextType {
   setSelectedSector: (sector: string | null) => void;
   login: (identifier: string, password?: string, shouldRedirect?: boolean) => Promise<void>;
   logout: () => void;
+  requestPasswordRecovery: (identifier: string) => Promise<{ debugCode?: string }>;
+  resetPassword: (identifier: string, token: string, newPass: string) => Promise<void>;
   refreshData: () => Promise<void>;
   
   schedules: Schedule[];
@@ -172,12 +174,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
     router.push('/login');
   }, [router]);
 
+  const requestPasswordRecovery = async (identifier: string) => {
+    const res = await fetch('/api/nexus/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Falha ao solicitar recuperação.');
+    return data;
+  };
+
+  const resetPassword = async (identifier: string, token: string, newPassword: string) => {
+    const res = await fetch('/api/nexus/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, token, newPassword })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Falha ao redefinir senha.');
+  };
+
   useEffect(() => {
     const init = async () => {
       const token = localStorage.getItem('citymotion_token');
       const email = localStorage.getItem('userEmailForSimulation');
       const pass = localStorage.getItem('userPassForSimulation');
-      const publicRoutes = ['/home', '/docs', '/login', '/terminal'];
+      const publicRoutes = ['/home', '/docs', '/login', '/terminal', '/forgot-password', '/reset-password'];
       const isPublic = publicRoutes.some(r => pathname.startsWith(r));
 
       if (token && email) {
@@ -311,6 +334,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider value={{ 
         isLoading, isRefreshing, userRole, currentUser, activeOrganization, setActiveOrganization: setActiveOrganizationState,
         selectedSector, setSelectedSector: setSelectedSectorState, login, logout, refreshData: () => fetchData(true),
+        requestPasswordRecovery, resetPassword,
         schedules, updateScheduleStatus, vehicleRequests, addVehicleRequest, updateVehicleRequestStatus,
         employees, addEmployee, updateEmployee, deleteEmployee, vehicles, addVehicle, updateVehicle: (id: string, data: any) => Promise.resolve(),
         sectors, workSchedules, maintenanceRequests, refuelings, addRefueling,
