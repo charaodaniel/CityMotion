@@ -21,7 +21,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error("\x1b[31m[Erro DB]:\x1b[0m", err.message);
     } else {
-        console.log("\x1b[32m[Conectado]:\x1b[0m Banco de dados SQLite pronto.");
+        console.log("\x1b[32m[Conectado]:\x1b[0m Banco de dados SQLite pronto em: " + dbPath);
         
         // Garantir que a tabela de auditoria exista para o logger
         db.run(`CREATE TABLE IF NOT EXISTS audit_logs (
@@ -77,7 +77,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 server.on('error', (e) => {
     if (e.code === 'EADDRINUSE') {
         console.error(`\n\x1b[41m\x1b[37m ERRO CRÍTICO \x1b[0m A porta ${PORT} já está em uso.`);
-        console.error(`\x1b[33m[Dica]:\x1b[0m Use 'npx kill-port ${PORT}' no seu terminal para liberar a porta e tente novamente.\n`);
+        console.error(`\x1b[33m[Dica]:\x1b[0m Rodando 'npm run dev' novamente deve resolver pois incluímos um comando de kill automático.\n`);
         process.exit(1);
     } else {
         console.error("[Backend Error]:", e);
