@@ -1,8 +1,8 @@
+
 const express = require('express');
 const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-const os = require('os');
 const bcrypt = require('bcryptjs');
 const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
@@ -45,8 +45,10 @@ module.exports = function(db) {
         const promises = Object.entries(queries).map(([key, sql]) => {
             return new Promise((resolve, reject) => {
                 db.all(sql, [], (err, rows) => {
-                    if (err) reject(err);
-                    else {
+                    if (err) {
+                        console.error(`[DB Query Error] key: ${key}, error:`, err.message);
+                        reject(new Error(`Falha na tabela ${key}: ${err.message}`));
+                    } else {
                         results[key] = rows.map(row => {
                             const newRow = { ...row };
                             if (key === 'employees') delete newRow.password;
@@ -63,7 +65,14 @@ module.exports = function(db) {
 
         Promise.all(promises)
             .then(() => res.json(results))
-            .catch(err => res.status(500).json({ error: 'Erro ao carregar ecossistema de dados.' }));
+            .catch(err => {
+                console.error('[Sync Error]:', err.message);
+                res.status(500).json({ 
+                    error: 'Erro ao carregar ecossistema de dados.', 
+                    message: err.message,
+                    hint: 'Verifique se o banco de dados foi inicializado corretamente com npm run db:init'
+                });
+            });
     });
 
     router.get('/employees', authMiddleware, (req, res) => {
@@ -134,6 +143,26 @@ module.exports = function(db) {
         });
     });
 
+    router.delete('/employees/:id', authMiddleware, (req, res) => {
+        const userRole = req.user.role.toLowerCase();
+        const isRoot = userRole.includes('dev') || userRole.includes('global');
+        
+        backupDb();
+        if (isRoot) {
+            db.run('DELETE FROM employees WHERE id = ?', [req.params.id], function(err) {
+                if (err) return res.status(500).json({ error: err.message });
+                logChange('DELETE_HARD', 'employees', req.params.id, { message: 'Removido permanentemente' }, req.user);
+                res.json({ deleted: this.changes });
+            });
+        } else {
+            db.run('UPDATE employees SET status = "Desativado" WHERE id = ?', [req.params.id], function(err) {
+                if (err) return res.status(500).json({ error: err.message });
+                logChange('DELETE_SOFT', 'employees', req.params.id, { status: 'Desativado' }, req.user);
+                res.json({ deactivated: this.changes });
+            });
+        }
+    });
+
     // ABASTECIMENTOS
     router.post('/refuelings', authMiddleware, (req, res) => {
         const { vehicleId, vehicleModel, licensePlate, tripId, mileage, liters, price, fuelType, gasStation, notes } = req.body;
@@ -165,11 +194,28 @@ module.exports = function(db) {
     // SISTEMA
     router.get('/system/audit-logs', authMiddleware, (req, res) => {
         const role = req.user.role.toLowerCase();
-        if (!role.includes('dev') && !role.includes('ti')) return res.status(403).json({ message: 'Acesso negado.' });
+        const isAuthorized = role.includes('dev') || role.includes('ti') || role.includes('admin');
+        if (!isAuthorized) return res.status(403).json({ message: 'Acesso negado.' });
+
         db.all('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 100', [], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json(rows || []);
         });
+    });
+
+    router.get('/system/db-info', authMiddleware, (req, res) => {
+        const tables = ['employees', 'vehicles', 'trips', 'vehicle_requests', 'sectors', 'refuelings', 'maintenance_requests'];
+        const counts = {};
+        const promises = tables.map(table => {
+            return new Promise(resolve => {
+                db.get(`SELECT COUNT(*) as count FROM ${table}`, (err, row) => {
+                    counts[table] = row ? row.count : 0;
+                    resolve();
+                });
+            });
+        });
+        
+        Promise.all(promises).then(() => res.json({ status: 'online', counts }));
     });
 
     router.post('/maintenance/reset', authMiddleware, (req, res) => {
