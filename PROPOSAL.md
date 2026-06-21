@@ -43,8 +43,8 @@ O **Crachá Virtual CityMotion** elimina custos com cartões plásticos. Cada co
 - [x] Módulo de Abastecimento e Telemetria básica.
 - [x] Console de Administração (Terminal Kernel).
 
-### **Fase 2: Conectividade & Automação (Q3 2024)**
-- [ ] **Notificações Push:** Alertas em tempo real para motoristas sobre novas missões.
+### **Fase 2: Conectividade & Automação (Concluído)**
+- [x] **Notificações Push:** Alertas em tempo real para motoristas sobre novas missões via Nexus-Notification.
 - [ ] **WebSockets:** Atualização ao vivo dos mapas de calor de tráfego.
 - [ ] **Integração de Sensores:** Leitura automática de odômetro via sensores IoT.
 

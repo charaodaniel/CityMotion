@@ -17,6 +17,7 @@ Este arquivo organiza as funcionalidades construídas e os próximos passos do p
 - [x] **SaaS Multitenancy:** Painel global para gerenciamento de múltiplas organizações clientes.
 - [x] **Gestão de Missões:** Ciclo de vida completo da viagem com checklists de saída/chegada.
 - [x] **Crachá Virtual:** Identificação funcional com QR Code dinâmico e validação online.
+- [x] **Notificações Push:** Sistema de alertas imediatos para novos eventos operacionais.
 
 ### **Segurança e Identidade**
 - [x] **LGPD:** Banner de consentimento persistente e central de privacidade de dados.

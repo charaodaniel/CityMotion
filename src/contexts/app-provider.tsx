@@ -274,10 +274,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     console.log("Add Maintenance Request:", request);
   };
 
-  const addNotification = (n: any) => {
-    const newNotif = { ...n, id: Math.random().toString(36).substr(2, 9), date: new Date().toISOString(), read: false };
+  const addNotification = useCallback((n: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
+    const newNotif: AppNotification = { 
+      ...n, 
+      id: Math.random().toString(36).substr(2, 9), 
+      date: new Date().toISOString(), 
+      read: false 
+    };
     setNotifications(prev => [newNotif, ...prev]);
-  };
+    
+    // Simulando Notificação Push via Toast do ShadCN
+    toast({
+      title: `📲 Notificação: ${n.title}`,
+      description: n.message,
+      variant: "default",
+    });
+  }, [toast]);
 
   const markNotificationAsRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
