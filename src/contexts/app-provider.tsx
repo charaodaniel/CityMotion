@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus, UserRole, AppNotification, Organization, Refueling } from '@/lib/types';
+import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus, UserRole, AppNotification, Organization, Refueling, Message } from '@/lib/types';
 import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
@@ -42,6 +42,9 @@ interface AppContextType {
   refuelings: Refueling[];
   addRefueling: (data: Partial<Refueling>) => Promise<void>;
 
+  messages: Message[];
+  sendMessage: (receiverId: string, content: string) => Promise<void>;
+
   organizations: Organization[];
   notifications: AppNotification[];
   addNotification: (notification: Omit<AppNotification, 'id' | 'date' | 'read'>) => void;
@@ -70,6 +73,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([]);
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
   const [refuelings, setRefuelings] = useState<Refueling[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
@@ -89,15 +93,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/nexus/sync-all', { headers: getHeaders() });
       
       if (response.status === 401 || response.status === 403) {
-          console.warn("[AppProvider] Sessão inválida no sync.");
           return null;
       }
 
       const data = await response.json();
       if (!response.ok) {
-          if (response.status === 503) {
-              toast({ title: "Backend Indisponível", description: "O servidor backend não está respondendo. Tente novamente em instantes.", variant: "destructive" });
-          }
           throw new Error(data.message || 'Falha no sync.');
       }
       
@@ -109,6 +109,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setWorkSchedules(data.workSchedules || []);
       setMaintenanceRequests(data.maintenanceRequests || []);
       setRefuelings(data.refuelings || []);
+      setMessages(data.messages || []);
       
       return data;
     } catch (error) {
@@ -117,7 +118,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [getHeaders, toast]);
+  }, [getHeaders]);
 
   const login = useCallback(async (identifier: string, password = '123456', shouldRedirect = false) => {
     setIsLoading(true);
@@ -145,7 +146,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
             setCurrentUser(data.user);
             setUserRole(determinedRole);
             
-            // Força o sync imediato com o novo token
             await fetchData(true);
 
             if (shouldRedirect) {
@@ -157,12 +157,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
     } catch (error: any) {
         localStorage.removeItem('citymotion_token');
-        if (shouldRedirect) toast({ title: "Erro de Acesso", description: error.message, variant: "destructive" });
         throw error;
     } finally { 
         setIsLoading(false); 
     }
-  }, [fetchData, router, toast]);
+  }, [fetchData, router]);
 
   const logout = useCallback(() => {
     localStorage.removeItem('citymotion_token');
@@ -178,24 +177,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const token = localStorage.getItem('citymotion_token');
       const email = localStorage.getItem('userEmailForSimulation');
       const pass = localStorage.getItem('userPassForSimulation');
-      
       const publicRoutes = ['/home', '/docs', '/login', '/terminal'];
       const isPublic = publicRoutes.some(r => pathname.startsWith(r));
 
       if (token && email) {
-          try { 
-              await login(email, pass || '123456', false); 
-          } catch (e) { 
-              if (!isPublic) logout(); 
-          }
-      } else { 
-          setIsLoading(false); 
-      }
+          try { await login(email, pass || '123456', false); } catch (e) { if (!isPublic) logout(); }
+      } else { setIsLoading(false); }
     };
     init();
   }, [pathname, login, logout]);
 
   // MUTAÇÕES
+  const sendMessage = async (receiverId: string, content: string) => {
+    try {
+        const res = await fetch('/api/nexus/chat/messages', {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify({ receiverId, content })
+        });
+        if (res.ok) {
+            await fetchData(true);
+        }
+    } catch (e) { console.error(e); }
+  }
+
   const addRefueling = async (data: any) => {
     try {
       const res = await fetch('/api/nexus/refuelings', {
@@ -204,7 +209,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(data)
       });
       if (res.ok) {
-          toast({ title: "Sucesso", description: "Abastecimento registrado no SQLite." });
+          toast({ title: "Sucesso", description: "Abastecimento registrado." });
           await fetchData(true);
       }
     } catch (e) { console.error(e); }
@@ -218,7 +223,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             body: JSON.stringify(data)
         });
         if (res.ok) {
-            toast({ title: "Colaborador Criado", description: "Registro persistido com hash Bcrypt." });
+            toast({ title: "Colaborador Criado", description: "Registro persistido." });
             await fetchData(true);
         }
       } catch (e) { console.error(e); }
@@ -232,7 +237,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           body: JSON.stringify(data)
       });
       if (res.ok) {
-          toast({ title: "Perfil Atualizado", description: "Alterações salvas no banco de dados." });
+          toast({ title: "Perfil Atualizado", description: "Alterações salvas." });
           await fetchData(true);
       }
     } catch (e) { console.error(e); }
@@ -245,7 +250,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           headers: getHeaders()
       });
       if (res.ok) {
-          toast({ title: "Registro Removido", description: "O funcionário foi excluído do sistema." });
+          toast({ title: "Registro Removido", description: "O funcionário foi excluído." });
           await fetchData(true);
       }
     } catch (e) { console.error(e); }
@@ -259,7 +264,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             body: JSON.stringify(data)
         });
         if (res.ok) {
-            toast({ title: "Veículo Adicionado", description: "Ativo registrado na frota." });
+            toast({ title: "Veículo Adicionado", description: "Ativo registrado." });
             await fetchData(true);
         }
       } catch (e) { console.error(e); }
@@ -293,12 +298,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       read: false 
     };
     setNotifications(prev => [newNotif, ...prev]);
-    
-    toast({
-      title: `📲 Notificação: ${n.title}`,
-      description: n.message,
-      variant: "default",
-    });
+    toast({ title: `📲 ${n.title}`, description: n.message });
   }, [toast]);
 
   const markNotificationAsRead = (id: string) => {
@@ -314,6 +314,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         schedules, updateScheduleStatus, vehicleRequests, addVehicleRequest, updateVehicleRequestStatus,
         employees, addEmployee, updateEmployee, deleteEmployee, vehicles, addVehicle, updateVehicle: (id: string, data: any) => Promise.resolve(),
         sectors, workSchedules, maintenanceRequests, refuelings, addRefueling,
+        messages, sendMessage,
         organizations, notifications, addNotification, markNotificationAsRead, clearNotifications
     }}>
       {children}

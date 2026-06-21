@@ -1,6 +1,7 @@
+
 export type UserRole = 'dev' | 'ti' | 'admin' | 'manager' | 'employee';
 
-export type EmployeeStatus = 'Disponível' | 'Em Viagem' | 'Afastado' | 'Em Serviço';
+export type EmployeeStatus = 'Disponível' | 'Em Viagem' | 'Afastado' | 'Em Serviço' | 'Desativado';
 
 export type Employee = {
   id: string;
@@ -29,6 +30,15 @@ export type Vehicle = {
   mileage: number;
   sector: string;
   lastRefuelingDate?: string;
+};
+
+export type Message = {
+    id: string;
+    senderId: string;
+    receiverId: string;
+    content: string;
+    timestamp: string;
+    isRead: number;
 };
 
 export type ScheduleStatus = 'Agendada' | 'Em Andamento' | 'Concluída' | 'Cancelada';
@@ -134,7 +144,7 @@ export type AppNotification = {
   id: string;
   title: string;
   message: string;
-  type: 'request' | 'trip' | 'maintenance' | 'system';
+  type: 'request' | 'trip' | 'maintenance' | 'system' | 'message';
   date: string;
   read: boolean;
 };

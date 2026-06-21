@@ -39,7 +39,8 @@ import {
   ChevronRight,
   Terminal,
   FileCode,
-  Fuel
+  Fuel,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/app-provider';
@@ -56,6 +57,7 @@ const platformNavItems = [
 
 const operationalNavItems = [
   { href: '/dashboard', label: 'Painel', icon: LayoutDashboard, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
+  { href: '/chat', label: 'Comunicação', icon: MessageSquare, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
   { href: '/setores', label: 'Setores', icon: Building, roles: ['dev', 'ti', 'admin'] },
   { href: '/funcionarios', label: 'Funcionários', icon: Users, roles: ['dev', 'ti', 'admin', 'manager'] },
   { href: '/veiculos', label: 'Frota', icon: Car, roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },

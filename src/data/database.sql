@@ -1,35 +1,23 @@
 
--- CityMotion Database Schema
+--- CityMotion Database Schema v2.5
+--- Suporte a Módulo de Chat e Abastecimento
 
--- Audit Logs (Trilha de Auditoria)
-CREATE TABLE IF NOT EXISTS audit_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    action TEXT NOT NULL,
-    table_name TEXT NOT NULL,
-    record_id TEXT,
-    details TEXT,
-    user_identity TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Employees (Funcionários e Usuários)
+--- TABELA DE FUNCIONÁRIOS
 CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
+    phone TEXT UNIQUE,
     password TEXT NOT NULL,
     role TEXT NOT NULL,
-    sector TEXT, -- Armazenado como JSON String ["Setor A", "Setor B"]
+    sector TEXT, -- JSON String ["Setor A"]
     status TEXT DEFAULT 'Disponível',
     matricula TEXT UNIQUE,
-    phone TEXT,
     cnh TEXT,
-    idPhoto TEXT,
-    cnhPhoto TEXT,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Vehicles (Frota)
+--- TABELA DE VEÍCULOS
 CREATE TABLE IF NOT EXISTS vehicles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     vehicleModel TEXT NOT NULL,
@@ -37,13 +25,10 @@ CREATE TABLE IF NOT EXISTS vehicles (
     sector TEXT NOT NULL,
     mileage INTEGER DEFAULT 0,
     status TEXT DEFAULT 'Disponível',
-    driverName TEXT,
-    destination TEXT,
-    lastRefuelingDate DATETIME,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Trips (Missões e Viagens)
+--- TABELA DE VIAGENS (MISSÕES)
 CREATE TABLE IF NOT EXISTS trips (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -57,14 +42,60 @@ CREATE TABLE IF NOT EXISTS trips (
     endMileage INTEGER,
     status TEXT DEFAULT 'Agendada',
     category TEXT,
-    passengers TEXT, -- JSON Array de objetos {name, document}
-    startNotes TEXT,
-    endNotes TEXT,
-    startChecklist TEXT, -- JSON Array
-    endChecklist TEXT -- JSON Array
+    startChecklist TEXT, 
+    endChecklist TEXT
 );
 
--- Vehicle Requests (Solicitações de Transporte)
+--- TABELA DE ABASTECIMENTOS
+CREATE TABLE IF NOT EXISTS refuelings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vehicleId INTEGER NOT NULL,
+    vehicleModel TEXT,
+    licensePlate TEXT,
+    tripId INTEGER,
+    date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    mileage INTEGER NOT NULL,
+    liters REAL NOT NULL,
+    price REAL NOT NULL,
+    totalValue REAL NOT NULL,
+    fuelType TEXT NOT NULL,
+    gasStation TEXT,
+    driverName TEXT NOT NULL,
+    notes TEXT,
+    FOREIGN KEY (vehicleId) REFERENCES vehicles (id)
+);
+
+--- TABELA DE MENSAGENS (CHAT)
+CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    senderId INTEGER NOT NULL,
+    receiverId INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    isRead INTEGER DEFAULT 0,
+    FOREIGN KEY (senderId) REFERENCES employees (id),
+    FOREIGN KEY (receiverId) REFERENCES employees (id)
+);
+
+--- TABELA DE AUDITORIA
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    action TEXT NOT NULL,
+    table_name TEXT NOT NULL,
+    record_id TEXT,
+    details TEXT,
+    user_identity TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+--- TABELA DE SETORES
+CREATE TABLE IF NOT EXISTS sectors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    description TEXT
+);
+
+--- TABELA DE SOLICITAÇÕES DE VEÍCULOS
 CREATE TABLE IF NOT EXISTS vehicle_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -76,31 +107,10 @@ CREATE TABLE IF NOT EXISTS vehicle_requests (
     status TEXT DEFAULT 'Pendente'
 );
 
--- Sectors (Unidades e Secretarias)
-CREATE TABLE IF NOT EXISTS sectors (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL,
-    description TEXT,
-    vehicleCount INTEGER DEFAULT 0,
-    driverCount INTEGER DEFAULT 0
-);
-
--- Work Schedules (Escalas de Trabalho)
-CREATE TABLE IF NOT EXISTS work_schedules (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    employee TEXT NOT NULL,
-    type TEXT NOT NULL,
-    status TEXT DEFAULT 'Agendada',
-    startDate TEXT NOT NULL,
-    endDate TEXT NOT NULL,
-    description TEXT
-);
-
--- Maintenance Requests (Ordens de Serviço)
+--- TABELA DE MANUTENÇÃO
 CREATE TABLE IF NOT EXISTS maintenance_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId TEXT NOT NULL,
+    vehicleId INTEGER NOT NULL,
     vehicleModel TEXT,
     licensePlate TEXT,
     requesterName TEXT,
@@ -110,27 +120,16 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
     status TEXT DEFAULT 'Pendente'
 );
 
--- Refuelings (Histórico de Abastecimentos)
-CREATE TABLE IF NOT EXISTS refuelings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId TEXT NOT NULL,
-    vehicleModel TEXT,
-    licensePlate TEXT,
-    tripId TEXT,
-    date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    mileage INTEGER,
-    liters REAL,
-    price REAL,
-    totalValue REAL,
-    fuelType TEXT,
-    gasStation TEXT,
-    driverName TEXT,
-    notes TEXT
-);
+--- POPULANDO SETORES BÁSICOS
+INSERT OR IGNORE INTO sectors (name, description) VALUES 
+('Gabinete do Prefeito', 'Assessoramento direto executivo'),
+('Secretaria de Saúde', 'Gestão de saúde pública e vigilância'),
+('Secretaria de Obras, Viação e Urbanismo', 'Manutenção urbana e infraestrutura'),
+('Secretaria de Educação, Cultura, Desporto e Lazer', 'Ensino municipal e eventos'),
+('TI - Infraestrutura', 'Suporte tecnológico e redes');
 
--- Seed Inicial de Setores
-INSERT OR IGNORE INTO sectors (name, description) VALUES ('Gabinete do Prefeito', 'Assessoramento direto ao Prefeito.');
-INSERT OR IGNORE INTO sectors (name, description) VALUES ('Secretaria de Saúde', 'Gestão de saúde pública.');
-INSERT OR IGNORE INTO sectors (name, description) VALUES ('Secretaria de Obras, Viação e Urbanismo', 'Manutenção de vias e infraestrutura.');
-INSERT OR IGNORE INTO sectors (name, description) VALUES ('TI - Infraestrutura', 'Suporte tecnológico e redes.');
-INSERT OR IGNORE INTO sectors (name, description) VALUES ('Secretaria de Educação, Cultura, Desporto e Lazer', 'Gestão escolar e cultural.');
+--- POPULANDO VEÍCULOS DE TESTE
+INSERT OR IGNORE INTO vehicles (vehicleModel, licensePlate, sector, mileage, status) VALUES 
+('Fiat Strada', 'PM-001', 'Secretaria de Obras, Viação e Urbanismo', 15000, 'Disponível'),
+('VW Gol', 'PM-002', 'Secretaria de Saúde', 8525, 'Disponível'),
+('Renault Kwid', 'PM-003', 'Secretaria de Educação, Cultura, Desporto e Lazer', 22000, 'Disponível');

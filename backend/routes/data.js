@@ -36,9 +36,9 @@ module.exports = function(db) {
             vehicles: 'SELECT * FROM vehicles',
             employees: 'SELECT * FROM employees',
             sectors: 'SELECT * FROM sectors',
-            workSchedules: 'SELECT * FROM work_schedules',
             maintenanceRequests: 'SELECT * FROM maintenance_requests ORDER BY id DESC',
             refuelings: 'SELECT * FROM refuelings ORDER BY date DESC LIMIT 100',
+            messages: `SELECT * FROM messages WHERE senderId = ${req.user.id} OR receiverId = ${req.user.id} ORDER BY timestamp ASC`
         };
 
         const results = {};
@@ -67,12 +67,22 @@ module.exports = function(db) {
             .then(() => res.json(results))
             .catch(err => {
                 console.error('[Sync Error]:', err.message);
-                res.status(500).json({ 
-                    error: 'Erro ao carregar ecossistema de dados.', 
-                    message: err.message,
-                    hint: 'Verifique se o banco de dados foi inicializado corretamente com npm run db:init'
-                });
+                res.status(500).json({ error: 'Erro ao carregar ecossistema.', message: err.message });
             });
+    });
+
+    // CHAT
+    router.post('/messages', authMiddleware, (req, res) => {
+        const { receiverId, content } = req.body;
+        const senderId = req.user.id;
+
+        if (!receiverId || !content) return res.status(400).json({ message: 'Dados incompletos.' });
+
+        const sql = `INSERT INTO messages (senderId, receiverId, content) VALUES (?, ?, ?)`;
+        db.run(sql, [senderId, receiverId, content], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ id: this.lastID, timestamp: new Date().toISOString() });
+        });
     });
 
     router.get('/employees', authMiddleware, (req, res) => {
@@ -175,28 +185,14 @@ module.exports = function(db) {
 
         db.run(sql, params, function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            
-            // Atualiza KM do veículo automaticamente
             db.run('UPDATE vehicles SET mileage = ? WHERE id = ?', [mileage, vehicleId]);
-            
             logChange('INSERT', 'refuelings', this.lastID, { licensePlate, totalValue }, req.user);
             res.json({ id: this.lastID });
         });
     });
 
-    router.get('/refuelings', authMiddleware, (req, res) => {
-        db.all('SELECT * FROM refuelings ORDER BY date DESC', [], (err, rows) => {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json(rows);
-        });
-    });
-
     // SISTEMA
     router.get('/system/audit-logs', authMiddleware, (req, res) => {
-        const role = req.user.role.toLowerCase();
-        const isAuthorized = role.includes('dev') || role.includes('ti') || role.includes('admin');
-        if (!isAuthorized) return res.status(403).json({ message: 'Acesso negado.' });
-
         db.all('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 100', [], (err, rows) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json(rows || []);
@@ -204,7 +200,7 @@ module.exports = function(db) {
     });
 
     router.get('/system/db-info', authMiddleware, (req, res) => {
-        const tables = ['employees', 'vehicles', 'trips', 'vehicle_requests', 'sectors', 'refuelings', 'maintenance_requests'];
+        const tables = ['employees', 'vehicles', 'trips', 'vehicle_requests', 'sectors', 'refuelings', 'maintenance_requests', 'messages'];
         const counts = {};
         const promises = tables.map(table => {
             return new Promise(resolve => {
@@ -214,7 +210,6 @@ module.exports = function(db) {
                 });
             });
         });
-        
         Promise.all(promises).then(() => res.json({ status: 'online', counts }));
     });
 
