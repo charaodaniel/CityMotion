@@ -4,19 +4,26 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Conexão com o Banco de Dados
 const dbPath = path.resolve(__dirname, 'database', 'citymotion.db');
+const dbDir = path.dirname(dbPath);
+
+if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+}
+
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
-        console.error("Erro ao conectar ao banco de dados:", err.message);
+        console.error("\x1b[31m[Erro DB]:\x1b[0m", err.message);
     } else {
-        console.log("Conexão com o banco de dados SQLite estabelecida.");
+        console.log("\x1b[32m[Conectado]:\x1b[0m Banco de dados SQLite pronto.");
         
-        // Garantir que a tabela de auditoria exista
+        // Garantir que a tabela de auditoria exista para o logger
         db.run(`CREATE TABLE IF NOT EXISTS audit_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             action TEXT NOT NULL,
@@ -33,6 +40,12 @@ const db = new sqlite3.Database(dbPath, (err) => {
 app.use(cors()); 
 app.use(express.json());
 
+// Logger de Requisições para Depuração
+app.use((req, res, next) => {
+    console.log(`\x1b[36m[Backend Request]:\x1b[0m ${req.method} ${req.url}`);
+    next();
+});
+
 // Rotas da API
 const authRoutes = require('./routes/auth');
 const dataRoutes = require('./routes/data');
@@ -40,24 +53,31 @@ const dataRoutes = require('./routes/data');
 app.use('/api', authRoutes(db));
 app.use('/api', dataRoutes(db));
 
-// Rota de teste
-app.get('/', (req, res) => {
-    res.send('Servidor do CityMotion está no ar! Camada de segurança JWT e Bcrypt ativa.');
+// Rota de Health Check
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'online', 
+        timestamp: new Date().toISOString(),
+        database: dbPath,
+        service: 'CityMotion Backend'
+    });
 });
 
-// Inicialização do servidor com tratamento de erro EADDRINUSE
+app.get('/', (req, res) => {
+    res.send('Servidor do CityMotion está no ar! Porta: ' + PORT);
+});
+
+// Inicialização do servidor
 const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[CityMotion Backend] Rodando em http://0.0.0.0:${PORT}`);
-    if (!process.env.JWT_SECRET) {
-        console.warn('AVISO: JWT_SECRET não configurado no .env! Usando fallback inseguro.');
-    }
+    console.log(`\n\x1b[42m\x1b[30m SUCESSO \x1b[0m Backend CityMotion rodando na porta ${PORT}`);
+    console.log(`\x1b[34m[URL]:\x1b[0m http://localhost:${PORT}`);
+    console.log(`\x1b[34m[Health]:\x1b[0m http://localhost:${PORT}/api/health\n`);
 });
 
 server.on('error', (e) => {
     if (e.code === 'EADDRINUSE') {
-        console.error(`\x1b[31m[ERRO CRÍTICO] A porta ${PORT} já está em uso.\x1b[0m`);
-        console.error(`Certifique-se de que não há outra instância do backend rodando.`);
-        console.error(`Dica: Se estiver no Linux/Mac, use 'npx kill-port ${PORT}' para liberar a porta.`);
+        console.error(`\n\x1b[41m\x1b[37m ERRO CRÍTICO \x1b[0m A porta ${PORT} já está em uso.`);
+        console.error(`\x1b[33m[Dica]:\x1b[0m Use 'npx kill-port ${PORT}' no seu terminal para liberar a porta e tente novamente.\n`);
         process.exit(1);
     } else {
         console.error("[Backend Error]:", e);
