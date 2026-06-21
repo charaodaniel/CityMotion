@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useApp } from '@/contexts/app-provider';
 import { useToast } from '@/hooks/use-toast';
-import { KeyRound, ArrowLeft, Loader2, Info } from 'lucide-react';
+import { KeyRound, ArrowLeft, Loader2, Info, MailCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ForgotPasswordPage() {
@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
   const { toast } = useToast();
   const [identifier, setIdentifier] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [debugCode, setDebugCode] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,22 +26,19 @@ export default function ForgotPasswordPage() {
 
     setIsLoading(true);
     try {
-      const data = await requestPasswordRecovery(identifier);
+      await requestPasswordRecovery(identifier);
       
       toast({
         title: "Protocolo Iniciado",
-        description: "Um código de recuperação foi gerado para sua conta.",
+        description: "Um código de recuperação foi enviado para seu e-mail cadastrado.",
       });
 
-      // No protótipo, capturamos o código para facilitar o teste
-      if (data.debugCode) {
-        setDebugCode(data.debugCode);
-      }
+      setEmailSent(true);
 
-      // Pequeno delay para o usuário ver a mensagem antes de ir para a próxima tela
+      // Redireciona após 4 segundos para dar tempo de ler a mensagem de sucesso
       setTimeout(() => {
         router.push(`/reset-password?id=${encodeURIComponent(identifier)}`);
-      }, 3000);
+      }, 4000);
 
     } catch (error: any) {
       toast({
@@ -71,31 +68,42 @@ export default function ForgotPasswordPage() {
             <CardDescription>Insira o e-mail corporativo ou sua matrícula.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="id">Identificador</Label>
-                <Input 
-                  id="id" 
-                  placeholder="Ex: admin@citymotion.com ou MAT-001" 
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full h-11 font-bold uppercase tracking-widest text-[10px]" disabled={isLoading || !!debugCode}>
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Gerar Código de Acesso"}
-              </Button>
-            </form>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-              {debugCode && (
-                  <div className="w-full p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center animate-in fade-in zoom-in duration-300">
-                      <p className="text-[10px] uppercase font-bold text-emerald-500 mb-1">Código Gerado (Modo Prototipagem):</p>
-                      <span className="text-3xl font-black tracking-[0.5em] text-foreground">{debugCode}</span>
-                      <p className="text-[9px] text-muted-foreground mt-2">Redirecionando para tela de redefinição...</p>
+            {!emailSent ? (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="id">Identificador</Label>
+                    <Input 
+                      id="id" 
+                      placeholder="Ex: admin@citymotion.com ou MAT-001" 
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      disabled={isLoading}
+                      required
+                    />
                   </div>
-              )}
+                  <Button type="submit" className="w-full h-11 font-bold uppercase tracking-widest text-[10px]" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Gerar Código de Acesso"}
+                  </Button>
+                </form>
+            ) : (
+                <div className="flex flex-col items-center text-center py-6 space-y-4 animate-in fade-in zoom-in duration-500">
+                    <div className="w-16 h-16 bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center">
+                        <MailCheck className="h-8 w-8" />
+                    </div>
+                    <div>
+                        <p className="font-bold text-lg">E-mail Despachado!</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Verifique sua caixa de entrada (e pasta de spam) para obter o código de 6 dígitos.
+                        </p>
+                    </div>
+                    <div className="w-full h-1 bg-emerald-500/20 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-500 animate-progress origin-left" style={{ animationDuration: '4s' }} />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Redirecionando para a validação...</p>
+                </div>
+            )}
+          </CardContent>
+          <CardFooter>
               <Button variant="ghost" className="w-full text-xs" asChild>
                 <Link href="/login"><ArrowLeft className="h-3 w-3 mr-2" /> Voltar ao Login</Link>
               </Button>
@@ -104,11 +112,21 @@ export default function ForgotPasswordPage() {
 
         <div className="bg-muted/30 p-4 rounded-lg flex items-start gap-3 border border-border/30">
             <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-            <p className="text-[10px] text-muted-foreground leading-relaxed italic">
-                Caso não possua mais acesso ao seu e-mail corporativo, entre em contato com o administrador de TI da sua unidade para realizar a redefinição manual via Terminal Kernel.
-            </p>
+            <div className="text-[10px] text-muted-foreground leading-relaxed italic">
+                <p><strong>Dica de Desenvolvimento:</strong></p>
+                <p>Como estamos em modo de demonstração, o backend exibirá um link no terminal para você visualizar o e-mail enviado sem precisar de um servidor SMTP real.</p>
+            </div>
         </div>
       </div>
+      <style jsx global>{`
+        @keyframes progress {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+        .animate-progress {
+            animation: progress linear forwards;
+        }
+      `}</style>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { sendPasswordResetEmail } = require('../services/emailService');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'citymotion_secret_key_2024';
@@ -44,7 +45,7 @@ module.exports = function(db) {
         if (!identifier) return res.status(400).json({ message: 'Informe seu e-mail ou matrícula.' });
 
         const sql = `SELECT * FROM employees WHERE email = ? OR matricula = ?`;
-        db.get(sql, [identifier, identifier], (err, user) => {
+        db.get(sql, [identifier, identifier], async (err, user) => {
             if (err) return res.status(500).json({ message: 'Erro interno.' });
             if (!user) return res.status(404).json({ message: 'Usuário não localizado.' });
 
@@ -52,14 +53,21 @@ module.exports = function(db) {
             const token = Math.floor(100000 + Math.random() * 900000).toString();
             const expires = new Date(Date.now() + 3600000).toISOString(); // 1 hora
 
-            db.run(`UPDATE employees SET reset_token = ?, reset_expires = ? WHERE id = ?`, [token, expires, user.id], (updErr) => {
+            db.run(`UPDATE employees SET reset_token = ?, reset_expires = ? WHERE id = ?`, [token, expires, user.id], async (updErr) => {
                 if (updErr) return res.status(500).json({ message: 'Erro ao gerar token.' });
                 
-                // Em um app real, aqui enviamos o e-mail. No protótipo, retornamos o código para fins de teste.
+                // Envio real de e-mail via serviço Nodemailer
+                const emailSent = await sendPasswordResetEmail(user.email, user.name, token);
+
+                if (!emailSent) {
+                    return res.status(500).json({ 
+                        message: 'Erro ao despachar e-mail de segurança. Tente novamente mais tarde.' 
+                    });
+                }
+
                 res.json({ 
-                    message: 'Protocolo de recuperação iniciado.', 
-                    debugCode: token,
-                    hint: 'O código foi enviado para seu e-mail cadastrado.' 
+                    message: 'Protocolo de recuperação iniciado. Verifique sua caixa de entrada.',
+                    hint: 'O código expira em 60 minutos.'
                 });
             });
         });
