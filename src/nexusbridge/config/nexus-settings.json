@@ -96,32 +96,32 @@
       "transformer": "identity"
     },
     {
-        "path": "refuelings",
-        "method": "GET",
-        "backendId": "node-backend",
-        "target": "/refuelings",
-        "transformer": "identity"
+      "path": "refuelings",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/refuelings",
+      "transformer": "identity"
     },
     {
-        "path": "refuelings",
-        "method": "POST",
-        "backendId": "node-backend",
-        "target": "/refuelings",
-        "transformer": "identity"
+      "path": "refuelings",
+      "method": "POST",
+      "backendId": "node-backend",
+      "target": "/refuelings",
+      "transformer": "identity"
     },
     {
-        "path": "chat/messages",
-        "method": "GET",
-        "backendId": "node-backend",
-        "target": "/messages",
-        "transformer": "identity"
+      "path": "chat/messages",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/messages",
+      "transformer": "identity"
     },
     {
-        "path": "chat/messages",
-        "method": "POST",
-        "backendId": "node-backend",
-        "target": "/messages",
-        "transformer": "identity"
+      "path": "chat/messages",
+      "method": "POST",
+      "backendId": "node-backend",
+      "target": "/messages",
+      "transformer": "identity"
     }
   ]
 }
