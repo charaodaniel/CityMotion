@@ -1,27 +1,22 @@
 
---- CityMotion Kernel Database Schema
---- NexusOS V2.4 Compliance
-
---- TABELA DE FUNCIONÁRIOS (Lotação e Segurança)
+-- TABELA DE FUNCIONÁRIOS
 CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    phone TEXT,
     password TEXT NOT NULL DEFAULT '123456',
     role TEXT NOT NULL,
-    sector TEXT, -- Armazenado como JSON String ["Setor A", "Setor B"]
+    sector TEXT, -- JSON String ["Setor A", "Setor B"]
     status TEXT DEFAULT 'Disponível',
     matricula TEXT UNIQUE,
+    phone TEXT,
     cnh TEXT,
     reset_token TEXT,
     reset_expires TEXT,
-    idPhoto TEXT,
-    cnhPhoto TEXT,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
---- TABELA DE VEÍCULOS (Ativos de Frota)
+-- TABELA DE VEÍCULOS
 CREATE TABLE IF NOT EXISTS vehicles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     vehicleModel TEXT NOT NULL,
@@ -32,7 +27,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
---- TABELA DE VIAGENS (Missões Logísticas)
+-- TABELA DE VIAGENS (MISSÕES)
 CREATE TABLE IF NOT EXISTS trips (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -52,19 +47,7 @@ CREATE TABLE IF NOT EXISTS trips (
     endNotes TEXT
 );
 
---- TABELA DE PEDIDOS DE VEÍCULO
-CREATE TABLE IF NOT EXISTS vehicle_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    sector TEXT NOT NULL,
-    details TEXT,
-    priority TEXT DEFAULT 'Média',
-    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-    status TEXT DEFAULT 'Pendente',
-    requester TEXT
-);
-
---- TABELA DE ABASTECIMENTOS
+-- TABELA DE ABASTECIMENTOS
 CREATE TABLE IF NOT EXISTS refuelings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     vehicleId INTEGER,
@@ -82,20 +65,7 @@ CREATE TABLE IF NOT EXISTS refuelings (
     notes TEXT
 );
 
---- TABELA DE MANUTENÇÃO
-CREATE TABLE IF NOT EXISTS maintenance_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId INTEGER,
-    vehicleModel TEXT,
-    licensePlate TEXT,
-    requesterName TEXT,
-    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-    type TEXT,
-    description TEXT,
-    status TEXT DEFAULT 'Pendente'
-);
-
---- TABELA DE COMUNICAÇÃO (CHAT)
+-- TABELA DE MENSAGENS (CHAT)
 CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     senderId INTEGER NOT NULL,
@@ -105,14 +75,39 @@ CREATE TABLE IF NOT EXISTS messages (
     isRead INTEGER DEFAULT 0
 );
 
---- TABELA DE SETORES
+-- TABELA DE SOLICITAÇÕES DE VEÍCULOS
+CREATE TABLE IF NOT EXISTS vehicle_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    sector TEXT NOT NULL,
+    details TEXT,
+    priority TEXT DEFAULT 'Média',
+    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status TEXT DEFAULT 'Pendente',
+    requester TEXT
+);
+
+-- TABELA DE MANUTENÇÃO
+CREATE TABLE IF NOT EXISTS maintenance_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vehicleId INTEGER NOT NULL,
+    vehicleModel TEXT,
+    licensePlate TEXT,
+    requesterName TEXT,
+    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    type TEXT,
+    description TEXT,
+    status TEXT DEFAULT 'Pendente'
+);
+
+-- TABELA DE SETORES
 CREATE TABLE IF NOT EXISTS sectors (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     description TEXT
 );
 
---- AUDITORIA DE SISTEMA
+-- TABELA DE LOGS DE AUDITORIA
 CREATE TABLE IF NOT EXISTS audit_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     action TEXT NOT NULL,
