@@ -1,9 +1,10 @@
+
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-insecure-secret';
+const JWT_SECRET = process.env.JWT_SECRET || 'citymotion_secret_key_2024';
 
 module.exports = function(db) {
     // Rota de Login - Suporta Email, Matrícula ou Telefone
@@ -14,15 +15,19 @@ module.exports = function(db) {
             return res.status(400).json({ message: 'Identificador e senha são obrigatórios.' });
         }
 
+        console.log(`[Auth] Tentativa de login para: ${email}`);
+
         // Busca por email OU matrícula OU telefone
         const sql = `SELECT * FROM employees WHERE email = ? OR matricula = ? OR phone = ?`;
 
         db.get(sql, [email, email, email], (err, user) => {
             if (err) {
-                console.error('Erro no banco de dados:', err);
-                return res.status(500).json({ message: 'Erro interno no servidor.' });
+                console.error('[Auth DB Error]:', err);
+                return res.status(500).json({ message: 'Erro interno no servidor de banco de dados.' });
             }
+            
             if (!user) {
+                console.warn(`[Auth] Usuário não encontrado: ${email}`);
                 return res.status(404).json({ message: 'Usuário não encontrado no sistema.' });
             }
 
@@ -30,12 +35,19 @@ module.exports = function(db) {
             const isPasswordValid = bcrypt.compareSync(password, user.password);
 
             if (!isPasswordValid) {
+                 console.warn(`[Auth] Senha inválida para: ${email}`);
                  return res.status(401).json({ message: 'Senha incorreta para o identificador fornecido.' });
             }
 
+            console.log(`[Auth] Login bem-sucedido: ${user.name} (${user.role})`);
+
             // Tenta fazer o parse do campo 'sector' (JSON array no banco)
             try {
-                user.sector = JSON.parse(user.sector);
+                if (user.sector) {
+                    user.sector = JSON.parse(user.sector);
+                } else {
+                    user.sector = [];
+                }
             } catch (e) {
                 user.sector = Array.isArray(user.sector) ? user.sector : [user.sector];
             }

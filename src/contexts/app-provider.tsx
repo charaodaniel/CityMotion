@@ -74,7 +74,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   const getHeaders = useCallback(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('citymotion_token') : null;
+    if (typeof window === 'undefined') return { 'Content-Type': 'application/json' };
+    const token = localStorage.getItem('citymotion_token');
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     return headers;
@@ -86,12 +87,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await fetch('/api/nexus/sync-all', { headers: getHeaders() });
-      if (response.status === 401 || response.status === 403) return null;
+      
+      if (response.status === 401 || response.status === 403) {
+          console.warn("[AppProvider] Sessão inválida no sync.");
+          return null;
+      }
 
       const data = await response.json();
       if (!response.ok) {
           if (response.status === 503) {
-              toast({ title: "Backend Indisponível", description: "O servidor backend (porta 3001) não está respondendo. Verifique se o processo está rodando.", variant: "destructive" });
+              toast({ title: "Backend Indisponível", description: "O servidor backend não está respondendo. Tente novamente em instantes.", variant: "destructive" });
           }
           throw new Error(data.message || 'Falha no sync.');
       }
@@ -107,7 +112,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       return data;
     } catch (error) {
-      console.error("Sync error:", error);
+      console.error("[AppProvider] Sync error:", error);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -122,7 +127,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: identifier, password })
         });
+        
         const data = await res.json();
+        
         if (res.ok && data.token && data.user) {
             localStorage.setItem('citymotion_token', data.token);
             localStorage.setItem('userEmailForSimulation', identifier);
@@ -137,21 +144,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
             
             setCurrentUser(data.user);
             setUserRole(determinedRole);
+            
+            // Força o sync imediato com o novo token
             await fetchData(true);
 
             if (shouldRedirect) {
                 if (determinedRole === 'dev') router.push('/dev-global');
                 else router.push('/dashboard');
             }
-        } else throw new Error(data.message || 'Erro no login.');
+        } else {
+            throw new Error(data.message || 'Credenciais inválidas.');
+        }
     } catch (error: any) {
+        localStorage.removeItem('citymotion_token');
         if (shouldRedirect) toast({ title: "Erro de Acesso", description: error.message, variant: "destructive" });
         throw error;
-    } finally { setIsLoading(false); }
+    } finally { 
+        setIsLoading(false); 
+    }
   }, [fetchData, router, toast]);
 
   const logout = useCallback(() => {
-    localStorage.clear();
+    localStorage.removeItem('citymotion_token');
+    localStorage.removeItem('userEmailForSimulation');
+    localStorage.removeItem('userPassForSimulation');
     setCurrentUser(null);
     setUserRole('employee'); 
     router.push('/login');
@@ -159,14 +175,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const init = async () => {
+      const token = localStorage.getItem('citymotion_token');
       const email = localStorage.getItem('userEmailForSimulation');
       const pass = localStorage.getItem('userPassForSimulation');
-      const token = localStorage.getItem('citymotion_token');
       
-      const publicRoutes = ['/home', '/docs', '/login'];
+      const publicRoutes = ['/home', '/docs', '/login', '/terminal'];
       const isPublic = publicRoutes.some(r => pathname.startsWith(r));
 
-      if (email && token) {
+      if (token && email) {
           try { 
               await login(email, pass || '123456', false); 
           } catch (e) { 
@@ -179,7 +195,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     init();
   }, [pathname, login, logout]);
 
-  // MUTAÇÕES REAIS VIA NEXUSBRIDGE
+  // MUTAÇÕES
   const addRefueling = async (data: any) => {
     try {
       const res = await fetch('/api/nexus/refuelings', {
@@ -250,27 +266,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const updateScheduleStatus = async (id: string, status: ScheduleStatus, details: any) => {
-      // Implementação futura conforme novas rotas de trips no backend
       console.log("Update Trip:", id, status, details);
   };
 
   const addVehicleRequest = async (request: any) => {
-      // Implementação futura
       console.log("Add Request:", request);
   };
 
   const updateVehicleRequestStatus = async (id: string, status: any) => {
-      // Implementação futura
       console.log("Update Request Status:", id, status);
   };
 
   const updateMaintenanceRequestStatus = async (id: string, status: any) => {
-    // Implementação futura
     console.log("Update Maintenance Status:", id, status);
   };
 
   const addMaintenanceRequest = async (request: any) => {
-    // Implementação futura
     console.log("Add Maintenance Request:", request);
   };
 
@@ -283,7 +294,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
     setNotifications(prev => [newNotif, ...prev]);
     
-    // Simulando Notificação Push via Toast do ShadCN
     toast({
       title: `📲 Notificação: ${n.title}`,
       description: n.message,
