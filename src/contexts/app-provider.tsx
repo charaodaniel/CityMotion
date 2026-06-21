@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
 import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus, UserRole, AppNotification, Organization, Refueling, Message } from '@/lib/types';
 import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -79,6 +79,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
+  // Ref para evitar loops de inicialização
+  const hasInited = useRef(false);
+
   const getHeaders = useCallback(() => {
     if (typeof window === 'undefined') return { 'Content-Type': 'application/json' };
     const token = localStorage.getItem('citymotion_token');
@@ -100,7 +103,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json();
       if (!response.ok) {
-          throw new Error(data.message || 'Falha no sync.');
+          throw new Error(data.message || 'Falha no sync da NexusBridge.');
       }
       
       setSchedules(data.trips || []);
@@ -114,8 +117,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setMessages(data.messages || []);
       
       return data;
-    } catch (error) {
-      console.error("[AppProvider] Sync error:", error);
+    } catch (error: any) {
+      console.error("[AppProvider] Sync Error:", error.message);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -155,7 +158,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 else router.push('/dashboard');
             }
         } else {
-            throw new Error(data.message || 'Credenciais inválidas.');
+            throw new Error(data.message || 'Credenciais inválidas no Nexus-Core.');
         }
     } catch (error: any) {
         localStorage.removeItem('citymotion_token');
@@ -196,21 +199,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    if (hasInited.current) return;
+    
     const init = async () => {
       const token = localStorage.getItem('citymotion_token');
       const email = localStorage.getItem('userEmailForSimulation');
       const pass = localStorage.getItem('userPassForSimulation');
+      
       const publicRoutes = ['/home', '/docs', '/login', '/terminal', '/forgot-password', '/reset-password'];
       const isPublic = publicRoutes.some(r => pathname.startsWith(r));
 
       if (token && email) {
-          try { await login(email, pass || '123456', false); } catch (e) { if (!isPublic) logout(); }
-      } else { setIsLoading(false); }
+          try { 
+            await login(email, pass || '123456', false); 
+          } catch (e) { 
+            if (!isPublic) logout(); 
+          }
+      } else { 
+        setIsLoading(false); 
+      }
+      hasInited.current = true;
     };
     init();
   }, [pathname, login, logout]);
 
-  // MUTAÇÕES
+  // MUTAÇÕES DE DADOS (Persistência via Bridge)
   const sendMessage = async (receiverId: string, content: string) => {
     try {
         const res = await fetch('/api/nexus/chat/messages', {
@@ -232,7 +245,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(data)
       });
       if (res.ok) {
-          toast({ title: "Sucesso", description: "Abastecimento registrado." });
+          toast({ title: "Sucesso", description: "Abastecimento registrado no banco." });
           await fetchData(true);
       }
     } catch (e) { console.error(e); }
@@ -246,7 +259,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             body: JSON.stringify(data)
         });
         if (res.ok) {
-            toast({ title: "Colaborador Criado", description: "Registro persistido." });
+            toast({ title: "Colaborador Criado", description: "Registro persistido no SQLite." });
             await fetchData(true);
         }
       } catch (e) { console.error(e); }
@@ -273,7 +286,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           headers: getHeaders()
       });
       if (res.ok) {
-          toast({ title: "Registro Removido", description: "O funcionário foi excluído." });
+          toast({ title: "Registro Removido", description: "Operação de exclusão concluída." });
           await fetchData(true);
       }
     } catch (e) { console.error(e); }
@@ -287,30 +300,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
             body: JSON.stringify(data)
         });
         if (res.ok) {
-            toast({ title: "Veículo Adicionado", description: "Ativo registrado." });
+            toast({ title: "Veículo Adicionado", description: "Ativo registrado na frota." });
             await fetchData(true);
         }
       } catch (e) { console.error(e); }
   };
 
   const updateScheduleStatus = async (id: string, status: ScheduleStatus, details: any) => {
-      console.log("Update Trip:", id, status, details);
+      // Placeholder para futura implementação de missões reais no banco
+      console.log("Trip Status Update:", id, status);
   };
 
   const addVehicleRequest = async (request: any) => {
-      console.log("Add Request:", request);
+      console.log("New Vehicle Request:", request);
   };
 
   const updateVehicleRequestStatus = async (id: string, status: any) => {
-      console.log("Update Request Status:", id, status);
+      console.log("Request Status Update:", id, status);
   };
 
   const updateMaintenanceRequestStatus = async (id: string, status: any) => {
-    console.log("Update Maintenance Status:", id, status);
+    console.log("Maintenance OS Update:", id, status);
   };
 
   const addMaintenanceRequest = async (request: any) => {
-    console.log("Add Maintenance Request:", request);
+    console.log("New Maintenance OS:", request);
   };
 
   const addNotification = useCallback((n: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
@@ -348,6 +362,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
 export const useApp = () => {
     const context = useContext(AppContext);
-    if (!context) throw new Error('useApp must be used within AppProvider');
+    if (!context) throw new Error('useApp deve ser utilizado dentro de um AppProvider');
     return context;
 };

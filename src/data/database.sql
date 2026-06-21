@@ -1,44 +1,27 @@
 
--- CityMotion NexusOS - Database Schema V2 (SQLite)
+-- --- CITYMOTION ENTERPRISE DATABASE SCHEMA ---
+-- SQLite3 Portability Layer
 
--- 1. SETORES
-CREATE TABLE IF NOT EXISTS sectors (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL,
-    description TEXT,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+PRAGMA foreign_keys = ON;
 
-INSERT OR IGNORE INTO sectors (name, description) VALUES 
-('Gabinete do Prefeito', 'Assessoramento direto.'),
-('Secretaria de Administração e Planejamento', 'Gestão de pessoal e patrimônio.'),
-('Secretaria da Fazenda', 'Gestão financeira e tributária.'),
-('Secretaria de Educação, Cultura, Desporto e Lazer', 'Administração de escolas e transporte escolar.'),
-('Secretaria de Saúde', 'Gestão de saúde pública e vigilância.'),
-('Secretaria de Obras, Viação e Urbanismo', 'Manutenção de infraestrutura.'),
-('Secretaria de Assistência Social', 'Políticas de proteção social.'),
-('Secretaria de Agricultura e Meio Ambiente', 'Apoio rural e ambiental.'),
-('Secretaria de Turismo e Desenvolvimento Econômico', 'Fomento ao comércio.'),
-('TI - Infraestrutura', 'Suporte tecnológico central.');
-
--- 2. FUNCIONÁRIOS (Lotação e Segurança)
+-- 1. FUNCIONÁRIOS & MOTORISTAS
 CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    phone TEXT,
     password TEXT NOT NULL,
     role TEXT NOT NULL,
-    sector TEXT, -- Armazenado como JSON String ["Setor A"]
+    sector TEXT, -- JSON Array: ["Secretaria X", "Setor Y"]
     status TEXT DEFAULT 'Disponível',
     matricula TEXT UNIQUE,
+    phone TEXT,
     cnh TEXT,
     reset_token TEXT,
     reset_expires TEXT,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. VEÍCULOS (Ativos de Frota)
+-- 2. VEÍCULOS (ATIVOS DA FROTA)
 CREATE TABLE IF NOT EXISTS vehicles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     vehicleModel TEXT NOT NULL,
@@ -46,18 +29,10 @@ CREATE TABLE IF NOT EXISTS vehicles (
     sector TEXT NOT NULL,
     mileage INTEGER DEFAULT 0,
     status TEXT DEFAULT 'Disponível',
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(sector) REFERENCES sectors(name)
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT OR IGNORE INTO vehicles (vehicleModel, licensePlate, sector, mileage, status) VALUES 
-('Fiat Strada', 'PM-001', 'Secretaria de Obras, Viação e Urbanismo', 15000, 'Disponível'),
-('VW Gol', 'PM-002', 'Secretaria de Saúde', 8525, 'Disponível'),
-('Renault Kwid', 'PM-003', 'Administração', 22000, 'Disponível'),
-('Chevrolet Onix', 'PM-004', 'Secretaria de Educação, Cultura, Desporto e Lazer', 41000, 'Manutenção'),
-('Fiat Mobi', 'PM-005', 'Secretaria de Saúde', 5200, 'Disponível');
-
--- 4. MISSÕES (Viagens)
+-- 3. VIAGENS (MISSÕES)
 CREATE TABLE IF NOT EXISTS trips (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -71,28 +46,16 @@ CREATE TABLE IF NOT EXISTS trips (
     endMileage INTEGER,
     status TEXT DEFAULT 'Agendada',
     category TEXT,
-    startChecklist TEXT, -- JSON Array
-    endChecklist TEXT, -- JSON Array
     startNotes TEXT,
-    endNotes TEXT
+    endNotes TEXT,
+    startChecklist TEXT, -- JSON Array
+    endChecklist TEXT    -- JSON Array
 );
 
--- 5. SOLICITAÇÕES DE TRANSPORTE
-CREATE TABLE IF NOT EXISTS vehicle_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    sector TEXT NOT NULL,
-    details TEXT,
-    priority TEXT DEFAULT 'Média',
-    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-    status TEXT DEFAULT 'Pendente',
-    requester TEXT
-);
-
--- 6. ABASTECIMENTOS
+-- 4. ABASTECIMENTOS
 CREATE TABLE IF NOT EXISTS refuelings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId INTEGER,
+    vehicleId INTEGER NOT NULL,
     vehicleModel TEXT,
     licensePlate TEXT,
     tripId INTEGER,
@@ -104,39 +67,76 @@ CREATE TABLE IF NOT EXISTS refuelings (
     fuelType TEXT,
     gasStation TEXT,
     driverName TEXT,
-    notes TEXT
+    notes TEXT,
+    FOREIGN KEY(vehicleId) REFERENCES vehicles(id)
 );
 
--- 7. MANUTENÇÃO
+-- 5. MANUTENÇÃO (ORDENS DE SERVIÇO)
 CREATE TABLE IF NOT EXISTS maintenance_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId INTEGER,
+    vehicleId INTEGER NOT NULL,
     vehicleModel TEXT,
     licensePlate TEXT,
     requesterName TEXT,
     requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     type TEXT,
     description TEXT,
-    status TEXT DEFAULT 'Pendente'
+    status TEXT DEFAULT 'Pendente',
+    FOREIGN KEY(vehicleId) REFERENCES vehicles(id)
 );
 
--- 8. CHAT
+-- 6. COMUNICAÇÃO (CHAT)
 CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     senderId INTEGER NOT NULL,
     receiverId INTEGER NOT NULL,
     content TEXT NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    isRead INTEGER DEFAULT 0
+    isRead INTEGER DEFAULT 0,
+    FOREIGN KEY(senderId) REFERENCES employees(id),
+    FOREIGN KEY(receiverId) REFERENCES employees(id)
 );
 
--- 9. AUDITORIA
+-- 7. AUDITORIA DE SISTEMA
 CREATE TABLE IF NOT EXISTS audit_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     action TEXT NOT NULL,
-    table_name TEXT NOT NULL,
+    table_name TEXT,
     record_id TEXT,
     details TEXT,
-    user_identity TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    user_identity TEXT
 );
+
+-- 8. SETORES (ESTRUTURA HIERÁRQUICA)
+CREATE TABLE IF NOT EXISTS sectors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    description TEXT
+);
+
+-- 9. SOLICITAÇÕES DE VEÍCULOS (PENDENTES DE APROVAÇÃO)
+CREATE TABLE IF NOT EXISTS vehicle_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    sector TEXT NOT NULL,
+    details TEXT,
+    priority TEXT DEFAULT 'Média',
+    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status TEXT DEFAULT 'Pendente',
+    requester TEXT
+);
+
+-- INSERIR SETORES INICIAIS
+INSERT OR IGNORE INTO sectors (name, description) VALUES 
+('Gabinete do Prefeito', 'Gestão administrativa central'),
+('Secretaria de Saúde', 'Operações de urgência e transporte médico'),
+('Secretaria de Educação, Cultura, Desporto e Lazer', 'Transporte escolar e eventos'),
+('Secretaria de Obras, Viação e Urbanismo', 'Infraestrutura e manutenção urbana'),
+('TI - Infraestrutura', 'Suporte técnico e rede NexusOS');
+
+-- INSERIR VEÍCULOS INICIAIS
+INSERT OR IGNORE INTO vehicles (vehicleModel, licensePlate, sector, mileage, status) VALUES
+('Fiat Strada', 'PM-001', 'Secretaria de Obras, Viação e Urbanismo', 15000, 'Disponível'),
+('VW Gol', 'PM-002', 'Secretaria de Saúde', 8500, 'Disponível'),
+('Renault Kwid', 'PM-003', 'Secretaria de Educação, Cultura, Desporto e Lazer', 22000, 'Disponível');
