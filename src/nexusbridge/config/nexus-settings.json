@@ -2,11 +2,11 @@
 {
   "backends": {
     "local-sim": {
-      "baseUrl": "http://localhost:9002/api",
+      "baseUrl": "http://127.0.0.1:9002/api",
       "description": "API de Simulação Interna (JSON Files)"
     },
     "node-backend": {
-      "baseUrl": "http://localhost:3001/api",
+      "baseUrl": "http://127.0.0.1:3001/api",
       "description": "Servidor Backend Principal (Node/SQLite)"
     }
   },
@@ -86,6 +86,13 @@
       "method": "GET",
       "backendId": "node-backend",
       "target": "/system/audit-logs",
+      "transformer": "identity"
+    },
+    {
+      "path": "system/db-info",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/system/db-info",
       "transformer": "identity"
     },
     {
