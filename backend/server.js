@@ -30,6 +30,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 // MOTOR DE RESET DIÁRIO (Demo-Cleaner)
+// Limpa os dados de demonstração a cada 24 horas
 let lastResetDate = new Date().toDateString();
 
 setInterval(async () => {
@@ -37,7 +38,7 @@ setInterval(async () => {
     if (currentDate !== lastResetDate) {
         console.log('\x1b[35m[Cron]:\x1b[0m Mudança de dia detectada. Executando limpeza de dados demo...');
         try {
-            // Reinicializa o banco para o estado de fábrica
+            // Reinicializa o banco para o estado original
             await initializeDatabase();
             lastResetDate = currentDate;
             console.log('\x1b[32m[Cron]:\x1b[0m Reset diário concluído com sucesso.');
@@ -48,10 +49,11 @@ setInterval(async () => {
 }, 3600000); // Verifica a cada 1 hora
 
 const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log('\x1b[44m\x1b[37m NEXUS-CORE \x1b[0m Servidor rodando em \x1b[4mhttp://0.0.0.0:' + PORT + '\x1b[0m');
+    console.log(`\x1b[32m[CityMotion Backend]\x1b[0m Rodando em http://0.0.0.0:${PORT}`);
+    console.log(`Conexão com o banco de dados SQLite estabelecida.`);
 }).on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
-        console.error(`Porta ${PORT} ocupada.`);
+        console.error(`Porta ${PORT} ocupada. Tente limpar os processos ou aguardar.`);
     }
     process.exit(1);
 });

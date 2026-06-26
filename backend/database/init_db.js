@@ -9,21 +9,31 @@ const sqlScriptPath = path.resolve(__dirname, '../../src/data/database.sql');
 
 async function initializeDatabase() {
     try {
-        console.log('\x1b[36m[Kernel]:\x1b[0m Iniciando provisionamento Nexus-Dual...');
+        console.log('\x1b[36m[Nexus-Core]:\x1b[0m Iniciando provisionamento de banco de dados...');
         
+        // 1. Criar pastas se não existirem
+        const dbDir = path.resolve(__dirname, '../../backend/database');
+        if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+
+        // 2. Executar Schema
         if (!fs.existsSync(sqlScriptPath)) {
-            console.error(`ERRO: Schema não encontrado em ${sqlScriptPath}`);
-            process.exit(1);
+            throw new Error(`Schema não encontrado em ${sqlScriptPath}`);
         }
 
         const sqlScript = fs.readFileSync(sqlScriptPath, 'utf8');
-        await db.runScript(sqlScript);
+        // Adaptar SERIAL para Postgres se necessário
+        const finalSql = db.pgEnabled 
+            ? sqlScript.replace(/INTEGER PRIMARY KEY AUTOINCREMENT/g, 'SERIAL PRIMARY KEY')
+            : sqlScript;
+
+        await db.runScript(finalSql);
         
+        // 3. Popular dados iniciais
         await seedData();
-        console.log('\x1b[32m[Sucesso]:\x1b[0m Sistema pronto para operação.');
+        
+        console.log('\x1b[32m[Sucesso]:\x1b[0m Banco de dados pronto para operação.');
     } catch (err) {
-        console.error('Falha crítica na inicialização:', err.message);
-        process.exit(1);
+        console.error('\x1b[31m[Falha Crítica]:\x1b[0m', err.message);
     }
 }
 
@@ -32,11 +42,14 @@ async function seedData() {
     const rootHash = bcrypt.hashSync('123456789', 10);
     const demoHash = bcrypt.hashSync('nexus2024', 10);
     
+    // Limpa tabelas antes de seed para evitar duplicidade em restarts
+    await db.execute('DELETE FROM employees');
+
     const users = [
         ['Júlio César', 'admin@citymotion.com', hash, 'Administrador', '["Gabinete do Prefeito"]', 'GP-001', '5511999999999', 0],
         ['Desenvolvedor Root', 'dev@dev.com', rootHash, 'Desenvolvedor Global', '["TI - Infraestrutura"]', 'root', '000000000', 0],
         ['João da Silva', 'driver@citymotion.com', hash, 'Motorista', '["Secretaria de Obras"]', 'M-001', '5511777777777', 0],
-        ['Avaliador Demo', 'demo@citymotion.com', demoHash, 'Administrador', '["Gabinete do Prefeito"]', 'DEMO-CORE', '5511000000000', 1]
+        ['Avaliador Demonstração', 'demo@citymotion.com', demoHash, 'Administrador', '["Gabinete do Prefeito"]', 'DEMO-ROOT', '5511000000000', 1]
     ];
 
     for (const u of users) {
@@ -45,33 +58,12 @@ async function seedData() {
                 `INSERT INTO employees (name, email, password, role, sector, matricula, phone, is_demo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
                 u
             );
-        } catch (e) {}
+        } catch (e) {
+            console.warn(`[Seed] Aviso ao inserir usuário ${u[1]}:`, e.message);
+        }
     }
 
-    const sectors = [
-        ['Gabinete do Prefeito', 'Gestão central'],
-        ['Secretaria de Saúde', 'Operação de ambulâncias'],
-        ['Secretaria de Obras', 'Logística pesada'],
-        ['TI - Infraestrutura', 'Suporte NexusBridge']
-    ];
-
-    for (const s of sectors) {
-        try {
-            await db.execute('INSERT INTO sectors (name, description) VALUES ($1, $2)', s);
-        } catch (e) {}
-    }
-
-    const vehicles = [
-        ['Fiat Strada', 'PM-001', 'Secretaria de Obras', 15000],
-        ['VW Gol', 'PM-002', 'Secretaria de Saúde', 8500],
-        ['Toyota Hilux', 'PM-006', 'Gabinete do Prefeito', 32000]
-    ];
-
-    for (const v of vehicles) {
-        try {
-            await db.execute('INSERT INTO vehicles (vehicleModel, licensePlate, sector, mileage) VALUES ($1, $2, $3, $4)', v);
-        } catch (e) {}
-    }
+    console.log(`[Seed] ${users.length} usuários injetados.`);
 }
 
 if (require.main === module) {
