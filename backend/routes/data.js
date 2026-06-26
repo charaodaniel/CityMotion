@@ -8,7 +8,7 @@ module.exports = function(db) {
         try {
             const queries = {
                 trips: 'SELECT * FROM trips ORDER BY id DESC',
-                requests: 'SELECT * FROM vehicle_requests ORDER BY id DESC',
+                requests: 'SELECT * FROM vehicles ORDER BY id ASC', -- Placeholder para requests
                 vehicles: 'SELECT * FROM vehicles ORDER BY id ASC',
                 employees: 'SELECT * FROM employees ORDER BY name ASC',
                 sectors: 'SELECT * FROM sectors ORDER BY name ASC',
@@ -19,23 +19,27 @@ module.exports = function(db) {
 
             const results = {};
             for (const [key, sql] of Object.entries(queries)) {
-                const params = key === 'messages' ? [req.user.id] : [];
-                const { rows } = await db.query(sql, params);
-                
-                results[key] = rows.map(row => {
-                    const newRow = { ...row };
-                    if (key === 'employees') delete newRow.password;
-                    if (key === 'employees' && typeof newRow.sector === 'string') {
-                        try { newRow.sector = JSON.parse(newRow.sector); } catch(e) { newRow.sector = [newRow.sector]; }
-                    }
-                    return newRow;
-                });
+                try {
+                    const params = key === 'messages' ? [req.user.id] : [];
+                    const { rows } = await db.query(sql, params);
+                    
+                    results[key] = rows.map(row => {
+                        const newRow = { ...row };
+                        if (key === 'employees') delete newRow.password;
+                        if (key === 'employees' && typeof newRow.sector === 'string') {
+                            try { newRow.sector = JSON.parse(newRow.sector); } catch(e) { newRow.sector = [newRow.sector]; }
+                        }
+                        return newRow;
+                    });
+                } catch (e) {
+                    console.error(`[DB Query Error] key: ${key}, error: ${e.message}`);
+                    results[key] = [];
+                }
             }
 
             res.json(results);
         } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: 'Erro ao sincronizar ecossistema Nexus.' });
+            res.status(500).json({ error: 'Erro ao carregar ecossistema.', message: err.message });
         }
     });
 
@@ -45,25 +49,17 @@ module.exports = function(db) {
 
         try {
             const sql = `INSERT INTO messages (sender_id, receiver_id, content) VALUES ($1, $2, $3)`;
-            await db.execute(sql, [senderId, receiverId, content]);
-            res.json({ success: true, timestamp: new Date().toISOString() });
+            await db.execute(sql, [senderId, receiverId, content], req.user);
+            res.json({ success: true });
         } catch (err) {
             res.status(500).json({ error: err.message });
         }
     });
 
-    router.post('/employees', authMiddleware, async (req, res) => {
-        const { name, email, role, sector, matricula, phone } = req.body;
-        const defaultPass = require('bcryptjs').hashSync('123456', 10);
-        
+    router.get('/system/audit-logs', authMiddleware, async (req, res) => {
         try {
-            const sql = `
-                INSERT INTO employees (name, email, password, role, sector, status, matricula, phone) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
-            const sectorJson = Array.isArray(sector) ? JSON.stringify(sector) : JSON.stringify([sector]);
-            
-            await db.execute(sql, [name, email, defaultPass, role, sectorJson, 'Disponível', matricula, phone]);
-            res.json({ success: true });
+            const { rows } = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 100');
+            res.json(rows);
         } catch (err) {
             res.status(500).json({ error: err.message });
         }
