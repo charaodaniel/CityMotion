@@ -7,68 +7,75 @@ const db = require('./db_manager');
 
 const sqlScriptPath = path.resolve(__dirname, '../../src/data/database.sql');
 
-console.log('\x1b[36m--- CityMotion Hybrid DB Initialization (Dual Mode) ---\x1b[0m');
-
 async function initializeDatabase() {
     try {
+        console.log('\x1b[36m[Kernel]:\x1b[0m Iniciando provisionamento Nexus-Dual...');
+        
         if (!fs.existsSync(sqlScriptPath)) {
-            console.error(`\x1b[31mERRO CRÍTICO:\x1b[0m Arquivo SQL não localizado em: ${sqlScriptPath}`);
+            console.error(`ERRO: Schema não encontrado em ${sqlScriptPath}`);
             process.exit(1);
         }
 
-        console.log('Executando schema SQL sincronizado...');
         const sqlScript = fs.readFileSync(sqlScriptPath, 'utf8');
-
-        // O db.runScript executa em Postgres e SQLite
         await db.runScript(sqlScript);
-        console.log('SUCESSO: Estrutura de tabelas replicada.');
         
         await seedData();
+        console.log('\x1b[32m[Sucesso]:\x1b[0m Sistema pronto para operação.');
     } catch (err) {
-        console.error('\x1b[31mERRO na inicialização:\x1b[0m', err.message);
+        console.error('Falha crítica na inicialização:', err.message);
         process.exit(1);
     }
 }
 
 async function seedData() {
-    console.log('Gerando usuários e setores sincronizados...');
+    const hash = bcrypt.hashSync('123456', 10);
+    const rootHash = bcrypt.hashSync('123456789', 10);
+    const demoHash = bcrypt.hashSync('nexus2024', 10);
     
     const users = [
-        { email: 'admin@citymotion.com', pass: '123456', role: 'Administrador', name: 'Júlio César', matricula: 'GP-001', sector: '["Gabinete do Prefeito"]', phone: '5511999999999' },
-        { email: 'dev@dev.com', pass: '123456789', role: 'Desenvolvedor Global', name: 'Desenvolvedor Root', matricula: 'root', sector: '["TI - Infraestrutura"]', phone: '000000000' },
-        { email: 'manager@citymotion.com', pass: '123456', role: 'Gestor de Setor', name: 'Maria Oliveira', matricula: 'M-002', sector: '["Secretaria de Saúde"]', phone: '5511888888888' },
-        { email: 'driver@citymotion.com', pass: '123456', role: 'Motorista', name: 'João da Silva', matricula: 'M-001', sector: '["Secretaria de Obras, Viação e Urbanismo"]', phone: '5511777777777' }
+        ['Júlio César', 'admin@citymotion.com', hash, 'Administrador', '["Gabinete do Prefeito"]', 'GP-001', '5511999999999', 0],
+        ['Desenvolvedor Root', 'dev@dev.com', rootHash, 'Desenvolvedor Global', '["TI - Infraestrutura"]', 'root', '000000000', 0],
+        ['João da Silva', 'driver@citymotion.com', hash, 'Motorista', '["Secretaria de Obras"]', 'M-001', '5511777777777', 0],
+        ['Avaliador Demo', 'demo@citymotion.com', demoHash, 'Administrador', '["Gabinete do Prefeito"]', 'DEMO-CORE', '5511000000000', 1]
     ];
 
     for (const u of users) {
-        const hash = bcrypt.hashSync(u.pass, 10);
-        const query = `
-            INSERT INTO employees (name, email, password, role, sector, status, matricula, phone) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        `;
-        // Usamos execute para replicar em ambos
         try {
-            await db.execute(query, [u.name, u.email, hash, u.role, u.sector, 'Disponível', u.matricula, u.phone]);
-        } catch (e) {
-            // Ignora duplicados no seed
-        }
+            await db.execute(
+                `INSERT INTO employees (name, email, password, role, sector, matricula, phone, is_demo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+                u
+            );
+        } catch (e) {}
     }
 
     const sectors = [
-        ['Gabinete do Prefeito', 'Assessoramento direto.'],
-        ['Secretaria de Saúde', 'Gestão de saúde pública.'],
-        ['Secretaria de Obras, Viação e Urbanismo', 'Manutenção de vias.'],
-        ['TI - Infraestrutura', 'Suporte técnico central.']
+        ['Gabinete do Prefeito', 'Gestão central'],
+        ['Secretaria de Saúde', 'Operação de ambulâncias'],
+        ['Secretaria de Obras', 'Logística pesada'],
+        ['TI - Infraestrutura', 'Suporte NexusBridge']
     ];
 
     for (const s of sectors) {
         try {
-            await db.execute('INSERT INTO sectors (name, description) VALUES ($1, $2)', [s[0], s[1]]);
+            await db.execute('INSERT INTO sectors (name, description) VALUES ($1, $2)', s);
         } catch (e) {}
     }
 
-    console.log('\x1b[32mSUCESSO: Bancos de dados inicializados e sincronizados.\x1b[0m');
-    process.exit(0);
+    const vehicles = [
+        ['Fiat Strada', 'PM-001', 'Secretaria de Obras', 15000],
+        ['VW Gol', 'PM-002', 'Secretaria de Saúde', 8500],
+        ['Toyota Hilux', 'PM-006', 'Gabinete do Prefeito', 32000]
+    ];
+
+    for (const v of vehicles) {
+        try {
+            await db.execute('INSERT INTO vehicles (vehicleModel, licensePlate, sector, mileage) VALUES ($1, $2, $3, $4)', v);
+        } catch (e) {}
+    }
 }
 
-initializeDatabase();
+if (require.main === module) {
+    initializeDatabase();
+}
+
+module.exports = { initializeDatabase };

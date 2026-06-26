@@ -15,7 +15,7 @@ interface AppContextType {
   setActiveOrganization: (org: Organization | null) => void;
   selectedSector: string | null;
   setSelectedSector: (sector: string | null) => void;
-  login: (identifier: string, password?: string, shouldRedirect?: boolean) => Promise<void>;
+  login: (identifier: string, password?: string, shouldRedirect?: boolean, isTerminal?: boolean) => Promise<void>;
   logout: () => void;
   requestPasswordRecovery: (identifier: string) => Promise<{ debugCode?: string }>;
   resetPassword: (identifier: string, token: string, newPass: string) => Promise<void>;
@@ -79,7 +79,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
-  // Ref para evitar loops de inicialização
   const hasInited = useRef(false);
 
   const getHeaders = useCallback(() => {
@@ -96,15 +95,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await fetch('/api/nexus/sync-all', { headers: getHeaders() });
-      
-      if (response.status === 401 || response.status === 403) {
-          return null;
-      }
+      if (response.status === 401 || response.status === 403) return null;
 
       const data = await response.json();
-      if (!response.ok) {
-          throw new Error(data.message || 'Falha no sync da NexusBridge.');
-      }
+      if (!response.ok) throw new Error(data.message || 'Falha no sync.');
       
       setSchedules(data.trips || []);
       setVehicleRequests(data.requests || []);
@@ -115,7 +109,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setMaintenanceRequests(data.maintenanceRequests || []);
       setRefuelings(data.refuelings || []);
       setMessages(data.messages || []);
-      
       return data;
     } catch (error: any) {
       console.error("[AppProvider] Sync Error:", error.message);
@@ -125,17 +118,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [getHeaders]);
 
-  const login = useCallback(async (identifier: string, password = '123456', shouldRedirect = false) => {
+  const login = useCallback(async (identifier: string, password = '123456', shouldRedirect = false, isTerminal = false) => {
     setIsLoading(true);
     try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (isTerminal) headers['x-nexus-terminal'] = 'true';
+
         const res = await fetch('/api/nexus/auth/login', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({ email: identifier, password })
         });
         
         const data = await res.json();
-        
         if (res.ok && data.token && data.user) {
             localStorage.setItem('citymotion_token', data.token);
             localStorage.setItem('userEmailForSimulation', identifier);
@@ -143,29 +138,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
             
             const roleStr = data.user.role.toLowerCase();
             let determinedRole: UserRole = 'employee';
-            if (['dev', 'root', 'global'].some(r => roleStr.includes(r))) determinedRole = 'dev';
+            if (roleStr.includes('dev')) determinedRole = 'dev';
             else if (roleStr.includes('ti')) determinedRole = 'ti';
             else if (roleStr.includes('admin')) determinedRole = 'admin';
-            else if (['gestor', 'chefe', 'mecanico'].some(r => roleStr.includes(r))) determinedRole = 'manager';
+            else if (['gestor', 'chefe'].some(r => roleStr.includes(r))) determinedRole = 'manager';
             
             setCurrentUser(data.user);
             setUserRole(determinedRole);
-            
             await fetchData(true);
 
             if (shouldRedirect) {
-                if (determinedRole === 'dev') router.push('/dev-global');
-                else router.push('/dashboard');
+                router.push(determinedRole === 'dev' ? '/dev-global' : '/dashboard');
             }
         } else {
-            throw new Error(data.message || 'Credenciais inválidas no Nexus-Core.');
+            throw new Error(data.message || 'Credenciais inválidas.');
         }
     } catch (error: any) {
         localStorage.removeItem('citymotion_token');
         throw error;
-    } finally { 
-        setIsLoading(false); 
-    }
+    } finally { setIsLoading(false); }
   }, [fetchData, router]);
 
   const logout = useCallback(() => {
@@ -177,6 +168,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     router.push('/login');
   }, [router]);
 
+  useEffect(() => {
+    if (hasInited.current) return;
+    const init = async () => {
+      const token = localStorage.getItem('citymotion_token');
+      const email = localStorage.getItem('userEmailForSimulation');
+      const pass = localStorage.getItem('userPassForSimulation');
+      if (token && email) {
+          try { await login(email, pass || '123456', false); } 
+          catch (e) { logout(); }
+      } else { setIsLoading(false); }
+      hasInited.current = true;
+    };
+    init();
+  }, [login, logout]);
+
   const requestPasswordRecovery = async (identifier: string) => {
     const res = await fetch('/api/nexus/auth/forgot-password', {
         method: 'POST',
@@ -184,7 +190,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ identifier })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Falha ao solicitar recuperação.');
+    if (!res.ok) throw new Error(data.message || 'Falha.');
     return data;
   };
 
@@ -194,166 +200,56 @@ export function AppProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier, token, newPassword })
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Falha ao redefinir senha.');
+    if (!res.ok) throw new Error('Falha.');
   };
 
-  useEffect(() => {
-    if (hasInited.current) return;
-    
-    const init = async () => {
-      const token = localStorage.getItem('citymotion_token');
-      const email = localStorage.getItem('userEmailForSimulation');
-      const pass = localStorage.getItem('userPassForSimulation');
-      
-      const publicRoutes = ['/home', '/docs', '/login', '/terminal', '/forgot-password', '/reset-password'];
-      const isPublic = publicRoutes.some(r => pathname.startsWith(r));
-
-      if (token && email) {
-          try { 
-            await login(email, pass || '123456', false); 
-          } catch (e) { 
-            if (!isPublic) logout(); 
-          }
-      } else { 
-        setIsLoading(false); 
-      }
-      hasInited.current = true;
-    };
-    init();
-  }, [pathname, login, logout]);
-
-  // MUTAÇÕES DE DADOS (Persistência via Bridge)
+  // MUTAÇÕES
   const sendMessage = async (receiverId: string, content: string) => {
-    try {
-        const res = await fetch('/api/nexus/chat/messages', {
-            method: 'POST',
-            headers: getHeaders(),
-            body: JSON.stringify({ receiverId, content })
-        });
-        if (res.ok) {
-            await fetchData(true);
-        }
-    } catch (e) { console.error(e); }
-  }
+    await fetch('/api/nexus/chat/messages', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ receiverId, content }) });
+    await fetchData(true);
+  };
 
   const addRefueling = async (data: any) => {
-    try {
-      const res = await fetch('/api/nexus/refuelings', {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify(data)
-      });
-      if (res.ok) {
-          toast({ title: "Sucesso", description: "Abastecimento registrado no banco." });
-          await fetchData(true);
-      }
-    } catch (e) { console.error(e); }
+    await fetch('/api/nexus/refuelings', { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
+    await fetchData(true);
   };
 
   const addEmployee = async (data: any) => {
-      try {
-        const res = await fetch('/api/nexus/test/db-employees', {
-            method: 'POST',
-            headers: getHeaders(),
-            body: JSON.stringify(data)
-        });
-        if (res.ok) {
-            toast({ title: "Colaborador Criado", description: "Registro persistido no SQLite." });
-            await fetchData(true);
-        }
-      } catch (e) { console.error(e); }
+    await fetch('/api/nexus/test/db-employees', { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
+    await fetchData(true);
   };
 
   const updateEmployee = async (id: string, data: any) => {
-    try {
-      const res = await fetch(`/api/nexus/test/db-employees/${id}`, {
-          method: 'PUT',
-          headers: getHeaders(),
-          body: JSON.stringify(data)
-      });
-      if (res.ok) {
-          toast({ title: "Perfil Atualizado", description: "Alterações salvas." });
-          await fetchData(true);
-      }
-    } catch (e) { console.error(e); }
+    await fetch(`/api/nexus/test/db-employees/${id}`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(data) });
+    await fetchData(true);
   };
 
   const deleteEmployee = async (id: string) => {
-    try {
-      const res = await fetch(`/api/nexus/test/db-employees/${id}`, {
-          method: 'DELETE',
-          headers: getHeaders()
-      });
-      if (res.ok) {
-          toast({ title: "Registro Removido", description: "Operação de exclusão concluída." });
-          await fetchData(true);
-      }
-    } catch (e) { console.error(e); }
+    await fetch(`/api/nexus/test/db-employees/${id}`, { method: 'DELETE', headers: getHeaders() });
+    await fetchData(true);
   };
 
   const addVehicle = async (data: any) => {
-      try {
-        const res = await fetch('/api/nexus/test/db-vehicles', {
-            method: 'POST',
-            headers: getHeaders(),
-            body: JSON.stringify(data)
-        });
-        if (res.ok) {
-            toast({ title: "Veículo Adicionado", description: "Ativo registrado na frota." });
-            await fetchData(true);
-        }
-      } catch (e) { console.error(e); }
-  };
-
-  const updateScheduleStatus = async (id: string, status: ScheduleStatus, details: any) => {
-      // Placeholder para futura implementação de missões reais no banco
-      console.log("Trip Status Update:", id, status);
-  };
-
-  const addVehicleRequest = async (request: any) => {
-      console.log("New Vehicle Request:", request);
-  };
-
-  const updateVehicleRequestStatus = async (id: string, status: any) => {
-      console.log("Request Status Update:", id, status);
-  };
-
-  const updateMaintenanceRequestStatus = async (id: string, status: any) => {
-    console.log("Maintenance OS Update:", id, status);
-  };
-
-  const addMaintenanceRequest = async (request: any) => {
-    console.log("New Maintenance OS:", request);
+    await fetch('/api/nexus/test/db-vehicles', { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
+    await fetchData(true);
   };
 
   const addNotification = useCallback((n: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
-    const newNotif: AppNotification = { 
-      ...n, 
-      id: Math.random().toString(36).substr(2, 9), 
-      date: new Date().toISOString(), 
-      read: false 
-    };
+    const newNotif: AppNotification = { ...n, id: Math.random().toString(36).substr(2, 9), date: new Date().toISOString(), read: false };
     setNotifications(prev => [newNotif, ...prev]);
     toast({ title: `📲 ${n.title}`, description: n.message });
   }, [toast]);
-
-  const markNotificationAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-  };
-
-  const clearNotifications = () => setNotifications([]);
 
   return (
     <AppContext.Provider value={{ 
         isLoading, isRefreshing, userRole, currentUser, activeOrganization, setActiveOrganization: setActiveOrganizationState,
         selectedSector, setSelectedSector: setSelectedSectorState, login, logout, refreshData: () => fetchData(true),
         requestPasswordRecovery, resetPassword,
-        schedules, updateScheduleStatus, vehicleRequests, addVehicleRequest, updateVehicleRequestStatus,
-        employees, addEmployee, updateEmployee, deleteEmployee, vehicles, addVehicle, updateVehicle: (id: string, data: any) => Promise.resolve(),
+        schedules, updateScheduleStatus: async () => {}, vehicleRequests, addVehicleRequest: async () => {}, updateVehicleRequestStatus: async () => {},
+        employees, addEmployee, updateEmployee, deleteEmployee, vehicles, addVehicle, updateVehicle: async () => {},
         sectors, workSchedules, maintenanceRequests, refuelings, addRefueling,
         messages, sendMessage,
-        organizations, notifications, addNotification, markNotificationAsRead, clearNotifications
+        organizations, notifications, addNotification, markNotificationAsRead: (id) => {}, clearNotifications: () => {}
     }}>
       {children}
     </AppContext.Provider>
