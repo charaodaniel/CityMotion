@@ -6,7 +6,7 @@
   "main": "electron/main.js",
   "scripts": {
     "dev": "concurrently -k -n \"FRONT,BACK\" -c \"blue,green\" \"npm:dev:frontend\" \"npm:dev:backend\"",
-    "dev:frontend": "npx kill-port 9002 || true; sleep 2; next dev --turbopack -p 9002",
+    "dev:frontend": "npx kill-port 9005 || true; sleep 2; next dev --turbopack -p 9005",
     "dev:backend": "cd backend && (npx kill-port 3001 || true) && npm run dev",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
@@ -15,7 +15,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "electron:dev": "concurrently -k \"npm:dev:frontend\" \"npm:dev:backend\" \"npm:electron\"",
-    "electron": "wait-on tcp:9002 && electron .",
+    "electron": "wait-on tcp:9005 && electron .",
     "dev-server": "npm run dev:backend"
   },
   "dependencies": {
@@ -44,7 +44,6 @@
     "@radix-ui/react-toast": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.1.8",
     "bcryptjs": "^2.4.3",
-    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",
@@ -61,6 +60,7 @@
     "next": "15.3.8",
     "nodemailer": "^6.9.13",
     "patch-package": "^8.0.0",
+    "pg": "^8.11.5",
     "qrcode.react": "^3.1.0",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",

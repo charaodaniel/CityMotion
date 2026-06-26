@@ -9,7 +9,7 @@ const sqlScriptPath = path.resolve(__dirname, '../../src/data/database.sql');
 
 async function initializeDatabase() {
     try {
-        console.log('\x1b[36m[Nexus-Core]:\x1b[0m Iniciando provisionamento de banco de dados...');
+        console.log('\x1b[36m[Nexus-Core]:\x1b[0m Iniciando provisionamento de banco de dados unificado...');
         
         // 1. Criar pastas se não existirem
         const dbDir = path.resolve(__dirname, '../../backend/database');
@@ -17,21 +17,22 @@ async function initializeDatabase() {
 
         // 2. Executar Schema
         if (!fs.existsSync(sqlScriptPath)) {
-            throw new Error(`Schema não encontrado em ${sqlScriptPath}`);
+            throw new Error(`Schema não encontrado em ${sqlScriptPath}. Por favor, crie o arquivo SQL.`);
         }
 
         const sqlScript = fs.readFileSync(sqlScriptPath, 'utf8');
-        // Adaptar SERIAL para Postgres se necessário
+        // Adaptar SERIAL para Postgres se necessário (o db_manager lida com dialetos nas queries, mas o DDL precisa de ajuste)
         const finalSql = db.pgEnabled 
             ? sqlScript.replace(/INTEGER PRIMARY KEY AUTOINCREMENT/g, 'SERIAL PRIMARY KEY')
             : sqlScript;
 
+        console.log('\x1b[90m[Nexus-Core]:\x1b[0m Executando estrutura de tabelas...');
         await db.runScript(finalSql);
         
-        // 3. Popular dados iniciais
+        // 3. Popular dados iniciais (Seed)
         await seedData();
         
-        console.log('\x1b[32m[Sucesso]:\x1b[0m Banco de dados pronto para operação.');
+        console.log('\x1b[32m[Sucesso]:\x1b[0m Ecossistema Nexus-Dual pronto para operação.');
     } catch (err) {
         console.error('\x1b[31m[Falha Crítica]:\x1b[0m', err.message);
     }
@@ -42,7 +43,7 @@ async function seedData() {
     const rootHash = bcrypt.hashSync('123456789', 10);
     const demoHash = bcrypt.hashSync('nexus2024', 10);
     
-    // Limpa tabelas antes de seed para evitar duplicidade em restarts
+    // Limpa tabelas antes de seed para evitar duplicidade
     await db.execute('DELETE FROM employees');
 
     const users = [
@@ -63,7 +64,7 @@ async function seedData() {
         }
     }
 
-    console.log(`[Seed] ${users.length} usuários injetados.`);
+    console.log(`[Seed] ${users.length} usuários injetados no kernel dual.`);
 }
 
 if (require.main === module) {
