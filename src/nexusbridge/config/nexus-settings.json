@@ -2,7 +2,7 @@
 {
   "backends": {
     "local-sim": {
-      "baseUrl": "http://127.0.0.1:9005/api",
+      "baseUrl": "http://127.0.0.1:9002/api",
       "description": "API de Simulação Interna (JSON Files)"
     },
     "node-backend": {

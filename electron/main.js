@@ -1,25 +1,21 @@
 
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-// A biblioteca 'electron-is-dev' foi substituída pela verificação nativa '!app.isPackaged'
-// para evitar erros de compatibilidade de módulo (CJS/ESM).
 const isDev = !app.isPackaged; 
 const { fork } = require('child_process');
 const fs = require('fs');
 
 let backendProcess;
 
-// Função para criar a janela principal
 function createWindow() {
     const mainWindow = new BrowserWindow({
         width: 1280,
         height: 800,
-        // Opções para uma aparência mais moderna
         titleBarStyle: 'hidden',
         titleBarOverlay: {
-            color: '#222222', // Cor de fundo da barra de título (use uma cor do seu tema)
-            symbolColor: '#ffffff', // Cor dos ícones (fechar, minimizar, etc.)
-            height: 32 // Altura da barra de título
+            color: '#222222',
+            symbolColor: '#ffffff',
+            height: 32
         },
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
@@ -28,23 +24,19 @@ function createWindow() {
         },
     });
 
-    // Carrega a URL da aplicação Next.js
     const startUrl = isDev
-        ? 'http://localhost:9005' // URL de desenvolvimento do Next.js atualizada
-        : `file://${path.join(__dirname, '../out/index.html')}`; // Caminho para o build de produção
+        ? 'http://localhost:9002'
+        : `file://${path.join(__dirname, '../out/index.html')}`;
 
     mainWindow.loadURL(startUrl);
 
-    // Abre o DevTools se estiver em modo de desenvolvimento
     if (isDev) {
         mainWindow.webContents.openDevTools();
     } else {
-        // Remove o menu padrão em produção para uma aparência mais limpa
         mainWindow.setMenu(null);
     }
 }
 
-// Inicia o servidor de backend como um processo filho
 function startBackend() {
     const backendPath = path.join(__dirname, '../backend/server.js');
     backendProcess = fork(backendPath);
@@ -58,10 +50,7 @@ function startBackend() {
     });
 }
 
-// Evento disparado quando o Electron está pronto
 app.whenReady().then(() => {
-    // Em modo de desenvolvimento, o servidor é iniciado pelo concurrently.
-    // Em produção, o Electron gerencia o servidor.
     if (!isDev) { 
       startBackend();
     }
@@ -73,7 +62,6 @@ app.whenReady().then(() => {
     });
 });
 
-// Evento para encerrar a aplicação em todas as plataformas
 app.on('window-all-closed', function () {
     if (process.platform !== 'darwin') {
         if (backendProcess) {
@@ -89,8 +77,6 @@ app.on('before-quit', () => {
     }
 });
 
-
-// IPC para ler a configuração da API
 ipcMain.handle('get-api-config', async () => {
     try {
         const configPath = path.join(__dirname, 'api.config.json');
@@ -98,7 +84,6 @@ ipcMain.handle('get-api-config', async () => {
         return JSON.parse(data);
     } catch (error) {
         console.error('Erro ao ler api.config.json:', error);
-        // Retorna uma configuração padrão em caso de erro
         return { serverIp: '' };
     }
 });

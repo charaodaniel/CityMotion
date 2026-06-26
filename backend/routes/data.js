@@ -34,11 +34,16 @@ module.exports = function(db) {
                 } catch (e) {
                     console.error(`[DB Query Error] key: ${key}, error: ${e.message}`);
                     results[key] = [];
+                    // Se for um erro crítico que não seja apenas tabela vazia, interrompe
+                    if (e.message.includes('no such column')) {
+                        throw new Error(`Falha na tabela ${key}: ${e.message}`);
+                    }
                 }
             }
 
             res.json(results);
         } catch (err) {
+            console.error('[Sync Error]:', err.message);
             res.status(500).json({ error: 'Erro ao carregar ecossistema.', message: err.message });
         }
     });
