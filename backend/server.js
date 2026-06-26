@@ -2,28 +2,26 @@
 require('dotenv').config({ path: '../.env' });
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const path = require('path');
 const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Conexão com o Banco de Dados
-const dbPath = path.resolve(__dirname, 'database', 'citymotion.db');
-const dbDir = path.dirname(dbPath);
+// Configuração do Pool de Conexão PostgreSQL
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+});
 
-if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-}
-
-// Inicializa a conexão com o banco
-const db = new sqlite3.Database(dbPath, (err) => {
+// Teste de conexão
+pool.connect((err, client, release) => {
     if (err) {
-        console.error("\x1b[31m[ERRO CRÍTICO DB]:\x1b[0m", err.message);
-        process.exit(1);
+        console.error("\x1b[31m[ERRO CRÍTICO DB]:\x1b[0m Falha ao conectar ao PostgreSQL", err.stack);
     } else {
-        console.log("\x1b[32m[CONECTADO]:\x1b[0m SQLite Kernel em: " + dbPath);
+        console.log("\x1b[32m[CONECTADO]:\x1b[0m PostgreSQL Engine Ativa.");
+        release();
     }
 });
 
@@ -40,25 +38,22 @@ app.use((req, res, next) => {
 const authRoutes = require('./routes/auth');
 const dataRoutes = require('./routes/data');
 
-app.use('/api', authRoutes(db));
-app.use('/api', dataRoutes(db));
+app.use('/api', authRoutes(pool));
+app.use('/api', dataRoutes(pool));
 
-app.get('/api/health', (req, res) => {
-    res.json({ 
-        status: 'online', 
-        database: fs.existsSync(dbPath) ? 'ready' : 'missing',
-        timestamp: new Date().toISOString()
-    });
-});
-
-const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`\n\x1b[42m\x1b[30m NEXUS-CORE \x1b[0m Servidor rodando em http://127.0.0.1:${PORT}`);
-    console.log(`\x1b[34m[Integridade]:\x1b[0m http://127.0.0.1:${PORT}/api/health\n`);
-});
-
-server.on('error', (e) => {
-    if (e.code === 'EADDRINUSE') {
-        console.error(`\x1b[31m[FALHA]:\x1b[0m Porta ${PORT} ocupada. Libere-a antes de iniciar.`);
-        process.exit(1);
+app.get('/api/health', async (req, res) => {
+    try {
+        await pool.query('SELECT 1');
+        res.json({ 
+            status: 'online', 
+            database: 'connected',
+            timestamp: new Date().toISOString()
+        });
+    } catch (e) {
+        res.status(500).json({ status: 'error', database: 'disconnected' });
     }
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n\x1b[42m\x1b[30m NEXUS-CORE \x1b[0m Servidor rodando em http://0.0.0.0:${PORT}`);
 });

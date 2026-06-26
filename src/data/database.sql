@@ -1,119 +1,110 @@
 
--- TABELA DE FUNCIONÁRIOS
+-- SCHEMA PARA POSTGRESQL (CityMotion Cloud)
+
 CREATE TABLE IF NOT EXISTS employees (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL DEFAULT '123456',
+    password TEXT NOT NULL,
     role TEXT NOT NULL,
-    sector TEXT, -- JSON String ["Setor A", "Setor B"]
+    sector TEXT, -- Armazenado como JSON string ["Setor A"]
     status TEXT DEFAULT 'Disponível',
     matricula TEXT UNIQUE,
     phone TEXT,
     cnh TEXT,
     reset_token TEXT,
-    reset_expires TEXT,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    reset_expires TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- TABELA DE VEÍCULOS
+CREATE TABLE IF NOT EXISTS sectors (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    description TEXT
+);
+
 CREATE TABLE IF NOT EXISTS vehicles (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleModel TEXT NOT NULL,
-    licensePlate TEXT UNIQUE NOT NULL,
+    id SERIAL PRIMARY KEY,
+    vehicle_model TEXT NOT NULL,
+    license_plate TEXT UNIQUE NOT NULL,
     sector TEXT NOT NULL,
     mileage INTEGER DEFAULT 0,
     status TEXT DEFAULT 'Disponível',
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- TABELA DE VIAGENS (MISSÕES)
 CREATE TABLE IF NOT EXISTS trips (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     driver TEXT NOT NULL,
     vehicle TEXT NOT NULL,
     origin TEXT NOT NULL,
     destination TEXT NOT NULL,
-    departureTime TEXT NOT NULL,
-    arrivalTime TEXT,
-    startMileage INTEGER,
-    endMileage INTEGER,
+    departure_time TEXT NOT NULL,
+    arrival_time TEXT,
+    start_mileage INTEGER,
+    end_mileage INTEGER,
     status TEXT DEFAULT 'Agendada',
     category TEXT,
-    startChecklist TEXT, -- JSON Array
-    endChecklist TEXT, -- JSON Array
-    startNotes TEXT,
-    endNotes TEXT
+    start_checklist TEXT,
+    end_checklist TEXT
 );
 
--- TABELA DE ABASTECIMENTOS
-CREATE TABLE IF NOT EXISTS refuelings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId INTEGER,
-    vehicleModel TEXT,
-    licensePlate TEXT,
-    tripId INTEGER,
-    date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    mileage INTEGER,
-    liters REAL,
-    price REAL,
-    totalValue REAL,
-    fuelType TEXT,
-    gasStation TEXT,
-    driverName TEXT,
-    notes TEXT
-);
-
--- TABELA DE MENSAGENS (CHAT)
-CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    senderId INTEGER NOT NULL,
-    receiverId INTEGER NOT NULL,
-    content TEXT NOT NULL,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    isRead INTEGER DEFAULT 0
-);
-
--- TABELA DE SOLICITAÇÕES DE VEÍCULOS
 CREATE TABLE IF NOT EXISTS vehicle_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     sector TEXT NOT NULL,
     details TEXT,
     priority TEXT DEFAULT 'Média',
-    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     status TEXT DEFAULT 'Pendente',
-    requester TEXT
+    requester TEXT,
+    request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- TABELA DE MANUTENÇÃO
 CREATE TABLE IF NOT EXISTS maintenance_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId INTEGER NOT NULL,
-    vehicleModel TEXT,
-    licensePlate TEXT,
-    requesterName TEXT,
-    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    id SERIAL PRIMARY KEY,
+    vehicle_id INTEGER,
+    vehicle_model TEXT,
+    license_plate TEXT,
+    requester_name TEXT,
     type TEXT,
     description TEXT,
-    status TEXT DEFAULT 'Pendente'
+    status TEXT DEFAULT 'Pendente',
+    request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- TABELA DE SETORES
-CREATE TABLE IF NOT EXISTS sectors (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE,
-    description TEXT
+CREATE TABLE IF NOT EXISTS refuelings (
+    id SERIAL PRIMARY KEY,
+    vehicle_id TEXT,
+    vehicle_model TEXT,
+    license_plate TEXT,
+    trip_id INTEGER,
+    mileage INTEGER,
+    liters DECIMAL,
+    price DECIMAL,
+    total_value DECIMAL,
+    fuel_type TEXT,
+    gas_station TEXT,
+    driver_name TEXT,
+    notes TEXT,
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- TABELA DE LOGS DE AUDITORIA
+CREATE TABLE IF NOT EXISTS messages (
+    id SERIAL PRIMARY KEY,
+    sender_id INTEGER NOT NULL,
+    receiver_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS audit_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     action TEXT NOT NULL,
-    table_name TEXT,
+    table_name TEXT NOT NULL,
     record_id TEXT,
     details TEXT,
     user_identity TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
