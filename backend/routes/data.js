@@ -8,7 +8,7 @@ module.exports = function(db) {
         try {
             const queries = {
                 trips: 'SELECT * FROM trips ORDER BY id DESC',
-                requests: 'SELECT * FROM vehicles ORDER BY id ASC', -- Placeholder para requests
+                requests: 'SELECT * FROM vehicles ORDER BY id ASC', // Placeholder para requests
                 vehicles: 'SELECT * FROM vehicles ORDER BY id ASC',
                 employees: 'SELECT * FROM employees ORDER BY name ASC',
                 sectors: 'SELECT * FROM sectors ORDER BY name ASC',

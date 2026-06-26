@@ -1,25 +1,24 @@
 
--- CityMotion Nexus-Dual Schema (PostgreSQL & SQLite compatible)
+--- SCHEMA UNIFICADO CITYMOTION NEXUS-DUAL ---
 
--- 1. FUNCIONÁRIOS (EMPLOYEES)
+--- 1. FUNCIONÁRIOS ---
 CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL DEFAULT '123456',
+    password TEXT NOT NULL,
     role TEXT NOT NULL,
-    sector TEXT, -- Armazenado como JSON String ["Setor A"]
-    status TEXT DEFAULT 'Disponível',
+    sector TEXT, -- Armazenado como JSON ["Setor A"]
     matricula TEXT UNIQUE,
     phone TEXT,
-    cnh TEXT,
-    is_demo INTEGER DEFAULT 0,
+    is_demo INTEGER DEFAULT 0, -- 1 para usuários voláteis
     reset_token TEXT,
     reset_expires DATETIME,
+    status TEXT DEFAULT 'Disponível',
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. VEÍCULOS (VEHICLES)
+--- 2. VEÍCULOS ---
 CREATE TABLE IF NOT EXISTS vehicles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     vehicleModel TEXT NOT NULL,
@@ -30,7 +29,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. VIAGENS (TRIPS)
+--- 3. VIAGENS (MISSÕES) ---
 CREATE TABLE IF NOT EXISTS trips (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -44,14 +43,14 @@ CREATE TABLE IF NOT EXISTS trips (
     endMileage INTEGER,
     status TEXT DEFAULT 'Agendada',
     category TEXT,
-    startChecklist TEXT, -- JSON Array
-    endChecklist TEXT -- JSON Array
+    startChecklist TEXT,
+    endChecklist TEXT
 );
 
--- 4. ABASTECIMENTOS (REFUELINGS)
+--- 4. ABASTECIMENTO ---
 CREATE TABLE IF NOT EXISTS refuelings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId TEXT NOT NULL,
+    vehicleId TEXT,
     vehicleModel TEXT,
     licensePlate TEXT,
     date DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -65,7 +64,17 @@ CREATE TABLE IF NOT EXISTS refuelings (
     notes TEXT
 );
 
--- 5. MANUTENÇÃO (MAINTENANCE)
+--- 5. CHAT / MENSAGENS ---
+CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender_id INTEGER NOT NULL,
+    receiver_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_read INTEGER DEFAULT 0
+);
+
+--- 6. MANUTENÇÃO ---
 CREATE TABLE IF NOT EXISTS maintenance_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     vehicleId TEXT NOT NULL,
@@ -78,17 +87,7 @@ CREATE TABLE IF NOT EXISTS maintenance_requests (
     status TEXT DEFAULT 'Pendente'
 );
 
--- 6. MENSAGENS (MESSAGES)
-CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    sender_id INTEGER NOT NULL,
-    receiver_id INTEGER NOT NULL,
-    content TEXT NOT NULL,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    is_read INTEGER DEFAULT 0
-);
-
--- 7. AUDITORIA (AUDIT)
+--- 7. AUDITORIA ---
 CREATE TABLE IF NOT EXISTS audit_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -98,7 +97,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     details TEXT
 );
 
--- 8. SETORES (SECTORS)
+--- 8. SETORES ---
 CREATE TABLE IF NOT EXISTS sectors (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE NOT NULL,
