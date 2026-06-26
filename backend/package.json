@@ -2,7 +2,7 @@
 {
   "name": "citymotion-backend",
   "version": "1.0.0",
-  "description": "Servidor seguro para o sistema CityMotion",
+  "description": "Servidor seguro com persistência dual (SQLite/Postgres) para CityMotion",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -19,6 +19,7 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^6.9.13",
-    "pg": "^8.11.5"
+    "pg": "^8.11.5",
+    "sqlite3": "^5.1.7"
   }
 }

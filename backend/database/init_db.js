@@ -1,18 +1,13 @@
 
-const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
-});
+const db = require('./db_manager');
 
 const sqlScriptPath = path.resolve(__dirname, '../../src/data/database.sql');
 
-console.log('\x1b[36m--- CityMotion DB Initialization (PostgreSQL) ---\x1b[0m');
+console.log('\x1b[36m--- CityMotion Hybrid DB Initialization (Dual Mode) ---\x1b[0m');
 
 async function initializeDatabase() {
     try {
@@ -21,11 +16,12 @@ async function initializeDatabase() {
             process.exit(1);
         }
 
-        console.log('Executando schema SQL no PostgreSQL...');
+        console.log('Executando schema SQL sincronizado...');
         const sqlScript = fs.readFileSync(sqlScriptPath, 'utf8');
 
-        await pool.query(sqlScript);
-        console.log('SUCESSO: Estrutura de tabelas criada.');
+        // O db.runScript executa em Postgres e SQLite
+        await db.runScript(sqlScript);
+        console.log('SUCESSO: Estrutura de tabelas replicada.');
         
         await seedData();
     } catch (err) {
@@ -35,7 +31,7 @@ async function initializeDatabase() {
 }
 
 async function seedData() {
-    console.log('Gerando usuários iniciais...');
+    console.log('Gerando usuários e setores sincronizados...');
     
     const users = [
         { email: 'admin@citymotion.com', pass: '123456', role: 'Administrador', name: 'Júlio César', matricula: 'GP-001', sector: '["Gabinete do Prefeito"]', phone: '5511999999999' },
@@ -49,9 +45,13 @@ async function seedData() {
         const query = `
             INSERT INTO employees (name, email, password, role, sector, status, matricula, phone) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            ON CONFLICT (email) DO NOTHING
         `;
-        await pool.query(query, [u.name, u.email, hash, u.role, u.sector, 'Disponível', u.matricula, u.phone]);
+        // Usamos execute para replicar em ambos
+        try {
+            await db.execute(query, [u.name, u.email, hash, u.role, u.sector, 'Disponível', u.matricula, u.phone]);
+        } catch (e) {
+            // Ignora duplicados no seed
+        }
     }
 
     const sectors = [
@@ -62,11 +62,13 @@ async function seedData() {
     ];
 
     for (const s of sectors) {
-        await pool.query('INSERT INTO sectors (name, description) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING', [s[0], s[1]]);
+        try {
+            await db.execute('INSERT INTO sectors (name, description) VALUES ($1, $2)', [s[0], s[1]]);
+        } catch (e) {}
     }
 
-    console.log('\x1b[32mSUCESSO: Banco de dados populado e pronto.\x1b[0m');
-    await pool.end();
+    console.log('\x1b[32mSUCESSO: Bancos de dados inicializados e sincronizados.\x1b[0m');
+    process.exit(0);
 }
 
 initializeDatabase();

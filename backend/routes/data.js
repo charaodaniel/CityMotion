@@ -3,7 +3,7 @@ const express = require('express');
 const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
-module.exports = function(pool) {
+module.exports = function(db) {
     router.get('/data', authMiddleware, async (req, res) => {
         try {
             const queries = {
@@ -20,13 +20,11 @@ module.exports = function(pool) {
             const results = {};
             for (const [key, sql] of Object.entries(queries)) {
                 const params = key === 'messages' ? [req.user.id] : [];
-                const { rows } = await pool.query(sql, params);
+                const { rows } = await db.query(sql, params);
                 
                 results[key] = rows.map(row => {
                     const newRow = { ...row };
                     if (key === 'employees') delete newRow.password;
-                    // Postgres lida com JSON de forma diferente dependendo do tipo da coluna, 
-                    // se for TEXT no DB, fazemos parse aqui.
                     if (key === 'employees' && typeof newRow.sector === 'string') {
                         try { newRow.sector = JSON.parse(newRow.sector); } catch(e) { newRow.sector = [newRow.sector]; }
                     }
@@ -37,7 +35,7 @@ module.exports = function(pool) {
             res.json(results);
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'Erro ao sincronizar ecossistema.' });
+            res.status(500).json({ error: 'Erro ao sincronizar ecossistema Nexus.' });
         }
     });
 
@@ -46,27 +44,26 @@ module.exports = function(pool) {
         const senderId = req.user.id;
 
         try {
-            const sql = `INSERT INTO messages (sender_id, receiver_id, content) VALUES ($1, $2, $3) RETURNING id`;
-            const { rows } = await pool.query(sql, [senderId, receiverId, content]);
-            res.json({ id: rows[0].id, timestamp: new Date().toISOString() });
+            const sql = `INSERT INTO messages (sender_id, receiver_id, content) VALUES ($1, $2, $3)`;
+            await db.execute(sql, [senderId, receiverId, content]);
+            res.json({ success: true, timestamp: new Date().toISOString() });
         } catch (err) {
             res.status(500).json({ error: err.message });
         }
     });
 
-    router.post('/refuelings', authMiddleware, async (req, res) => {
-        const { vehicleId, vehicleModel, licensePlate, tripId, mileage, liters, price, fuelType, gasStation, notes } = req.body;
-        const totalValue = parseFloat(liters) * parseFloat(price);
+    router.post('/employees', authMiddleware, async (req, res) => {
+        const { name, email, role, sector, matricula, phone } = req.body;
+        const defaultPass = require('bcryptjs').hashSync('123456', 10);
         
         try {
             const sql = `
-                INSERT INTO refuelings (vehicle_id, vehicle_model, license_plate, trip_id, mileage, liters, price, total_value, fuel_type, gas_station, driver_name, notes) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id`;
+                INSERT INTO employees (name, email, password, role, sector, status, matricula, phone) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
+            const sectorJson = Array.isArray(sector) ? JSON.stringify(sector) : JSON.stringify([sector]);
             
-            const { rows } = await pool.query(sql, [vehicleId, vehicleModel, licensePlate, tripId || null, mileage, liters, price, totalValue, fuelType, gasStation || null, req.user.name, notes || null]);
-            
-            await pool.query('UPDATE vehicles SET mileage = $1 WHERE id = $2', [mileage, vehicleId]);
-            res.json({ id: rows[0].id });
+            await db.execute(sql, [name, email, defaultPass, role, sectorJson, 'Disponível', matricula, phone]);
+            res.json({ success: true });
         } catch (err) {
             res.status(500).json({ error: err.message });
         }
