@@ -4,11 +4,15 @@ const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
 module.exports = function(db) {
+    /**
+     * Sincronização Global do Ecossistema
+     * Carrega todos os estados necessários para o dashboard inicial.
+     */
     router.get('/data', authMiddleware, async (req, res) => {
         try {
             const queries = {
                 trips: 'SELECT * FROM trips ORDER BY id DESC',
-                requests: 'SELECT * FROM vehicles ORDER BY id ASC', // Placeholder para requests
+                requests: 'SELECT * FROM vehicle_requests ORDER BY id DESC',
                 vehicles: 'SELECT * FROM vehicles ORDER BY id ASC',
                 employees: 'SELECT * FROM employees ORDER BY name ASC',
                 sectors: 'SELECT * FROM sectors ORDER BY name ASC',
@@ -34,9 +38,9 @@ module.exports = function(db) {
                 } catch (e) {
                     console.error(`[DB Query Error] key: ${key}, error: ${e.message}`);
                     results[key] = [];
-                    // Se for um erro crítico que não seja apenas tabela vazia, interrompe
-                    if (e.message.includes('no such column')) {
-                        throw new Error(`Falha na tabela ${key}: ${e.message}`);
+                    // Se for erro de tabela inexistente, o kernel deve continuar mas o dev precisa ser avisado
+                    if (e.message.includes('no such table')) {
+                        console.warn(`[Nexus-Warning]: A tabela '${key}' não foi localizada no SQLite.`);
                     }
                 }
             }
@@ -44,10 +48,13 @@ module.exports = function(db) {
             res.json(results);
         } catch (err) {
             console.error('[Sync Error]:', err.message);
-            res.status(500).json({ error: 'Erro ao carregar ecossistema.', message: err.message });
+            res.status(500).json({ error: 'Erro ao carregar ecossistema de dados.' });
         }
     });
 
+    /**
+     * Endpoint de Chat / Mensagens
+     */
     router.post('/messages', authMiddleware, async (req, res) => {
         const { receiverId, content } = req.body;
         const senderId = req.user.id;
@@ -61,10 +68,36 @@ module.exports = function(db) {
         }
     });
 
+    /**
+     * Auditoria do Sistema
+     */
     router.get('/system/audit-logs', authMiddleware, async (req, res) => {
         try {
             const { rows } = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 100');
             res.json(rows);
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    /**
+     * Estatísticas de Banco (Health Check)
+     */
+    router.get('/system/db-info', authMiddleware, async (req, res) => {
+        try {
+            const tables = ['employees', 'vehicles', 'trips', 'messages', 'refuelings'];
+            const counts = {};
+            
+            for (const table of tables) {
+                const { rows } = await db.query(`SELECT COUNT(*) as count FROM ${table}`);
+                counts[table] = rows[0].count;
+            }
+            
+            res.json({
+                kernel: 'Nexus-Dual',
+                engine: db.pgEnabled ? 'PostgreSQL + SQLite' : 'SQLite Local Only',
+                counts
+            });
         } catch (err) {
             res.status(500).json({ error: err.message });
         }

@@ -1,37 +1,38 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 231 18% 9%;
+    --background: 231 18% 7%;
     --foreground: 245 22% 91%;
-    --card: 231 12% 13%;
+    --card: 231 12% 10%;
     --card-foreground: 245 22% 91%;
-    --popover: 231 18% 9%;
+    --popover: 231 18% 7%;
     --popover-foreground: 245 22% 91%;
     --primary: 221 100% 84%;
     --primary-foreground: 214 100% 21%;
-    --secondary: 240 2% 78%;
-    --secondary-foreground: 240 3% 19%;
-    --muted: 224 12% 29%;
-    --muted-foreground: 228 12% 80%;
-    --accent: 224 12% 29%;
-    --accent-foreground: 245 22% 91%;
-    --destructive: 6 100% 83%;
-    --destructive-foreground: 0 100% 21%;
-    --border: 224 12% 29%;
-    --input: 224 12% 29%;
+    --secondary: 240 2% 15%;
+    --secondary-foreground: 240 3% 91%;
+    --muted: 224 12% 15%;
+    --muted-foreground: 228 12% 70%;
+    --accent: 221 100% 84%;
+    --accent-foreground: 231 18% 7%;
+    --destructive: 0 100% 67%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 224 12% 20%;
+    --input: 224 12% 20%;
     --ring: 221 100% 84%;
-    --radius: 0.25rem;
+    --radius: 0.5rem;
     
-    --sidebar-background: 231 18% 7%;
-    --sidebar-foreground: 245 22% 91%;
+    --sidebar-background: 231 18% 6%;
+    --sidebar-foreground: 245 22% 85%;
     --sidebar-primary: 221 100% 84%;
     --sidebar-primary-foreground: 214 100% 21%;
-    --sidebar-accent: 231 12% 21%;
+    --sidebar-accent: 231 12% 18%;
     --sidebar-accent-foreground: 245 22% 91%;
-    --sidebar-border: 224 12% 29%;
+    --sidebar-border: 224 12% 18%;
     --sidebar-ring: 221 100% 84%;
   }
 }
@@ -41,11 +42,13 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
 @layer components {
+  /* NexusOS Advanced UI Effects */
   .scanlines {
     position: relative;
     overflow: hidden;
@@ -58,30 +61,43 @@
     left: 0;
     bottom: 0;
     right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
-    z-index: 10;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+    z-index: 5;
     background-size: 100% 2px, 3px 100%;
     pointer-events: none;
-    opacity: 0.1;
+    opacity: 0.2;
   }
 
   .tui-scanline {
-    background: linear-gradient(to bottom, transparent 50%, rgba(255, 255, 255, 0.01) 51%);
+    background: linear-gradient(to bottom, transparent 50%, rgba(255, 255, 255, 0.005) 51%);
     background-size: 100% 4px;
     pointer-events: none;
   }
   
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-md border border-white/5 shadow-2xl;
+  }
+
+  .glow-border {
+    box-shadow: 0 0 15px -5px hsl(var(--primary) / 0.3);
+  }
+
   .crt-flicker {
     animation: flicker 0.15s infinite;
   }
 
   @keyframes flicker {
-    0% { opacity: 0.98; }
+    0% { opacity: 0.99; }
     50% { opacity: 1; }
-    100% { opacity: 0.98; }
+    100% { opacity: 0.99; }
   }
 
   .terminal-glow {
-    text-shadow: 0 0 5px rgba(173, 198, 255, 0.3);
+    text-shadow: 0 0 10px hsla(var(--primary), 0.5);
+  }
+
+  /* Magic UI Inspired Animations */
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 }
