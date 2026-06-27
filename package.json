@@ -5,7 +5,7 @@
   "private": true,
   "main": "electron/main.js",
   "scripts": {
-    "dev": "concurrently -k -n \"FRONT,BACK\" -c \"blue,green\" \"npm:dev:frontend\" \"npm:dev:backend\"",
+    "dev": "npm run db:init && concurrently -k -n \"FRONT,BACK\" -c \"blue,green\" \"npm:dev:frontend\" \"npm:dev:backend\"",
     "dev:frontend": "npx kill-port 9002 || true; sleep 2; next dev --turbopack -p 9002",
     "dev:backend": "cd backend && (npx kill-port 3001 || true) && npm run dev",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
