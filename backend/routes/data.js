@@ -38,7 +38,6 @@ module.exports = function(db) {
                 } catch (e) {
                     console.error(`[DB Query Error] key: ${key}, error: ${e.message}`);
                     results[key] = [];
-                    // Se for erro de tabela inexistente, o kernel deve continuar mas o dev precisa ser avisado
                     if (e.message.includes('no such table')) {
                         console.warn(`[Nexus-Warning]: A tabela '${key}' não foi localizada no SQLite.`);
                     }
@@ -90,7 +89,7 @@ module.exports = function(db) {
             
             for (const table of tables) {
                 const { rows } = await db.query(`SELECT COUNT(*) as count FROM ${table}`);
-                counts[table] = rows[0].count;
+                counts[table] = rows[0]?.count || 0;
             }
             
             res.json({

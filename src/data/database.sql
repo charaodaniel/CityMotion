@@ -1,26 +1,24 @@
+-- SCHEMA UNIFICADO CITYMOTION (SQLITE & POSTGRES COMPATIBLE)
 
--- CityMotion // NexusOS Kernel Database Schema
--- Compatibilidade Dual: SQLite3 e PostgreSQL (Render)
-
--- 1. FUNCIONÁRIOS (Lotação e Segurança)
+-- 1. TABELA DE FUNCIONÁRIOS
 CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL DEFAULT '123456',
-    phone TEXT,
     role TEXT NOT NULL,
     sector TEXT, -- Armazenado como JSON String ["Setor A", "Setor B"]
     status TEXT DEFAULT 'Disponível',
     matricula TEXT UNIQUE,
+    phone TEXT,
     cnh TEXT,
-    is_demo INTEGER DEFAULT 0, -- 1 para usuários voláteis
+    is_demo INTEGER DEFAULT 0,
     reset_token TEXT,
     reset_expires DATETIME,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. VEÍCULOS (Ativos de Frota)
+-- 2. TABELA DE VEÍCULOS
 CREATE TABLE IF NOT EXISTS vehicles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     vehicleModel TEXT NOT NULL,
@@ -28,11 +26,10 @@ CREATE TABLE IF NOT EXISTS vehicles (
     sector TEXT NOT NULL,
     mileage INTEGER DEFAULT 0,
     status TEXT DEFAULT 'Disponível',
-    lastRefuelingDate DATETIME,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. VIAGENS (Missões Logísticas)
+-- 3. TABELA DE VIAGENS (MISSÕES)
 CREATE TABLE IF NOT EXISTS trips (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -48,29 +45,39 @@ CREATE TABLE IF NOT EXISTS trips (
     category TEXT,
     startChecklist TEXT, -- JSON Array
     endChecklist TEXT, -- JSON Array
-    startNotes TEXT,
-    endNotes TEXT
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. ABASTECIMENTO (Telemetria Financeira)
+-- 4. TABELA DE SOLICITAÇÕES DE VEÍCULOS
+CREATE TABLE IF NOT EXISTS vehicle_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    sector TEXT NOT NULL,
+    details TEXT,
+    priority TEXT DEFAULT 'Média',
+    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    requester TEXT,
+    status TEXT DEFAULT 'Pendente'
+);
+
+-- 5. TABELA DE ABASTECIMENTOS
 CREATE TABLE IF NOT EXISTS refuelings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId TEXT NOT NULL,
+    vehicleId INTEGER,
     vehicleModel TEXT,
     licensePlate TEXT,
-    tripId TEXT,
-    date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    mileage INTEGER NOT NULL,
-    liters REAL NOT NULL,
-    price REAL NOT NULL,
-    totalValue REAL NOT NULL,
-    fuelType TEXT NOT NULL,
-    gasStation TEXT,
     driverName TEXT,
+    date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    mileage INTEGER,
+    liters REAL,
+    price REAL,
+    totalValue REAL,
+    fuelType TEXT,
+    gasStation TEXT,
     notes TEXT
 );
 
--- 5. MENSAGENS (NexusTalk)
+-- 6. TABELA DE MENSAGENS (CHAT)
 CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sender_id INTEGER NOT NULL,
@@ -80,32 +87,19 @@ CREATE TABLE IF NOT EXISTS messages (
     is_read INTEGER DEFAULT 0
 );
 
--- 6. MANUTENÇÃO (Oficina)
-CREATE TABLE IF NOT EXISTS maintenance_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId TEXT NOT NULL,
-    vehicleModel TEXT NOT NULL,
-    licensePlate TEXT NOT NULL,
-    requesterName TEXT NOT NULL,
-    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-    type TEXT NOT NULL,
-    description TEXT NOT NULL,
-    status TEXT DEFAULT 'Pendente'
-);
-
--- 7. AUDITORIA (NexusGuard)
+-- 7. TABELA DE AUDITORIA
 CREATE TABLE IF NOT EXISTS audit_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    user_identity TEXT NOT NULL,
-    action TEXT NOT NULL,
-    table_name TEXT NOT NULL,
-    details TEXT -- JSON Data
+    user_identity TEXT,
+    action TEXT,
+    table_name TEXT,
+    details TEXT
 );
 
--- 8. SETORES (Organização)
+-- 8. TABELA DE SETORES
 CREATE TABLE IF NOT EXISTS sectors (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE,
+    name TEXT UNIQUE NOT NULL,
     description TEXT
 );

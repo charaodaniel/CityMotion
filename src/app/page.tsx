@@ -9,7 +9,7 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to the /home page as the main entry point for the app
+    // Redireciona para a página /home como ponto de entrada principal do aplicativo
     router.replace('/home');
   }, [router]);
 
