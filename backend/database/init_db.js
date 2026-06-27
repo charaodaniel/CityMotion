@@ -1,3 +1,4 @@
+
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 
 const fs = require('fs');
@@ -16,7 +17,8 @@ async function initializeDatabase() {
         if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
 
         if (!fs.existsSync(sqlScriptPath)) {
-            throw new Error(`Schema não encontrado em ${sqlScriptPath}. Por favor, crie o arquivo SQL.`);
+            console.error(`[FALHA]: Schema não encontrado em ${sqlScriptPath}`);
+            return;
         }
 
         const sqlScript = fs.readFileSync(sqlScriptPath, 'utf8');
@@ -32,7 +34,7 @@ async function initializeDatabase() {
         
         console.log('\x1b[32m[Sucesso]:\x1b[0m Ecossistema Nexus-Dual pronto para operação.');
     } catch (err) {
-        console.error('\x1b[31m[Falha Crítica]:\x1b[0m', err.message, err.stack);
+        console.error('\x1b[31m[Falha Crítica]:\x1b[0m', err.message);
     }
 }
 
@@ -42,7 +44,8 @@ async function seedData() {
     const rootHash = bcrypt.hashSync('123456789', 10);
     const demoHash = bcrypt.hashSync('nexus2024', 10);
     
-    await db.execute('DELETE FROM employees');
+    // Limpar funcionários existentes para evitar duplicatas no seed
+    try { await db.execute('DELETE FROM employees'); } catch (e) {}
 
     const users = [
         ['Júlio César', 'admin@citymotion.com', hash, 'Administrador', '["Gabinete do Prefeito"]', 'GP-001', '5511999999999', 0],

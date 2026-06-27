@@ -18,7 +18,8 @@ module.exports = function(db) {
                 sectors: 'SELECT * FROM sectors ORDER BY name ASC',
                 maintenanceRequests: 'SELECT * FROM maintenance_requests ORDER BY id DESC',
                 refuelings: 'SELECT * FROM refuelings ORDER BY date DESC LIMIT 100',
-                messages: 'SELECT * FROM messages WHERE sender_id = $1 OR receiver_id = $1 ORDER BY timestamp ASC'
+                messages: 'SELECT * FROM messages WHERE sender_id = $1 OR receiver_id = $1 ORDER BY timestamp ASC',
+                workSchedules: 'SELECT * FROM work_schedules ORDER BY id DESC'
             };
 
             const results = {};
@@ -37,10 +38,7 @@ module.exports = function(db) {
                     });
                 } catch (e) {
                     console.error(`[DB Query Error] key: ${key}, error: ${e.message}`);
-                    results[key] = [];
-                    if (e.message.includes('no such table')) {
-                        console.warn(`[Nexus-Warning]: A tabela '${key}' não foi localizada no SQLite.`);
-                    }
+                    results[key] = []; // Retorna array vazio em vez de quebrar a resposta toda
                 }
             }
 
@@ -88,8 +86,12 @@ module.exports = function(db) {
             const counts = {};
             
             for (const table of tables) {
-                const { rows } = await db.query(`SELECT COUNT(*) as count FROM ${table}`);
-                counts[table] = rows[0]?.count || 0;
+                try {
+                    const { rows } = await db.query(`SELECT COUNT(*) as count FROM ${table}`);
+                    counts[table] = rows[0]?.count || 0;
+                } catch (e) {
+                    counts[table] = 0;
+                }
             }
             
             res.json({
