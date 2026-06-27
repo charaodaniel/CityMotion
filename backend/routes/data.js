@@ -38,7 +38,7 @@ module.exports = function(db) {
                     });
                 } catch (e) {
                     console.error(`[DB Query Error] key: ${key}, error: ${e.message}`);
-                    results[key] = []; // Retorna array vazio em vez de quebrar a resposta toda
+                    results[key] = []; 
                 }
             }
 
