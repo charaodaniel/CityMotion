@@ -49,9 +49,9 @@ async function seedData() {
 
     const users = [
         ['Júlio César', 'admin@citymotion.com', hash, 'Administrador', '["Gabinete do Prefeito"]', 'GP-001', '5511999999999', 0],
-        ['Desenvolvedor Root', 'dev@citymotion.com', rootHash, 'Administrador', '["TI - Infraestrutura"]', 'root', '000000000', 0],
-        ['João da Silva', 'driver@citymotion.com', hash, 'Motorista', '["Secretaria de Obras"]', 'M-001', '5511777777777', 0],
-        ['Avaliador Demonstração', 'demo@citymotion.com', demoHash, 'Administrador', '["Gabinete do Prefeito"]', 'DEMO-ROOT', '5511000000000', 1]
+        ['Desenvolvedor Root', 'dev@dev.com', rootHash, 'Desenvolvedor Global', '["TI - Infraestrutura"]', 'root', '000000000', 0],
+        ['João da Silva', 'driver@citymotion.com', hash, 'Motorista', '["Secretaria de Obras, Viação e Urbanismo"]', 'M-001', '5511777777777', 0],
+        ['Avaliador Demonstração', 'demo@citymotion.com', demoHash, 'Gestor de Setor', '["Gabinete do Prefeito"]', 'DEMO-ROOT', '5511000000000', 1]
     ];
 
     for (const u of users) {

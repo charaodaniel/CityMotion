@@ -1,25 +1,24 @@
 
--- CityMotion Nexus-Core SQL Schema
--- Compatibilidade: SQLite3 & PostgreSQL
+-- CityMotion NexusOS - Unified Database Schema (V2.4)
+-- Compatível com SQLite3 e PostgreSQL (via Nexus-Bridge)
 
--- FUNCIONÁRIOS E SEGURANÇA
+-- 1. FUNCIONÁRIOS E SEGURANÇA
 CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL DEFAULT '123456',
     role TEXT NOT NULL,
-    sector TEXT,
+    sector TEXT, -- Armazenado como JSON String ["Setor A", "Setor B"]
     status TEXT DEFAULT 'Disponível',
     matricula TEXT UNIQUE,
     phone TEXT,
-    cnh TEXT,
-    is_demo INTEGER DEFAULT 0,
+    is_demo INTEGER DEFAULT 0, -- 1 para usuários voláteis (demo)
     reset_token TEXT,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- ATIVOS DA FROTA
+-- 2. VEÍCULOS E FROTA
 CREATE TABLE IF NOT EXISTS vehicles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     vehicleModel TEXT NOT NULL,
@@ -31,7 +30,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- MISSÕES LOGÍSTICAS
+-- 3. VIAGENS E MISSÕES
 CREATE TABLE IF NOT EXISTS trips (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -45,31 +44,53 @@ CREATE TABLE IF NOT EXISTS trips (
     endMileage INTEGER,
     status TEXT DEFAULT 'Agendada',
     category TEXT,
-    startChecklist TEXT,
-    endChecklist TEXT,
+    startChecklist TEXT, -- JSON Array
+    endChecklist TEXT, -- JSON Array
     startNotes TEXT,
     endNotes TEXT
 );
 
--- SOLICITAÇÕES DE VEÍCULOS
+-- 4. SOLICITAÇÕES DE TRANSPORTE
 CREATE TABLE IF NOT EXISTS vehicle_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     sector TEXT NOT NULL,
     details TEXT,
     priority TEXT DEFAULT 'Média',
+    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     requester TEXT,
-    status TEXT DEFAULT 'Pendente',
-    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP
+    status TEXT DEFAULT 'Pendente'
 );
 
--- REGISTROS DE ABASTECIMENTO
+-- 5. SETORES E UNIDADES
+CREATE TABLE IF NOT EXISTS sectors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    description TEXT,
+    vehicleCount INTEGER DEFAULT 0,
+    driverCount INTEGER DEFAULT 0
+);
+
+-- 6. MANUTENÇÃO E OFICINA
+CREATE TABLE IF NOT EXISTS maintenance_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vehicleId INTEGER,
+    vehicleModel TEXT,
+    licensePlate TEXT,
+    requesterName TEXT,
+    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    type TEXT, -- 'Manutenção Corretiva' | 'Revisão Preventiva'
+    description TEXT,
+    status TEXT DEFAULT 'Pendente'
+);
+
+-- 7. ABASTECIMENTO
 CREATE TABLE IF NOT EXISTS refuelings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     vehicleId INTEGER,
     vehicleModel TEXT,
     licensePlate TEXT,
-    driverName TEXT,
+    tripId INTEGER,
     date DATETIME DEFAULT CURRENT_TIMESTAMP,
     mileage INTEGER,
     liters REAL,
@@ -77,10 +98,11 @@ CREATE TABLE IF NOT EXISTS refuelings (
     totalValue REAL,
     fuelType TEXT,
     gasStation TEXT,
+    driverName TEXT,
     notes TEXT
 );
 
--- CENTRAL DE MENSAGENS (CHAT)
+-- 8. COMUNICAÇÃO (CHAT)
 CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sender_id INTEGER NOT NULL,
@@ -90,30 +112,7 @@ CREATE TABLE IF NOT EXISTS messages (
     is_read INTEGER DEFAULT 0
 );
 
--- MANUTENÇÃO
-CREATE TABLE IF NOT EXISTS maintenance_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicleId INTEGER NOT NULL,
-    vehicleModel TEXT,
-    licensePlate TEXT,
-    requesterName TEXT,
-    type TEXT,
-    description TEXT,
-    status TEXT DEFAULT 'Pendente',
-    requestDate DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- AUDITORIA DE SISTEMA
-CREATE TABLE IF NOT EXISTS audit_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_identity TEXT,
-    action TEXT,
-    table_name TEXT,
-    details TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- ESCALAS DE TRABALHO
+-- 9. ESCALAS DE TRABALHO
 CREATE TABLE IF NOT EXISTS work_schedules (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -125,11 +124,12 @@ CREATE TABLE IF NOT EXISTS work_schedules (
     description TEXT
 );
 
--- SETORES E UNIDADES
-CREATE TABLE IF NOT EXISTS sectors (
+-- 10. AUDITORIA (NEXUS-GUARD)
+CREATE TABLE IF NOT EXISTS audit_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL,
-    description TEXT,
-    vehicleCount INTEGER DEFAULT 0,
-    driverCount INTEGER DEFAULT 0
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    user_identity TEXT,
+    action TEXT,
+    table_name TEXT,
+    details TEXT
 );

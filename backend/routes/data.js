@@ -36,11 +36,13 @@ module.exports = function(db) {
                         return newRow;
                     });
                 } catch (e) {
+                    console.warn(`[Sync Warning] Failed to fetch table ${key}:`, e.message);
                     results[key] = []; 
                 }
             }
             res.json(results);
         } catch (err) {
+            console.error('[Sync Error]:', err.message);
             res.status(500).json({ error: 'Erro ao carregar ecossistema de dados.' });
         }
     });
@@ -87,15 +89,22 @@ module.exports = function(db) {
             `);
 
             const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            
+            // Se não houver dados, retorna vazio
+            if (!refuelingStats.rows || refuelingStats.rows.length === 0) {
+                return res.json([]);
+            }
+
             const formatted = refuelingStats.rows.map(r => ({
                 month: months[parseInt(r.month_num) - 1] || '???',
-                cost: r.total_spent,
-                volume: r.count
+                cost: r.total_spent || 0,
+                volume: r.count || 0
             }));
 
             res.json(formatted);
         } catch (err) {
-            res.status(500).json({ error: err.message });
+            console.warn('[Analytics Fallback] Returning empty stats:', err.message);
+            res.json([]);
         }
     });
 
