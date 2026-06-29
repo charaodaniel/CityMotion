@@ -1,7 +1,6 @@
 
 "use client";
 
-import type { Metadata } from 'next';
 import { AppProvider } from '@/contexts/app-provider';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
@@ -27,6 +26,7 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="theme-color" content="#09090b" />
+        <link rel="manifest" href="/manifest.webmanifest" crossOrigin="use-credentials" />
       </head>
       <body className={cn("font-sans antialiased", inter.variable)}>
         <AppProvider>

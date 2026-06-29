@@ -55,12 +55,14 @@ module.exports = function(db) {
             const result = await db.execute(sql, [title, sector, details, priority || 'Média', req.user.name]);
             
             // Notificar via WebSocket
-            req.io.to(sector).emit('new-request', {
-                id: result.lastID,
-                title,
-                requester: req.user.name,
-                priority: priority || 'Média'
-            });
+            if (req.io) {
+                req.io.to(sector).emit('new-request', {
+                    id: result.lastID,
+                    title,
+                    requester: req.user.name,
+                    priority: priority || 'Média'
+                });
+            }
 
             res.json({ success: true, id: result.lastID });
         } catch (err) {
@@ -73,7 +75,6 @@ module.exports = function(db) {
      */
     router.get('/analytics/telemetry', authMiddleware, async (req, res) => {
         try {
-            // Exemplo de agregação real para Recharts
             const refuelingStats = await db.query(`
                 SELECT 
                     strftime('%m', date) as month_num,
@@ -87,7 +88,7 @@ module.exports = function(db) {
 
             const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
             const formatted = refuelingStats.rows.map(r => ({
-                month: months[parseInt(r.month_num) - 1],
+                month: months[parseInt(r.month_num) - 1] || '???',
                 cost: r.total_spent,
                 volume: r.count
             }));
