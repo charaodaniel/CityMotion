@@ -18,7 +18,8 @@ module.exports = function(db) {
                 maintenanceRequests: 'SELECT * FROM maintenance_requests ORDER BY id DESC',
                 refuelings: 'SELECT * FROM refuelings ORDER BY date DESC LIMIT 100',
                 messages: 'SELECT * FROM messages WHERE sender_id = $1 OR receiver_id = $1 ORDER BY timestamp ASC',
-                workSchedules: 'SELECT * FROM work_schedules ORDER BY id DESC'
+                workSchedules: 'SELECT * FROM work_schedules ORDER BY id DESC',
+                organizations: 'SELECT * FROM organizations ORDER BY name ASC'
             };
 
             const results = {};
@@ -90,7 +91,6 @@ module.exports = function(db) {
 
             const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
             
-            // Se não houver dados, retorna vazio
             if (!refuelingStats.rows || refuelingStats.rows.length === 0) {
                 return res.json([]);
             }

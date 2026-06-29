@@ -30,10 +30,13 @@ interface AppContextType {
   workSchedules: WorkSchedule[];
   maintenanceRequests: MaintenanceRequest[];
   refuelings: Refueling[];
+  organizations: Organization[];
   messages: Message[];
   sendMessage: (receiverId: string, content: string) => Promise<void>;
 
   notifications: AppNotification[];
+  markNotificationAsRead: (id: string) => void;
+  clearNotifications: () => void;
   addNotification: (notification: Omit<AppNotification, 'id' | 'date' | 'read'>) => void;
   
   telemetryData: any[];
@@ -59,6 +62,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [workSchedules, setWorkSchedules] = useState<WorkSchedule[]>([]);
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
   const [refuelings, setRefuelings] = useState<Refueling[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [telemetryData, setTelemetryData] = useState<any[]>([]);
@@ -78,7 +82,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await fetch('/api/nexus/sync-all', { headers: getHeaders() });
-      if (response.status === 401 || response.status === 403) return;
+      if (response.status === 401 || response.status === 403) {
+          setIsLoading(false);
+          setIsRefreshing(false);
+          return;
+      }
 
       const data = await response.json();
       setSchedules(data.trips || []);
@@ -90,56 +98,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setMaintenanceRequests(data.maintenanceRequests || []);
       setRefuelings(data.refuelings || []);
       setMessages(data.messages || []);
+      setOrganizations(data.organizations || []);
 
-      // Fetch Telemetry for Reports
       const telRes = await fetch('/api/nexus/analytics/telemetry', { headers: getHeaders() });
       if (telRes.ok) setTelemetryData(await telRes.json());
 
     } catch (error) {
-      console.error("[AppProvider] Sync Error");
+      console.error("[AppProvider] Sync Error", error);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
   }, [getHeaders]);
 
-  // WebSocket Setup
-  useEffect(() => {
-    if (currentUser && !socketRef.current) {
-        socketRef.current = io('http://localhost:3001');
-        
-        socketRef.current.on('connect', () => {
-            if (selectedSector) socketRef.current?.emit('join-sector', selectedSector);
-        });
-
-        socketRef.current.on('new-request', (data) => {
-            addNotification({
-                title: "Novo Pedido de Viagem",
-                message: `${data.requester} solicitou um veículo: "${data.title}"`,
-                type: 'request'
-            });
-            fetchData(true);
-        });
-    }
-
-    return () => {
-        if (socketRef.current) {
-            socketRef.current.disconnect();
-            socketRef.current = null;
-        }
-    };
-  }, [currentUser, selectedSector, fetchData]);
-
   const addNotification = useCallback((n: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
     const newNotif: AppNotification = { ...n, id: Math.random().toString(36).substr(2, 9), date: new Date().toISOString(), read: false };
     setNotifications(prev => [newNotif, ...prev]);
     toast({ title: `📲 ${n.title}`, description: n.message });
-    
-    // Alerta sonoro de sistema (opcional)
-    if (typeof Audio !== 'undefined') {
-        new Audio('/sounds/notification.mp3').play().catch(() => {});
-    }
   }, [toast]);
+
+  const markNotificationAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+  };
+
+  const mapRole = (roleStr: string): UserRole => {
+    const r = roleStr.toLowerCase();
+    if (r.includes('desenvolvedor') || r.includes('dev') || r.includes('root')) return 'dev';
+    if (r.includes('ti') || r.includes('infra')) return 'ti';
+    if (r.includes('admin')) return 'admin';
+    if (r.includes('gestor') || r.includes('gerente')) return 'manager';
+    return 'employee';
+  };
 
   const login = async (identifier: string, password = '123456', shouldRedirect = false, isTerminal = false) => {
     setIsLoading(true);
@@ -153,7 +146,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
             localStorage.setItem('citymotion_token', data.token);
             setCurrentUser(data.user);
-            setUserRole(data.user.role.toLowerCase().includes('admin') ? 'admin' : data.user.role.toLowerCase().includes('gestor') ? 'manager' : 'employee');
+            setUserRole(mapRole(data.user.role));
             await fetchData(true);
             if (shouldRedirect) router.push('/dashboard');
         } else throw new Error(data.message);
@@ -163,6 +156,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem('citymotion_token');
     setCurrentUser(null);
+    setUserRole('employee');
     router.push('/login');
   };
 
@@ -178,11 +172,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{ 
-        isLoading, isRefreshing, userRole, currentUser, activeOrganization, setActiveOrganization: setActiveOrganizationState,
+        isLoading, isRefreshing, userRole, currentUser, activeOrganization, 
+        setActiveOrganization: setActiveOrganizationState,
         selectedSector, setSelectedSector: setSelectedSectorState, login, logout, refreshData: () => fetchData(true),
         schedules, vehicleRequests, addVehicleRequest,
-        employees, vehicles, sectors, workSchedules, maintenanceRequests, refuelings,
-        messages, sendMessage, notifications, addNotification, telemetryData
+        employees, vehicles, sectors, workSchedules, maintenanceRequests, refuelings, organizations,
+        messages, sendMessage, notifications, markNotificationAsRead, clearNotifications, addNotification, telemetryData
     }}>
       {children}
     </AppContext.Provider>
