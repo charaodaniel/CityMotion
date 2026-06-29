@@ -26,9 +26,9 @@ Este arquivo organiza as funcionalidades construídas e os próximos passos do p
 
 ## 🛠️ Próximos Passos Sugeridos
 
-- [ ] **Módulo de Abastecimento:** Integração com sensores de bomba e controle de média de consumo.
+
 - [ ] **WebSockets:** Notificações em tempo real para gestores quando novos pedidos de viagem são criados.
-- [ ] **Build Desktop (Electron):** Empacotamento da aplicação para uso em totens de garagem.
+- [ ] **Build Desktop (WPA):** Empacotamento da aplicação para uso em totens de garagem.
 - [ ] **Relatórios Avançados:** Gráficos de telemetria de longo prazo usando Recharts com dados reais do SQLite.
 
 ---

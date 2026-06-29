@@ -6,7 +6,6 @@ const router = express.Router();
 module.exports = function(db) {
     /**
      * Sincronização Global do Ecossistema
-     * Carrega todos os estados necessários para o dashboard inicial.
      */
     router.get('/data', authMiddleware, async (req, res) => {
         try {
@@ -37,68 +36,63 @@ module.exports = function(db) {
                         return newRow;
                     });
                 } catch (e) {
-                    console.error(`[DB Query Error] key: ${key}, error: ${e.message}`);
                     results[key] = []; 
                 }
             }
-
             res.json(results);
         } catch (err) {
-            console.error('[Sync Error]:', err.message);
             res.status(500).json({ error: 'Erro ao carregar ecossistema de dados.' });
         }
     });
 
     /**
-     * Endpoint de Chat / Mensagens
+     * Novos Pedidos com Notificação Socket
      */
-    router.post('/messages', authMiddleware, async (req, res) => {
-        const { receiverId, content } = req.body;
-        const senderId = req.user.id;
-
+    router.post('/requests', authMiddleware, async (req, res) => {
+        const { title, sector, details, priority } = req.body;
         try {
-            const sql = `INSERT INTO messages (sender_id, receiver_id, content) VALUES ($1, $2, $3)`;
-            await db.execute(sql, [senderId, receiverId, content], req.user);
-            res.json({ success: true });
-        } catch (err) {
-            res.status(500).json({ error: err.message });
-        }
-    });
-
-    /**
-     * Auditoria do Sistema
-     */
-    router.get('/system/audit-logs', authMiddleware, async (req, res) => {
-        try {
-            const { rows } = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 100');
-            res.json(rows);
-        } catch (err) {
-            res.status(500).json({ error: err.message });
-        }
-    });
-
-    /**
-     * Estatísticas de Banco (Health Check)
-     */
-    router.get('/system/db-info', authMiddleware, async (req, res) => {
-        try {
-            const tables = ['employees', 'vehicles', 'trips', 'messages', 'refuelings'];
-            const counts = {};
+            const sql = `INSERT INTO vehicle_requests (title, sector, details, priority, requester, status) VALUES ($1, $2, $3, $4, $5, 'Pendente')`;
+            const result = await db.execute(sql, [title, sector, details, priority || 'Média', req.user.name]);
             
-            for (const table of tables) {
-                try {
-                    const { rows } = await db.query(`SELECT COUNT(*) as count FROM ${table}`);
-                    counts[table] = rows[0]?.count || 0;
-                } catch (e) {
-                    counts[table] = 0;
-                }
-            }
-            
-            res.json({
-                kernel: 'Nexus-Dual',
-                engine: db.pgEnabled ? 'PostgreSQL + SQLite' : 'SQLite Local Only',
-                counts
+            // Notificar via WebSocket
+            req.io.to(sector).emit('new-request', {
+                id: result.lastID,
+                title,
+                requester: req.user.name,
+                priority: priority || 'Média'
             });
+
+            res.json({ success: true, id: result.lastID });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    /**
+     * Analytics para Gráficos
+     */
+    router.get('/analytics/telemetry', authMiddleware, async (req, res) => {
+        try {
+            // Exemplo de agregação real para Recharts
+            const refuelingStats = await db.query(`
+                SELECT 
+                    strftime('%m', date) as month_num,
+                    SUM(totalValue) as total_spent,
+                    COUNT(*) as count
+                FROM refuelings 
+                WHERE date >= date('now', '-6 months')
+                GROUP BY month_num
+                ORDER BY month_num ASC
+            `);
+
+            const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            const formatted = refuelingStats.rows.map(r => ({
+                month: months[parseInt(r.month_num) - 1],
+                cost: r.total_spent,
+                volume: r.count
+            }));
+
+            res.json(formatted);
         } catch (err) {
             res.status(500).json({ error: err.message });
         }

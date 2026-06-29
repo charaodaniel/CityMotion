@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect, useCa
 import type { VehicleRequest, VehicleRequestStatus, Schedule, ScheduleStatus, Employee, Vehicle, Sector, WorkSchedule, MaintenanceRequest, MaintenanceRequestStatus, UserRole, AppNotification, Organization, Refueling, Message } from '@/lib/types';
 import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { io, Socket } from 'socket.io-client';
 
 interface AppContextType {
   isLoading: boolean;
@@ -17,48 +18,31 @@ interface AppContextType {
   setSelectedSector: (sector: string | null) => void;
   login: (identifier: string, password?: string, shouldRedirect?: boolean, isTerminal?: boolean) => Promise<void>;
   logout: () => void;
-  requestPasswordRecovery: (identifier: string) => Promise<{ debugCode?: string }>;
-  resetPassword: (identifier: string, token: string, newPass: string) => Promise<void>;
   refreshData: () => Promise<void>;
   
   schedules: Schedule[];
-  updateScheduleStatus: (id: string, status: ScheduleStatus, details?: any) => Promise<void>;
-  
   vehicleRequests: VehicleRequest[];
   addVehicleRequest: (request: Partial<VehicleRequest>) => Promise<void>;
-  updateVehicleRequestStatus: (id: string, status: VehicleRequestStatus) => Promise<void>;
   
   employees: Employee[];
-  addEmployee: (employee: Partial<Employee>) => Promise<void>;
-  updateEmployee: (id: string, data: Partial<Employee>) => Promise<void>;
-  deleteEmployee: (id: string) => Promise<void>;
-  
   vehicles: Vehicle[];
-  addVehicle: (vehicle: Partial<Vehicle>) => Promise<void>;
-  updateVehicle: (id: string, data: Partial<Vehicle>) => Promise<void>;
-
   sectors: Sector[];
   workSchedules: WorkSchedule[];
   maintenanceRequests: MaintenanceRequest[];
-  
   refuelings: Refueling[];
-  addRefueling: (data: Partial<Refueling>) => Promise<void>;
-
   messages: Message[];
   sendMessage: (receiverId: string, content: string) => Promise<void>;
 
-  organizations: Organization[];
   notifications: AppNotification[];
   addNotification: (notification: Omit<AppNotification, 'id' | 'date' | 'read'>) => void;
-  markNotificationAsRead: (id: string) => void;
-  clearNotifications: () => void;
+  
+  telemetryData: any[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -76,14 +60,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
   const [refuelings, setRefuelings] = useState<Refueling[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [telemetryData, setTelemetryData] = useState<any[]>([]);
 
-  const hasInited = useRef(false);
+  const socketRef = useRef<Socket | null>(null);
 
   const getHeaders = useCallback(() => {
-    if (typeof window === 'undefined') return { 'Content-Type': 'application/json' };
-    const token = localStorage.getItem('citymotion_token');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('citymotion_token') : null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     return headers;
@@ -95,11 +78,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await fetch('/api/nexus/sync-all', { headers: getHeaders() });
-      if (response.status === 401 || response.status === 403) return null;
+      if (response.status === 401 || response.status === 403) return;
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Falha no sync.');
-      
       setSchedules(data.trips || []);
       setVehicleRequests(data.requests || []);
       setVehicles(data.vehicles || []);
@@ -109,147 +90,99 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setMaintenanceRequests(data.maintenanceRequests || []);
       setRefuelings(data.refuelings || []);
       setMessages(data.messages || []);
-      return data;
-    } catch (error: any) {
-      console.error("[AppProvider] Sync Error:", error.message);
+
+      // Fetch Telemetry for Reports
+      const telRes = await fetch('/api/nexus/analytics/telemetry', { headers: getHeaders() });
+      if (telRes.ok) setTelemetryData(await telRes.json());
+
+    } catch (error) {
+      console.error("[AppProvider] Sync Error");
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
   }, [getHeaders]);
 
-  const login = useCallback(async (identifier: string, password = '123456', shouldRedirect = false, isTerminal = false) => {
-    setIsLoading(true);
-    try {
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (isTerminal) headers['x-nexus-terminal'] = 'true';
-
-        const res = await fetch('/api/nexus/auth/login', {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ email: identifier, password })
-        });
-        
-        const data = await res.json();
-        if (res.ok && data.token && data.user) {
-            localStorage.setItem('citymotion_token', data.token);
-            localStorage.setItem('userEmailForSimulation', identifier);
-            localStorage.setItem('userPassForSimulation', password);
-            
-            const roleStr = data.user.role.toLowerCase();
-            let determinedRole: UserRole = 'employee';
-            if (roleStr.includes('dev')) determinedRole = 'dev';
-            else if (roleStr.includes('ti')) determinedRole = 'ti';
-            else if (roleStr.includes('admin')) determinedRole = 'admin';
-            else if (['gestor', 'chefe'].some(r => roleStr.includes(r))) determinedRole = 'manager';
-            
-            setCurrentUser(data.user);
-            setUserRole(determinedRole);
-            await fetchData(true);
-
-            if (shouldRedirect) {
-                router.push(determinedRole === 'dev' ? '/dev-global' : '/dashboard');
-            }
-        } else {
-            throw new Error(data.message || 'Credenciais inválidas.');
-        }
-    } catch (error: any) {
-        localStorage.removeItem('citymotion_token');
-        throw error;
-    } finally { setIsLoading(false); }
-  }, [fetchData, router]);
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('citymotion_token');
-    localStorage.removeItem('userEmailForSimulation');
-    localStorage.removeItem('userPassForSimulation');
-    setCurrentUser(null);
-    setUserRole('employee'); 
-    router.push('/login');
-  }, [router]);
-
+  // WebSocket Setup
   useEffect(() => {
-    if (hasInited.current) return;
-    const init = async () => {
-      const token = localStorage.getItem('citymotion_token');
-      const email = localStorage.getItem('userEmailForSimulation');
-      const pass = localStorage.getItem('userPassForSimulation');
-      if (token && email) {
-          try { await login(email, pass || '123456', false); } 
-          catch (e) { logout(); }
-      } else { setIsLoading(false); }
-      hasInited.current = true;
+    if (currentUser && !socketRef.current) {
+        socketRef.current = io('http://localhost:3001');
+        
+        socketRef.current.on('connect', () => {
+            if (selectedSector) socketRef.current?.emit('join-sector', selectedSector);
+        });
+
+        socketRef.current.on('new-request', (data) => {
+            addNotification({
+                title: "Novo Pedido de Viagem",
+                message: `${data.requester} solicitou um veículo: "${data.title}"`,
+                type: 'request'
+            });
+            fetchData(true);
+        });
+    }
+
+    return () => {
+        if (socketRef.current) {
+            socketRef.current.disconnect();
+            socketRef.current = null;
+        }
     };
-    init();
-  }, [login, logout]);
-
-  const requestPasswordRecovery = async (identifier: string) => {
-    const res = await fetch('/api/nexus/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Falha.');
-    return data;
-  };
-
-  const resetPassword = async (identifier: string, token: string, newPassword: string) => {
-    const res = await fetch('/api/nexus/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, token, newPassword })
-    });
-    if (!res.ok) throw new Error('Falha.');
-  };
-
-  // MUTAÇÕES
-  const sendMessage = async (receiverId: string, content: string) => {
-    await fetch('/api/nexus/chat/messages', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ receiverId, content }) });
-    await fetchData(true);
-  };
-
-  const addRefueling = async (data: any) => {
-    await fetch('/api/nexus/refuelings', { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
-    await fetchData(true);
-  };
-
-  const addEmployee = async (data: any) => {
-    await fetch('/api/nexus/test/db-employees', { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
-    await fetchData(true);
-  };
-
-  const updateEmployee = async (id: string, data: any) => {
-    await fetch(`/api/nexus/test/db-employees/${id}`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(data) });
-    await fetchData(true);
-  };
-
-  const deleteEmployee = async (id: string) => {
-    await fetch(`/api/nexus/test/db-employees/${id}`, { method: 'DELETE', headers: getHeaders() });
-    await fetchData(true);
-  };
-
-  const addVehicle = async (data: any) => {
-    await fetch('/api/nexus/test/db-vehicles', { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
-    await fetchData(true);
-  };
+  }, [currentUser, selectedSector, fetchData]);
 
   const addNotification = useCallback((n: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
     const newNotif: AppNotification = { ...n, id: Math.random().toString(36).substr(2, 9), date: new Date().toISOString(), read: false };
     setNotifications(prev => [newNotif, ...prev]);
     toast({ title: `📲 ${n.title}`, description: n.message });
+    
+    // Alerta sonoro de sistema (opcional)
+    if (typeof Audio !== 'undefined') {
+        new Audio('/sounds/notification.mp3').play().catch(() => {});
+    }
   }, [toast]);
+
+  const login = async (identifier: string, password = '123456', shouldRedirect = false, isTerminal = false) => {
+    setIsLoading(true);
+    try {
+        const res = await fetch('/api/nexus/auth/login', {
+            method: 'POST',
+            headers: isTerminal ? { 'x-nexus-terminal': 'true', 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: identifier, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            localStorage.setItem('citymotion_token', data.token);
+            setCurrentUser(data.user);
+            setUserRole(data.user.role.toLowerCase().includes('admin') ? 'admin' : data.user.role.toLowerCase().includes('gestor') ? 'manager' : 'employee');
+            await fetchData(true);
+            if (shouldRedirect) router.push('/dashboard');
+        } else throw new Error(data.message);
+    } catch (e: any) { throw e; } finally { setIsLoading(false); }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('citymotion_token');
+    setCurrentUser(null);
+    router.push('/login');
+  };
+
+  const addVehicleRequest = async (data: any) => {
+    await fetch('/api/nexus/requests', { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
+    await fetchData(true);
+  };
+
+  const sendMessage = async (receiverId: string, content: string) => {
+    await fetch('/api/nexus/chat/messages', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ receiverId, content }) });
+    await fetchData(true);
+  };
 
   return (
     <AppContext.Provider value={{ 
         isLoading, isRefreshing, userRole, currentUser, activeOrganization, setActiveOrganization: setActiveOrganizationState,
         selectedSector, setSelectedSector: setSelectedSectorState, login, logout, refreshData: () => fetchData(true),
-        requestPasswordRecovery, resetPassword,
-        schedules, updateScheduleStatus: async () => {}, vehicleRequests, addVehicleRequest: async () => {}, updateVehicleRequestStatus: async () => {},
-        employees, addEmployee, updateEmployee, deleteEmployee, vehicles, addVehicle, updateVehicle: async () => {},
-        sectors, workSchedules, maintenanceRequests, refuelings, addRefueling,
-        messages, sendMessage,
-        organizations, notifications, addNotification, markNotificationAsRead: (id) => {}, clearNotifications: () => {}
+        schedules, vehicleRequests, addVehicleRequest,
+        employees, vehicles, sectors, workSchedules, maintenanceRequests, refuelings,
+        messages, sendMessage, notifications, addNotification, telemetryData
     }}>
       {children}
     </AppContext.Provider>
