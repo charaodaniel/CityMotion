@@ -1,6 +1,6 @@
-
 require('dotenv').config({ path: '../.env', override: true });
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -12,7 +12,7 @@ const app = express();
 const server = http.createServer(app);
 
 // CORS configurável via variável de ambiente
-// Em produção, defina CORS_ORIGIN=http://localhost:9002 (ou seu domínio)
+// Em produção, defina CORS_ORIGIN=https://seudominio.com (ou * se mesmo domínio)
 const allowedOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
     : ['http://localhost:9002', 'http://127.0.0.1:9002'];
@@ -88,6 +88,51 @@ app.get('/api/health', async (req, res) => {
     res.json({ status: 'operational', kernel: 'Nexus-Dual', uptime: process.uptime() });
 });
 
+// =============================================================
+// Servir Frontend Next.js em Produção (Render / Docker)
+// =============================================================
+// Em produção, o Express serve os arquivos estáticos do Next.js
+// e deleita rotas não-API para o handler do Next.js.
+// O servidor HTTP só começa a aceitar conexões DEPOIS que o
+// Next.js estiver pronto, evitando race conditions.
+// =============================================================
+
+function startServer() {
+    server.listen(PORT, '0.0.0.0', () => {
+        console.log(`\x1b[32m[CityMotion Backend]\x1b[0m Rodando em http://0.0.0.0:${PORT}`);
+        console.log(`Conexão com o banco de dados SQLite estabelecida.`);
+    }).on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.error(`Porta ${PORT} ocupada. Tente limpar os processos ou aguardar.`);
+        }
+        process.exit(1);
+    });
+}
+
+if (process.env.NODE_ENV === 'production') {
+    const next = require('next');
+    const nextApp = next({ dev: false, dir: path.resolve(__dirname, '..') });
+    const handle = nextApp.getRequestHandler();
+
+    nextApp.prepare().then(() => {
+        // Servir arquivos estáticos do Next.js
+        app.use('/_next', express.static(path.resolve(__dirname, '../.next')));
+
+        // Rotas não-API vão para o Next.js
+        app.get('*', (req, res) => {
+            return handle(req, res);
+        });
+
+        console.log('\x1b[32m[Next.js]\x1b[0m Frontend pronto para servir em produção.');
+        startServer();
+    }).catch((err) => {
+        console.error('\x1b[31m[Next.js]\x1b[0m Erro ao preparar frontend:', err.message);
+        startServer();
+    });
+} else {
+    startServer();
+}
+
 // WebSocket Events
 io.on('connection', (socket) => {
     console.log('\x1b[35m[Socket]:\x1b[0m Nova conexão técnica estabelecida:', socket.id);
@@ -103,7 +148,6 @@ io.on('connection', (socket) => {
 });
 
 // MOTOR DE RESET DIÁRIO — SOMENTE EM MODO DEMONSTRAÇÃO
-// Para habilitar, defina DEMO_MODE=true no .env
 if (process.env.DEMO_MODE === 'true') {
     let lastResetDate = new Date().toDateString();
     setInterval(async () => {
@@ -123,13 +167,3 @@ if (process.env.DEMO_MODE === 'true') {
 } else {
     console.log('\x1b[32m[Security]:\x1b[0m Modo PRODUÇÃO — reset diário desabilitado.');
 }
-
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`\x1b[32m[CityMotion Backend]\x1b[0m Rodando em http://0.0.0.0:${PORT}`);
-    console.log(`Conexão com o banco de dados SQLite estabelecida.`);
-}).on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-        console.error(`Porta ${PORT} ocupada. Tente limpar os processos ou aguardar.`);
-    }
-    process.exit(1);
-});

@@ -41,6 +41,11 @@ chown -R $USER_NAME:$USER_NAME "$PROJECT_DIR/backend/database"
 echo -e "${BLUE}[3/5] Construindo Imagem CityMotion...${NC}"
 docker compose build
 
+# 4b. (Opcional) Subir PostgreSQL para desenvolvimento local
+# docker compose up -d postgres
+
+echo -e "${BLUE}[3b/5] Para usar PostgreSQL local, execute: docker compose up -d postgres${NC}"
+
 # 5. Criar Lançador no Desktop
 DESKTOP_DIR="/home/$USER_NAME/Desktop"
 LAUNCHER_PATH="/home/$USER_NAME/.citymotion-launcher.sh"

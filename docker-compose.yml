@@ -1,17 +1,48 @@
 version: '3.8'
 
 services:
+  # --- Banco de Dados PostgreSQL (opcional, para desenvolvimento local) ---
+  postgres:
+    image: postgres:16-alpine
+    container_name: citymotion-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: citymotion
+      POSTGRES_USER: citymotion_user
+      POSTGRES_PASSWORD: citymotion_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U citymotion_user -d citymotion"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- Aplicação CityMotion (Frontend + Backend) ---
   citymotion:
     build: .
     container_name: citymotion-app
     ports:
       - "9002:9002"
       - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
-      # Persistência do banco de dados no pendrive
+      # Persistência do banco SQLite (fallback)
       - ./backend/database:/app/backend/database
+      # Cache do Next.js
+      - next_cache:/app/.next/cache
     restart: unless-stopped
     env_file:
       - .env
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
+      # Para usar PostgreSQL local, descomente:
+      # - DATABASE_URL=postgresql://citymotion_user:citymotion_pass@postgres:5432/citymotion
+
+volumes:
+  postgres_data:
+  next_cache:
