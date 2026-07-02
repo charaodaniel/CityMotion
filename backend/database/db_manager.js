@@ -39,8 +39,8 @@ class DbManager {
      */
     async setPgIdentity(client, user) {
         if (!user) return;
-        const userName = user.name || 'Anonymous';
-        await client.query(`SET LOCAL citymotion.current_user_name = '${userName}'`);
+        const userName = (user.name || 'Anonymous').replace(/[^a-zA-Z0-9_@.\- ]/g, '');
+        await client.query('SET LOCAL citymotion.current_user_name = $1', [userName]);
     }
 
     async query(sql, params = []) {

@@ -5,9 +5,18 @@ const bcrypt = require('bcryptjs');
 const { sendPasswordResetEmail } = require('../services/emailService');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'citymotion_secret_key_2024';
 
-module.exports = function(db) {
+if (!process.env.JWT_SECRET) {
+    throw new Error('[CRÍTICO] JWT_SECRET não definido no arquivo .env. Configure uma chave secreta antes de iniciar o servidor.');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
+
+module.exports = function(db, loginLimiter) {
+    // Aplicar rate limiter apenas na rota de login
+    if (loginLimiter) {
+        router.use('/login', loginLimiter);
+    }
+
     router.post('/login', async (req, res) => {
         const { email, password } = req.body;
         // O header 'x-nexus-terminal' identifica se o login vem do terminal TTY

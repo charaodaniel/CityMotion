@@ -1,6 +1,10 @@
 
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-insecure-secret';
+
+if (!process.env.JWT_SECRET) {
+    throw new Error('[CRÍTICO] JWT_SECRET não definido no arquivo .env. Configure uma chave secreta antes de iniciar o servidor.');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 module.exports = function(req, res, next) {
     const authHeader = req.headers['authorization'];

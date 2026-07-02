@@ -1,25 +1,66 @@
 
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config({ path: '../.env', override: true });
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const rateLimit = require('express-rate-limit');
 const db = require('./database/db_manager');
 const { initializeDatabase } = require('./database/init_db');
 
 const app = express();
 const server = http.createServer(app);
+
+// CORS configurável via variável de ambiente
+// Em produção, defina CORS_ORIGIN=http://localhost:9002 (ou seu domínio)
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+    : ['http://localhost:9002', 'http://127.0.0.1:9002'];
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Permite requisições sem origin (ex: ferramentas internas, curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        console.warn(`[Security] CORS bloqueado para origem: ${origin}`);
+        return callback(new Error('Origem não permitida pelo CORS.'));
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-nexus-terminal'],
+    credentials: true,
+};
+
 const io = new Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
+    cors: corsOptions
 });
 
 const PORT = process.env.PORT || 3001;
 
-app.use(cors()); 
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// Rate Limiter global: máximo 100 requisições por IP a cada 15 minutos
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Muitas requisições. Tente novamente mais tarde.' },
+});
+
+// Rate Limiter para login: máximo 10 tentativas por IP a cada 15 minutos
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Muitas tentativas de login. Tente novamente mais tarde.' },
+    skipSuccessfulRequests: true,
+});
+
+app.use(globalLimiter);
 
 // Injetar IO no request para uso nas rotas
 app.use((req, res, next) => {
@@ -37,9 +78,11 @@ app.use((req, res, next) => {
 
 const authRoutes = require('./routes/auth');
 const dataRoutes = require('./routes/data');
+const infrastructureRoutes = require('./routes/infrastructure');
 
-app.use('/api', authRoutes(db));
+app.use('/api', authRoutes(db, loginLimiter));
 app.use('/api', dataRoutes(db));
+app.use('/api', infrastructureRoutes(db));
 
 app.get('/api/health', async (req, res) => {
     res.json({ status: 'operational', kernel: 'Nexus-Dual', uptime: process.uptime() });
@@ -59,21 +102,27 @@ io.on('connection', (socket) => {
     });
 });
 
-// MOTOR DE RESET DIÁRIO (Demo-Cleaner)
-let lastResetDate = new Date().toDateString();
-setInterval(async () => {
-    const currentDate = new Date().toDateString();
-    if (currentDate !== lastResetDate) {
-        console.log('\x1b[35m[Cron]:\x1b[0m Mudança de dia detectada. Executando limpeza de dados demo...');
-        try {
-            await initializeDatabase();
-            lastResetDate = currentDate;
-            console.log('\x1b[32m[Cron]:\x1b[0m Reset diário concluído com sucesso.');
-        } catch (err) {
-            console.error('[Cron Error]: Falha no reset diário:', err.message);
+// MOTOR DE RESET DIÁRIO — SOMENTE EM MODO DEMONSTRAÇÃO
+// Para habilitar, defina DEMO_MODE=true no .env
+if (process.env.DEMO_MODE === 'true') {
+    let lastResetDate = new Date().toDateString();
+    setInterval(async () => {
+        const currentDate = new Date().toDateString();
+        if (currentDate !== lastResetDate) {
+            console.log('\x1b[35m[Cron]:\x1b[0m Mudança de dia detectada. Executando limpeza de dados demo...');
+            try {
+                await initializeDatabase();
+                lastResetDate = currentDate;
+                console.log('\x1b[32m[Cron]:\x1b[0m Reset diário concluído com sucesso.');
+            } catch (err) {
+                console.error('[Cron Error]: Falha no reset diário:', err.message);
+            }
         }
-    }
-}, 3600000);
+    }, 3600000);
+    console.log('\x1b[33m[Security]:\x1b[0m Modo DEMO ativo — reset diário habilitado.');
+} else {
+    console.log('\x1b[32m[Security]:\x1b[0m Modo PRODUÇÃO — reset diário desabilitado.');
+}
 
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`\x1b[32m[CityMotion Backend]\x1b[0m Rodando em http://0.0.0.0:${PORT}`);

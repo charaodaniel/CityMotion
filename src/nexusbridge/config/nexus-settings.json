@@ -121,6 +121,48 @@
       "backendId": "node-backend",
       "target": "/messages",
       "transformer": "identity"
+    },
+    {
+      "path": "infrastructure/config",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/infrastructure/config",
+      "transformer": "identity"
+    },
+    {
+      "path": "infrastructure/test-db",
+      "method": "POST",
+      "backendId": "node-backend",
+      "target": "/infrastructure/test-db",
+      "transformer": "identity"
+    },
+    {
+      "path": "infrastructure/save",
+      "method": "POST",
+      "backendId": "node-backend",
+      "target": "/infrastructure/save",
+      "transformer": "identity"
+    },
+    {
+      "path": "infrastructure/test-smtp",
+      "method": "POST",
+      "backendId": "node-backend",
+      "target": "/infrastructure/test-smtp",
+      "transformer": "identity"
+    },
+    {
+      "path": "infrastructure/nexus-config",
+      "method": "GET",
+      "backendId": "node-backend",
+      "target": "/infrastructure/nexus-config",
+      "transformer": "identity"
+    },
+    {
+      "path": "infrastructure/nexus-config",
+      "method": "POST",
+      "backendId": "node-backend",
+      "target": "/infrastructure/nexus-config",
+      "transformer": "identity"
     }
   ]
 }
