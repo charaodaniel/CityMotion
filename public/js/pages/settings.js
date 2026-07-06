@@ -46,7 +46,7 @@ export default function SettingsPage(container, Store, API) {
   async function fetchInfraConfig() {
     upd({ infraLoading: true });
     try {
-      const res = await fetch('/api/nexus/infrastructure/config', { headers: authHeaders() });
+      const res = await fetch('/api/infrastructure/config', { headers: authHeaders() });
       if (res.ok) {
         const data = await res.json();
         upd({
@@ -76,8 +76,8 @@ export default function SettingsPage(container, Store, API) {
     upd({ testResults });
     try {
       let endpoint = '';
-      if (section === 'database') endpoint = '/api/nexus/infrastructure/test-db';
-      else if (section === 'smtp') endpoint = '/api/nexus/infrastructure/test-smtp';
+      if (section === 'database') endpoint = '/api/infrastructure/test-db';
+      else if (section === 'smtp') endpoint = '/api/infrastructure/test-smtp';
       const res = await fetch(endpoint, {
         method: 'POST', headers: authHeaders(), body: JSON.stringify(payload),
       });
@@ -95,7 +95,7 @@ export default function SettingsPage(container, Store, API) {
   async function saveConfig(section, data) {
     upd({ saving: true });
     try {
-      const res = await fetch('/api/nexus/infrastructure/save', {
+      const res = await fetch('/api/infrastructure/save', {
         method: 'POST', headers: authHeaders(), body: JSON.stringify({ section, config: data }),
       });
       const result = await res.json();

@@ -31,8 +31,8 @@ services:
     region: ohio
     plan: free
     branch: main
-    buildCommand: cd backend && npm install --include=dev && npx drizzle-kit push && npx tsx src/db/seed.ts && cd ..
-    startCommand: cd backend && npx tsx src/index.ts
+    buildCommand: cd backend && npm install --include=dev && cd ..
+    startCommand: cd backend && npx drizzle-kit push && npx tsx src/index.ts
     healthCheckPath: /api/health
 
     # Para usar Docker em vez de build nativo, descomente:

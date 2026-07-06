@@ -16,22 +16,35 @@ const WS = {
     if (this._loaded) return;
     this._loaded = true;
 
-    // Carregar socket.io client do CDN
+    // Carregar socket.io client do CDN (com fallback)
     return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.socket.io/4.7.5/socket.io.min.js';
-      script.integrity = 'sha384-2huaZvOR9iDzHqslqwpR4WBAwkm5I2YzD7N3c1SoJH7EJHjO/8h3Mk3v5n6w+JQ';
-      script.crossOrigin = 'anonymous';
-      script.onload = () => {
-        console.log('[WS] Socket.IO client loaded');
-        this._connect();
-        resolve();
-      };
-      script.onerror = () => {
-        console.warn('[WS] Failed to load Socket.IO CDN, notifications disabled');
-        resolve();
-      };
-      document.head.appendChild(script);
+      const CDNS = [
+        'https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.min.js',
+        'https://cdn.socket.io/4.8.1/socket.io.min.js',
+        'https://cdn.jsdelivr.net/npm/socket.io-client@4.8.1/dist/socket.io.min.js',
+      ];
+      let attempt = 0;
+      function tryLoad() {
+        if (attempt >= CDNS.length) {
+          console.warn('[WS] Todas as CDNs falharam, notificações desabilitadas');
+          resolve();
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = CDNS[attempt];
+        script.crossOrigin = 'anonymous';
+        script.onload = () => {
+          console.log('[WS] Socket.IO client loaded from', CDNS[attempt]);
+          this._connect();
+          resolve();
+        };
+        script.onerror = () => {
+          attempt++;
+          tryLoad();
+        };
+        document.head.appendChild(script);
+      }
+      tryLoad();
     });
   },
 

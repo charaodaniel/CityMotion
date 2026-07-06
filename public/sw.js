@@ -40,6 +40,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
+  // Ignorar métodos não-GET (POST, PUT, DELETE não devem ser cacheados)
+  if (event.request.method !== 'GET') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   // API: network-first (sempre buscar do servidor)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
