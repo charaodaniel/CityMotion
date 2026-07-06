@@ -8,9 +8,55 @@ export default function ChatPage(container, Store, API) {
     search: '',
     newMessage: '',
     unreadMap: {}, // { userId: count }
+    typingUsers: {}, // { userId: true } - quem está digitando
   };
+  let _typingTimer = null; // debounce timer
+  let _typingExpireTimers = {}; // auto-expire per user
 
   function upd(partial) { state = { ...state, ...partial }; }
+
+  // Emitir 'typing' via WebSocket com debounce
+  function emitTyping(receiverId) {
+    if (!WS._io || !WS._connected) return;
+    const user = Store.get('user');
+    if (!user) return;
+    if (_typingTimer) return; // já emitiu nos últimos 2s
+    WS._io.emit('typing', { from: String(user.id), to: receiverId });
+    _typingTimer = setTimeout(() => {
+      _typingTimer = null;
+    }, 2000);
+  }
+
+  // Emitir 'stop-typing'
+  function emitStopTyping(receiverId) {
+    if (!WS._io || !WS._connected) return;
+    const user = Store.get('user');
+    if (!user) return;
+    if (_typingTimer) {
+      clearTimeout(_typingTimer);
+      _typingTimer = null;
+    }
+    WS._io.emit('stop-typing', { from: String(user.id), to: receiverId });
+  }
+
+  // Sincronizar typingUsers do Store
+  function syncTypingUsers() {
+    const typingUsers = Store.get('typingUsers') || {};
+    upd({ typingUsers });
+    // Auto-expire após 3s sem atualização
+    for (const uid of Object.keys(typingUsers)) {
+      if (typingUsers[uid]) {
+        if (_typingExpireTimers[uid]) clearTimeout(_typingExpireTimers[uid]);
+        _typingExpireTimers[uid] = setTimeout(() => {
+          const tu = { ...state.typingUsers };
+          delete tu[uid];
+          upd({ typingUsers: tu });
+          render();
+          delete _typingExpireTimers[uid];
+        }, 3000);
+      }
+    }
+  }
 
   // Calcular mensagens não lidas por contato
   function computeUnread() {
@@ -156,10 +202,19 @@ export default function ChatPage(container, Store, API) {
                   <h3 class="font-bold text-sm leading-tight text-zinc-200">${selectedUser.name}</h3>
                   <div class="flex items-center gap-2 mt-0.5">
                     <span class="inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${getRoleBadge(selectedUser.role)}">${selectedUser.role}</span>
-                    <span class="text-[9px] text-zinc-600 flex items-center gap-1">
+                    ${state.typingUsers[String(selectedUser.id)] ? `
+                      <span class="inline-flex items-center text-[9px] text-primary font-bold gap-1">
+                        <span class="typing-dots flex gap-0.5">
+                          <span class="w-1 h-1 rounded-full bg-primary animate-bounce" style="animation-delay:0ms"></span>
+                          <span class="w-1 h-1 rounded-full bg-primary animate-bounce" style="animation-delay:200ms"></span>
+                          <span class="w-1 h-1 rounded-full bg-primary animate-bounce" style="animation-delay:400ms"></span>
+                        </span>
+                        digitando...
+                      </span>
+                    ` : `<span class="text-[9px] text-zinc-600 flex items-center gap-1">
                       <svg class="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                       NEX-256
-                    </span>
+                    </span>`}
                   </div>
                 </div>
               </div>
@@ -250,17 +305,33 @@ export default function ChatPage(container, Store, API) {
     // Send via Enter
     const input = document.getElementById('chatInput');
     if (input) {
+      // Enviar stop-typing ao pressionar Enter
       input.addEventListener('keydown', e => {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
+          if (state.selectedUserId) emitStopTyping(state.selectedUserId);
           handleSend();
         }
       });
       input.addEventListener('input', e => {
-        upd({ newMessage: e.target.value });
+        const val = e.target.value;
+        upd({ newMessage: val });
+        // Emitir 'typing' via WebSocket (com debounce)
+        if (state.selectedUserId) {
+          if (val.trim()) {
+            emitTyping(state.selectedUserId);
+          } else {
+            emitStopTyping(state.selectedUserId);
+          }
+        }
         // Re-enable/disable send button
         const btn = document.getElementById('btnSendMessage');
-        if (btn) btn.disabled = !e.target.value.trim();
+        if (btn) btn.disabled = !val.trim();
+      });
+
+      // Stop typing ao perder foco
+      input.addEventListener('blur', () => {
+        if (state.selectedUserId) emitStopTyping(state.selectedUserId);
       });
     }
   }
@@ -271,6 +342,13 @@ export default function ChatPage(container, Store, API) {
   const unsubEmployees = Store.on('employees', () => { upd({ unreadMap: computeUnread() }); render(); });
   const unsubMessages = Store.on('messages', () => {
     upd({ unreadMap: computeUnread() });
+    // Limpar typing ao receber mensagem
+    const selId = state.selectedUserId;
+    if (selId) {
+      const tu = { ...state.typingUsers };
+      delete tu[selId];
+      upd({ typingUsers: tu });
+    }
     render();
     setTimeout(() => {
       const ca = document.getElementById('chatMessages');
@@ -278,6 +356,10 @@ export default function ChatPage(container, Store, API) {
     }, 50);
   });
   const unsubUser = Store.on('user', () => { upd({ unreadMap: computeUnread() }); render(); });
+  const unsubTyping = Store.on('typingUsers', () => {
+    syncTypingUsers();
+    render();
+  });
 
   // ----------------------------------------------------------
   //  Render inicial
@@ -291,5 +373,11 @@ export default function ChatPage(container, Store, API) {
     unsubEmployees();
     unsubMessages();
     unsubUser();
+    unsubTyping();
+    // Limpar timers
+    if (_typingTimer) { clearTimeout(_typingTimer); _typingTimer = null; }
+    for (const key of Object.keys(_typingExpireTimers)) {
+      clearTimeout(_typingExpireTimers[key]);
+    }
   };
 }

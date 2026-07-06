@@ -23,6 +23,15 @@ export function setupWebSocket(fastify: FastifyInstance) {
       console.log(`[Socket]: Cliente entrou no canal: ${sector}`);
     });
 
+    // Relay de indicador de digitação
+    socket.on('typing', (data: { from: string; to: string }) => {
+      socket.broadcast.emit('typing', data);
+    });
+
+    socket.on('stop-typing', (data: { from: string; to: string }) => {
+      socket.broadcast.emit('stop-typing', data);
+    });
+
     socket.on('disconnect', () => {
       console.log('[Socket]: Conexão encerrada.');
     });

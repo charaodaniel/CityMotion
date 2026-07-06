@@ -82,6 +82,25 @@ const WS = {
 
       // ==================== EVENT LISTENERS ====================
 
+      // Indicador de digitação
+      this._io.on('typing', ({ from, to }) => {
+        const user = Store.get('user');
+        if (String(to) === String(user?.id)) {
+          const typingUsers = { ...(Store.get('typingUsers') || {}) };
+          typingUsers[from] = true;
+          Store.set('typingUsers', typingUsers);
+        }
+      });
+
+      this._io.on('stop-typing', ({ from, to }) => {
+        const user = Store.get('user');
+        if (String(to) === String(user?.id)) {
+          const typingUsers = { ...(Store.get('typingUsers') || {}) };
+          delete typingUsers[from];
+          Store.set('typingUsers', typingUsers);
+        }
+      });
+
       // Notificações de alerta (solicitações, etc.)
       this._io.on('notification', (data) => {
         console.log('[WS] Notification:', data);
