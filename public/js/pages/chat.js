@@ -23,8 +23,9 @@ export default function ChatPage(container, Store, API) {
     const user = Store.get('user');
     const employees = Store.get('employees') || [];
     const q = state.search.toLowerCase();
+    const userIdStr = String(user?.id || '');
     return employees.filter(e =>
-      e.id !== user?.id &&
+      String(e.id) !== userIdStr &&
       e.status !== 'Desativado' &&
       e.name.toLowerCase().includes(q)
     );
@@ -35,18 +36,19 @@ export default function ChatPage(container, Store, API) {
     const messages = Store.get('messages') || [];
     const selId = state.selectedUserId;
     if (!user || !selId) return [];
+    const userIdStr = String(user.id);
     return messages.filter(m =>
-      (m.senderId === user.id && m.receiverId === selId) ||
-      (m.senderId === selId && m.receiverId === user.id)
+      (String(m.senderId) === userIdStr && String(m.receiverId) === selId) ||
+      (String(m.senderId) === selId && String(m.receiverId) === userIdStr)
     );
   }
 
   function getSelectedUser() {
     const employees = Store.get('employees') || [];
-    return employees.find(e => e.id === state.selectedUserId) || null;
+    return employees.find(e => String(e.id) === state.selectedUserId) || null;
   }
 
-  function handleSend() {
+  async function handleSend() {
     const user = Store.get('user');
     const msg = state.newMessage.trim();
     if (!msg || !state.selectedUserId || !user) return;
@@ -54,12 +56,22 @@ export default function ChatPage(container, Store, API) {
     const messages = [...(Store.get('messages') || [])];
     const newMsg = {
       id: 'MSG' + Date.now(),
-      senderId: user.id,
+      senderId: String(user.id),
       receiverId: state.selectedUserId,
       content: msg,
       timestamp: new Date().toISOString(),
       isRead: 0,
     };
+
+    try {
+      await API.post('/api/messages', {
+        receiverId: state.selectedUserId,
+        content: msg,
+      });
+    } catch (e) {
+      // Fallback: salvar localmente se API falhar
+    }
+
     Store.set('messages', [...messages, newMsg]);
     upd({ newMessage: '' });
     render();
