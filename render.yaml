@@ -48,10 +48,9 @@ services:
           name: citymotion-db
           property: connectionString
       - key: CORS_ORIGIN
-        # ⚠️ APÓS O DEPLOY, substitua pelo seu domínio Render:
-        #    Ex: https://citymotion.onrender.com
-        # Deixe vazio para aceitar todas as origens (apenas para teste inicial)
-        value: ""
+        # ⚠️ APÓS O DEPLOY, configure manualmente no Dashboard do Render:
+        #    Acesse: Environment → CORS_ORIGIN → https://citymotion.onrender.com
+        #    (Não pode ter value e sync simultaneamente)
         sync: false
       - key: JWT_SECRET
         generateValue: true
