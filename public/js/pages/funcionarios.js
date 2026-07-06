@@ -473,8 +473,8 @@ export default function EmployeesPage(container, Store, API) {
       if (!matricula) { Toast.show('A matrícula é obrigatória.', 'warning'); return; }
       if (!email || !email.includes('@')) { Toast.show('Informe um email válido.', 'warning'); return; }
       if (!role) { Toast.show('Selecione um cargo.', 'warning'); return; }
-      if (!isEdit && password && password.length < 6) { Toast.show('A senha deve ter pelo menos 6 caracteres.', 'warning'); return; }
-      if (!lgpdConsent && !isEdit) { Toast.show('É necessário aceitar os termos LGPD.', 'warning'); return; }
+      if (state.activeModal !== 'edit' && password && password.length < 6) { Toast.show('A senha deve ter pelo menos 6 caracteres.', 'warning'); return; }
+      if (!lgpdConsent && state.activeModal !== 'edit') { Toast.show('É necessário aceitar os termos LGPD.', 'warning'); return; }
 
       // Coletar setores
       const sectorCheckboxes = form.querySelectorAll('input[name="sector"]:checked');

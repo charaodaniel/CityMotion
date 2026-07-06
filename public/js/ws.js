@@ -24,7 +24,7 @@ const WS = {
         'https://cdn.jsdelivr.net/npm/socket.io-client@4.8.1/dist/socket.io.min.js',
       ];
       let attempt = 0;
-      function tryLoad() {
+      const tryLoad = () => {
         if (attempt >= CDNS.length) {
           console.warn('[WS] Todas as CDNs falharam, notificações desabilitadas');
           resolve();
