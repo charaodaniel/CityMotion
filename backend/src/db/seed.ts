@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
+import { sql } from 'drizzle-orm';
 import { getDb, getSchema } from './index';
 
 const hash = bcrypt.hashSync('123456', 10);
@@ -12,13 +13,23 @@ export async function initializeDatabase() {
   const db = getDb();
   const schema = getSchema();
 
+  // =============================================================
+  // Verificar se já existem dados — não deletar em reinicializações
+  // =============================================================
+  let existingCount = 0;
   try {
-    // Limpar dados existentes
-    await (db as any).delete(schema.employees);
-    await (db as any).delete(schema.organizations);
+    const existing = await (db as any).select({ count: sql`COUNT(*)` }).from(schema.employees);
+    existingCount = Number(existing[0]?.count || 0);
   } catch (e) {
     // Tables might not exist yet, that's ok
   }
+
+  if (existingCount > 0) {
+    console.log(`\x1b[33m[Seed]:\x1b[0m Banco já populado (${existingCount} registros encontrados). Pulando seed.`);
+    return;
+  }
+
+  console.log('\x1b[36m[Seed]:\x1b[0m Banco vazio. Injetando dados vitais...');
 
   // =============================================================
   // Seed Employees (Usuários)

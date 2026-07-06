@@ -54,22 +54,23 @@ export default function VehiclesPage(container, Store, API) {
   // ----------------------------------------------------------
   //  Formulário
   // ----------------------------------------------------------
-  function handleFormSubmit(formData) {
+  async function handleFormSubmit(formData) {
     const vehicles = [...(Store.get('vehicles') || [])];
     if (state.activeModal === 'edit' && state.selectedVehicle) {
-      Store.set(
-        'vehicles',
-        vehicles.map((v) =>
-          v.id === state.selectedVehicle.id ? { ...v, ...formData } : v
-        )
-      );
+      try {
+        const result = await API.put('/api/vehicles/' + state.selectedVehicle.id, formData);
+        Store.set('vehicles', vehicles.map((v) => v.id === state.selectedVehicle.id ? { ...v, ...result } : v));
+      } catch (e) {
+        Store.set('vehicles', vehicles.map((v) => v.id === state.selectedVehicle.id ? { ...v, ...formData } : v));
+      }
     } else {
-      const newVehicle = {
-        id: 'V' + Date.now(),
-        ...formData,
-        status: 'Disponível',
-      };
-      Store.set('vehicles', [...vehicles, newVehicle]);
+      try {
+        const result = await API.post('/api/vehicles', formData);
+        Store.set('vehicles', [...vehicles, { ...formData, ...result, status: 'Disponível' }]);
+      } catch (e) {
+        const newVehicle = { id: 'V' + Date.now(), ...formData, status: 'Disponível' };
+        Store.set('vehicles', [...vehicles, newVehicle]);
+      }
     }
     closeModal();
   }

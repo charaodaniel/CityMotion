@@ -61,25 +61,24 @@ export default function EmployeesPage(container, Store, API) {
   // ----------------------------------------------------------
   //  CRUD
   // ----------------------------------------------------------
-  function handleFormSubmit(data) {
+  async function handleFormSubmit(data) {
     const employees = [...(Store.get('employees') || [])];
     if (state.activeModal === 'edit' && state.selectedEmployee) {
-      Store.set(
-        'employees',
-        employees.map((e) =>
-          e.id === state.selectedEmployee.id
-            ? { ...e, ...data, sector: data.sector }
-            : e
-        )
-      );
+      try {
+        const result = await API.put('/api/employees/' + state.selectedEmployee.id, data);
+        Store.set('employees', employees.map((e) => e.id === state.selectedEmployee.id ? { ...e, ...result, sector: data.sector } : e));
+      } catch (e) {
+        Store.set('employees', employees.map((e) => e.id === state.selectedEmployee.id ? { ...e, ...data, sector: data.sector } : e));
+      }
     } else {
-      const newEmployee = {
-        id: 'E' + Date.now(),
-        ...data,
-        sector: data.sector || [],
-        status: 'Disponível',
-      };
-      Store.set('employees', [...employees, newEmployee]);
+      try {
+        const payload = { ...data, password: data.password || '123456', sector: Array.isArray(data.sector) ? JSON.stringify(data.sector) : data.sector };
+        const result = await API.post('/api/employees', payload);
+        Store.set('employees', [...employees, { ...data, ...result, sector: data.sector, status: 'Disponível' }]);
+      } catch (e) {
+        const newEmployee = { id: 'E' + Date.now(), ...data, sector: data.sector || [], status: 'Disponível' };
+        Store.set('employees', [...employees, newEmployee]);
+      }
     }
     closeModal();
   }

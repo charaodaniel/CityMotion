@@ -254,7 +254,7 @@ export default function RefuelingPage(container, Store, API) {
       }
     });
 
-    overlay.addEventListener('submitRefueling', () => {
+    overlay.addEventListener('submitRefueling', async () => {
       const vehicleId = document.getElementById('refuelingVehicle')?.value;
       const mileage = parseInt(document.getElementById('refuelingMileage')?.value) || 0;
       const liters = parseFloat(document.getElementById('refuelingLiters')?.value) || 0;
@@ -273,12 +273,10 @@ export default function RefuelingPage(container, Store, API) {
       const vehicle = vehicles.find(v => v.id === vehicleId);
       const refuelings = Store.get('refuelings') || [];
 
-      const newRefueling = {
-        id: String(refuelings.length + 1),
+      const payload = {
         vehicleId,
         vehicleModel: vehicle?.vehicleModel || '',
         licensePlate: vehicle?.licensePlate || '',
-        date: new Date().toISOString(),
         mileage,
         liters,
         price,
@@ -289,7 +287,18 @@ export default function RefuelingPage(container, Store, API) {
         notes,
       };
 
-      Store.set('refuelings', [...refuelings, newRefueling]);
+      const newRefueling = {
+        id: String(refuelings.length + 1),
+        ...payload,
+        date: new Date().toISOString(),
+      };
+
+      try {
+        const result = await API.post('/api/refuelings', payload);
+        Store.set('refuelings', [...refuelings, { ...newRefueling, ...result }]);
+      } catch (e) {
+        Store.set('refuelings', [...refuelings, newRefueling]);
+      }
       closeModal();
     });
   }
