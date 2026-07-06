@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # --- Banco de Dados PostgreSQL (opcional, para desenvolvimento local) ---
+  # --- Banco de Dados PostgreSQL (opcional, para produção) ---
   postgres:
     image: postgres:16-alpine
     container_name: citymotion-postgres
@@ -19,30 +19,31 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    profiles:
+      - postgres
+      - production
 
-  # --- Aplicação CityMotion (Frontend + Backend) ---
+  # --- Aplicação CityMotion (Backend Fastify + SPA Frontend) ---
   citymotion:
     build: .
     container_name: citymotion-app
     ports:
-      - "9002:9002"
       - "3001:3001"
     depends_on:
       postgres:
         condition: service_healthy
+        required: false
     volumes:
-      # Persistência do banco SQLite (fallback)
-      - ./backend/database:/app/backend/database
-      # Cache do Next.js
-      - next_cache:/app/.next/cache
+      # Persistência do banco SQLite (usado por padrão)
+      - sqlite_data:/app/database
     restart: unless-stopped
     env_file:
       - .env
     environment:
       - NODE_ENV=development
-      # Para usar PostgreSQL local, descomente:
+      # Para usar PostgreSQL, descomente e ative o profile:
       # - DATABASE_URL=postgresql://citymotion_user:citymotion_pass@postgres:5432/citymotion
 
 volumes:
   postgres_data:
-  next_cache:
+  sqlite_data:

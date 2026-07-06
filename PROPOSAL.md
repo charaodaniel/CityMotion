@@ -2,78 +2,117 @@
 
 **Solução Enterprise para Setor Público e Logística Corporativa.**
 
-O **CityMotion** não é apenas um rastreador de veículos; é um sistema operacional completo para a logística da sua organização. Desenvolvido com o **NexusOS V2**, nossa interface oferece telemetria em tempo real, controle rigoroso de custos e segurança jurídica total para gestores.
+O **CityMotion** não é apenas um rastreador de veículos; é um sistema operacional completo para a logística da sua organização. Desenvolvido com **NexusOS**, nossa interface oferece telemetria em tempo real, controle rigoroso de custos e segurança jurídica total para gestores.
 
 ---
 
 ## 💎 Diferenciais Estratégicos
 
 ### 1. Interface de Alta Performance (NexusOS)
-Visual focado em legibilidade técnica, utilizando estética de telemetria industrial. Reduz a curva de aprendizado enquanto fornece dados densos de forma organizada para tomadas de decisão rápidas.
+Visual focado em legibilidade técnica, utilizando estética de telemetria industrial dark-tech. Notificações em tempo real via **Toast System** elegante, substituindo alertas tradicionais por feedbacks visuais não-intrusivos.
 
-### 2. Arquitetura NexusBridge
-Tecnologia exclusiva de adaptação que permite ao frontend se conectar a múltiplos bancos de dados de forma transparente. Ideal para organizações que precisam integrar sistemas legados ou rodar em ambientes isolados (como servidores municipais).
+### 2. Dual Engine (SQLite + PostgreSQL)
+Suporte nativo a dois motores de banco de dados, configuráveis dinamicamente:
+- **SQLite3** — Ideal para instalações locais, servidores municipais e ambientes sem internet constante
+- **PostgreSQL** — Para produção em nuvem com alta concorrência (Render, Supabase, Neon)
 
-### 3. Segurança Nível Bancário
+### 3. Notificações em Tempo Real
+**Socket.IO** integrado para comunicação instantânea:
+- Notificações push quando uma solicitação é criada ou aprovada
+- Atualização de dados sem refresh de página (entity-update)
+- Chat interno entre funcionários com mensagens em tempo real
+- Badge no sino com contagem de notificações não lidas
+
+### 4. Segurança Nível Bancário
 - **Criptografia Bcrypt:** Senhas nunca são armazenadas em texto claro.
-- **Autenticação JWT:** Sessões seguras com expiração automática de 8 horas.
-- **Rate Limiting:** Proteção contra ataques brute force no login e endpoints sensíveis.
+- **Autenticação JWT:** Sessões seguras com expiração automática de 8 horas via @fastify/jwt.
+- **Rate Limiting:** Proteção contra ataques brute force (100 req/15min global, 10 tentativas/login).
 - **CORS Configurável:** Controle preciso de quais domínios podem acessar a API.
-- **Auditoria Total:** Cada clique e alteração no sistema é registrado na trilha de auditoria, garantindo transparência para órgãos de controle.
+- **Zod Validation:** Schemas de validação em todas as rotas e variáveis de ambiente.
+- **RBAC:** 6 níveis de permissão (Desenvolvedor Global → Colaborador).
 
-### 4. Multi-Banco de Dados
-Suporte nativo para múltiplos motores de persistência, configuráveis diretamente pelo painel de infraestrutura:
-- **SQLite3** — Ideal para instalações locais e pendrives.
-- **PostgreSQL** — Para produção em nuvem com alta concorrência.
-- **MongoDB** — Para dados flexíveis e não estruturados.
-- **Supabase** — PostgreSQL gerenciado com API automática.
+### 5. Deploy Simplificado
+- **Docker:** Container único (porta 3001) — API + WebSocket + Frontend SPA + Documentação
+- **Render:** Blueprint com PostgreSQL automático + HTTPS
+- **On-premise:** Node.js direto para servidores municipais
 
-### 5. Identidade Digital Inviolável
-O **Crachá Virtual CityMotion** elimina custos com cartões plásticos. Cada colaborador possui um QR Code dinâmico que valida sua identidade e autorização de condução em tempo real.
+### 6. Qualidade Garantida
+**189+ testes unitários automatizados** com Vitest + jsdom, cobrindo:
+- Gerenciamento de estado (Store.js)
+- Cliente HTTP (API.js)
+- WebSocket (WS.js)
+- App Router (roteamento SPA)
+- Toast notifications
+- Todas as 12 páginas do sistema
+- Autenticação (backend)
 
 ---
 
 ## 🛠️ Módulos do Ecossistema
 
-- **🛡️ Gestão de Ativos:** Cadastro detalhado da frota com telemetria de quilometragem e status dinâmico (Disponível, Em Viagem, Manutenção).
-- **⛽ Módulo de Abastecimento:** Controle fino de consumo por km/l, histórico de postos e integração com financeiro.
-- **🔧 Oficina & Manutenção:** Gestão de Ordens de Serviço, pedidos de peças e histórico de revisões preventivas.
-- **📅 Escalas e Missões:** Ciclo de vida completo da viagem, desde a solicitação do colaborador até o checklist de chegada do motorista.
-- **🏗️ Infraestrutura:** Painel completo para configuração de banco de dados, proxy, DNS, SMTP e credenciais do servidor.
-- **⚖️ Conformidade LGPD:** Central de privacidade integrada, garantindo que o tratamento de dados pessoais dos servidores esteja em conformidade com a Lei nº 13.709/2018.
+- **🚗 Gestão de Ativos:** Cadastro detalhado da frota com telemetria de quilometragem, status dinâmico (Disponível, Em Viagem, Manutenção) e filtro por setor.
+- **⛽ Módulo de Abastecimento:** Controle de consumo por km/l, histórico por veículo, cálculo automático de valor total.
+- **🔧 Manutenção & Peças:** Kanban visual com 3 colunas (Pendente → Em Andamento → Concluído), solicitação de peças vinculada, prioridades.
+- **📅 Viagens e Missões:** Ciclo completo — solicitação → aprovação → check-in com KM inicial → check-out com KM final → auditoria.
+- **👥 Gestão de Pessoas:** Cadastro completo com matrícula, cargo, setor, aceite LGPD, soft delete/reativação, controle de permissões RBAC.
+- **💬 Chat:** Comunicação interna entre funcionários com filtro por setor e indicador de não lidas.
+- **📈 Relatórios:** Estatísticas de viagens, gráficos de telemetria com Chart.js, eficiência da frota.
+- **⚙️ Configurações:** Aba de Operações (regras de negócio) + Aba de Infraestrutura (DB, CORS, SMTP, segurança, modo demo).
 
 ---
 
 ## 🗺️ Roadmap de Evolução
 
 ### **Fase 1: Fundação & Persistência (Concluído)**
-- [x] Motor de persistência SQLite com suporte a múltiplos bancos.
-- [x] Camada de segurança JWT/Bcrypt/Rate Limiting/CORS.
-- [x] Módulo de Abastecimento e Telemetria básica.
-- [x] Console de Administração (Terminal Kernel).
-- [x] Painel de Infraestrutura com teste de conexão de bancos.
+- [x] Motor de persistência dual (SQLite + PostgreSQL)
+- [x] Segurança JWT/Bcrypt/Rate Limiting/CORS/Zod
+- [x] 12 módulos funcionais (Dashboard, Frota, Pessoas, Viagens, Abastecimento, Manutenção, Escalas, Setores, Chat, Relatórios, Configurações, Terminal Dev)
+- [x] Design System NexusOS (dark tech)
+- [x] Documentação Swagger OpenAPI em /docs
 
 ### **Fase 2: Conectividade & Automação (Concluído)**
-- [x] **Notificações Push:** Alertas em tempo real para motoristas sobre novas missões via Nexus-Notification.
-- [x] **WebSocket Events:** Eventos de novas solicitações entre frontend e backend.
-- [ ] **Integração de Sensores:** Leitura automática de odômetro via sensores IoT.
+- [x] WebSockets com notificações em tempo real (Socket.IO)
+- [x] Chat interno entre colaboradores
+- [x] Toast notifications (42 alert() substituídos)
+- [x] Relatórios com Chart.js e exportação html2pdf
+- [x] 189+ testes unitários automatizados (Vitest + jsdom)
 
-### **Fase 3: Inteligência Preditiva (2025-2026)**
-- [ ] **IA Predictor:** Algoritmo de inteligência artificial para prever manutenções antes de falhas ocorrerem.
-- [ ] **Relatórios BI Avançados:** Dashboards customizáveis com Recharts para análise de custo por setor.
-- [ ] **HTTPS/TLS:** Certificado SSL e headers de segurança HTTP.
+### **Fase 3: Inteligência Preditiva (2026)**
+- [ ] IA Preditiva para manutenção antes de falhas
+- [ ] BI Avançado com dashboards customizáveis
+- [ ] Integração Google Maps para otimização de rotas
+- [ ] Aplicativo mobile nativo (React Native)
 
 ---
 
 ## 🏗️ Especificações Técnicas
 
-- **Frontend:** Next.js 15 (Turbopack) + ShadCN UI + Tailwind CSS.
-- **Backend:** Node.js Express (Porta 3001) com Rate Limiting e CORS.
-- **Banco de Dados:** SQLite3 (local), PostgreSQL, MongoDB ou Supabase (nuvem).
-- **Segurança:** JWT + Bcrypt + Rate Limiting + CORS + SQL Injection Protection.
-- **RBAC:** Controle de Acesso Baseado em Função com 5 níveis de privilégios.
-- **Portabilidade:** Suporte nativo para rodar em Pendrives Persistentes ou Containers Docker em máquinas leves (antiX/Debian).
-- **Configuração:** Variáveis de ambiente via `.env` com documentação completa.
+| Camada | Tecnologia |
+| :--- | :--- |
+| **Frontend** | SPA HTML/JS/CSS + Tailwind CSS + Chart.js + Lucide Icons |
+| **Backend** | Fastify + TypeScript + Drizzle ORM (Porta 3001) |
+| **Autenticação** | JWT (@fastify/jwt) + Bcrypt |
+| **Segurança** | Rate Limiting + CORS + Zod Validation + RBAC |
+| **Tempo Real** | Socket.IO (WebSockets) |
+| **Banco Padrão** | SQLite3 via better-sqlite3 (portátil, offline) |
+| **Banco Nuvem** | PostgreSQL via node-postgres |
+| **Container** | Docker multi-estágio + Docker Compose |
+| **Hospedagem** | Render Blueprint, Firebase Studio, On-premise |
+| **Qualidade** | 189+ testes Vitest + jsdom |
+
+### Arquitetura Simplificada
+
+```
+[Navegador] ← HTTP/WS → [Fastify :3001]
+                             ├── API REST (/api/*)
+                             ├── WebSocket (Socket.IO)
+                             ├── Frontend SPA (/ → public/)
+                             └── Documentação (/docs)
+                                    │
+                             [SQLite / PostgreSQL]
+```
+
+**Uma única porta (3001), uma única stack, deploy simplificado.**
 
 ---
 

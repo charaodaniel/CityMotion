@@ -3,7 +3,11 @@ import fs from 'fs';
 import path from 'path';
 import { getDb, getSchema } from '../db';
 import { testDbSchema, saveConfigSchema, testSmtpSchema } from '../schemas';
+import { sql, desc } from 'drizzle-orm';
 import { getEnv } from '../config/env';
+import { esmDirname } from '../utils/path';
+
+const __dirname = esmDirname(import.meta.url);
 
 const CONFIG_PATH = path.resolve(__dirname, '../../../.env');
 const NEXUS_CONFIG_PATH = path.resolve(__dirname, '../../../src/nexusbridge/config/nexus-settings.json');

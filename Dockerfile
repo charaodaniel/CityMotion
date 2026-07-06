@@ -1,60 +1,60 @@
 # =============================================================
 # CityMotion - Dockerfile Multi-Estágio (Render + Local)
 # =============================================================
+# Arquitetura:
+#   Frontend: SPA HTML/JS/CSS em /public (servido pelo backend)
+#   Backend:  Fastify + Drizzle ORM + Socket.IO (TypeScript)
+#   Banco:    SQLite (padrão) ou PostgreSQL externo
+# =============================================================
 
 # ---- Estágio 1: Dependências ----
 FROM node:20-slim AS deps
 WORKDIR /app
 
-# Instalar dependências de build para módulos nativos
+# Instalar dependências de build para módulos nativos (better-sqlite3, bcryptjs)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 make g++ \
+    python3 make g++ curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY package*.json ./
+# Dependências da raiz (apenas as necessárias para o backend via workspace)
 COPY backend/package*.json ./backend/
+WORKDIR /app/backend
 RUN npm install
-RUN cd backend && npm install
 
-# ---- Estágio 2: Build ----
-FROM node:20-slim AS builder
+# Dependências da raiz (para tsx e ferramentas globais)
 WORKDIR /app
+COPY package*.json ./
+RUN npm install --omit=optional
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/backend/node_modules ./backend/node_modules
-COPY . .
-
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-
-RUN npm run build
-
-# ---- Estágio 3: Produção ----
+# ---- Estágio 2: Produção ----
 FROM node:20-slim AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Apenas runtime necessário (sem python/g++ em produção)
+# Runtime mínimo
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
+    curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/next.config.ts ./next.config.ts
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/backend ./backend
-COPY --from=builder /app/src/data/database.sql ./src/data/database.sql
-COPY --from=builder /app/.env.example ./.env.example
+# Copiar backend (código + node_modules)
+COPY --from=deps /app/backend /app/backend
 
-# Portas: Frontend (9002) e Backend (3001)
-EXPOSE 9002 3001
+# Copiar frontend SPA (HTML/JS/CSS estático servido pelo Fastify)
+COPY public /app/public
 
-# Script de entrada único (Render usa apenas o backend como entrypoint)
-# O frontend Next.js será servido pelo backend em produção
+# Copiar tsx da raiz para rodar TypeScript
+COPY --from=deps /app/node_modules /app/node_modules
+COPY --from=deps /app/package.json /app/package.json
+
+# Configuração de ambiente
+COPY .env.example /app/.env.example
+
+# Diretório para SQLite (persistente via volume)
+RUN mkdir -p /app/database
+
+# Porta do backend (serve API + SPA frontend)
+EXPOSE 3001
+
+# Script de entrada
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 

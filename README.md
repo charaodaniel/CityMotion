@@ -1,141 +1,161 @@
-# 🚘 CityMotion - Sistema SaaS de Gestão Inteligente de Frota
+# 🚘 CityMotion — Gestão Inteligente de Frotas
 
-O **CityMotion** é uma solução completa de software como serviço (SaaS) desenvolvida para modernizar e otimizar o gerenciamento de frotas veiculares em organizações de qualquer porte — desde prefeituras e órgãos públicos até empresas privadas de logística e serviços.
+**Sistema SaaS de gestão de frotas veiculares para prefeituras, logística e mobilidade corporativa.**
 
-Desenvolvido com uma arquitetura desacoplada e modular, o sistema centraliza o controle de veículos, colaboradores, viagens e manutenções em uma plataforma intuitiva e de alta segurança.
-
----
-
-## ✨ Diferenciais e Tecnologias
-
-- **Next.js 15 (App Router):** Performance de ponta com React Server Components e Turbopack.
-- **NexusBridge Architecture:** Camada intermediária de adaptação que permite conectar o frontend a múltiplos backends de forma transparente via roteamento virtual.
-- **Segurança Enterprise:** Autenticação via **JWT (JSON Web Tokens)**, criptografia de senhas com **Bcrypt**, **Rate Limiting** e **CORS configurável**.
-- **Multi-Banco de Dados:** Suporte nativo a **SQLite3**, **PostgreSQL**, **MongoDB** e **Supabase**, com teste de conexão integrado no painel de infraestrutura.
-- **Painel de Infraestrutura:** Interface completa para gerenciar bancos de dados, proxy/CORS, SMTP, DNS e credenciais do servidor.
-- **Multi-Empresa e Multi-Setor:** Suporte nativo a hierarquias complexas para ambientes SaaS.
-- **Admin Console (Kernel Shell):** Terminal interativo de manutenção (estilo TTY) com acesso root protegido para diagnósticos de hardware e banco.
-- **Design System NexusOS V2:** Interface high-tech com telemetria, scanlines e visual focado em legibilidade de dados logísticos.
+<p align="center">
+  <img src="screenshots/02-dashboard.png" alt="Dashboard" width="800"/>
+</p>
 
 ---
 
-## 🛠️ Arquitetura do Sistema
+## 📸 Visão Geral do Sistema
 
-O CityMotion utiliza o conceito de **NexusBridge** para garantir flexibilidade total:
-
-1. **Frontend:** React + Next.js (Porta 9002).
-2. **NexusBridge Engine:** Motor de roteamento no Next.js que resolve chamadas para diferentes fontes de dados.
-3. **Backend Core:** Servidor Express.js rodando em Node.js (Porta 3001).
-4. **Camada de Dados:** SQLite3 (local) ou PostgreSQL/MongoDB/Supabase (nuvem) com logs de auditoria automáticos.
-
----
-
-## 🔒 Segurança
-
-| Recurso | Status |
+| Tela | Preview |
 | :--- | :--- |
-| JWT com expiração de 8h | ✅ Ativo |
-| Bcrypt (hashing de senhas) | ✅ Ativo |
-| CORS configurável via `.env` | ✅ Ativo |
-| Rate Limiting (global + login) | ✅ Ativo |
-| Proteção contra SQL Injection | ✅ Ativo |
-| Reset diário apenas em modo demo | ✅ Ativo |
-| Auditoria automática de alterações | ✅ Ativo |
+| **🔐 Login** | <img src="screenshots/01-login.png" alt="Login" width="400"/> |
+| **📊 Dashboard** — KPIs, gráficos e alertas da frota | <img src="screenshots/02-dashboard.png" alt="Dashboard" width="400"/> |
+| **🗺️ Viagens** — Agendamento, check-in/check-out, incidentes | <img src="screenshots/03-viagens.png" alt="Viagens" width="400"/> |
+| **🚗 Veículos** — Cadastro, status, telemetria | <img src="screenshots/04-veiculos.png" alt="Veículos" width="400"/> |
+| **👥 Funcionários** — Gestão de pessoas, cargos, permissões | <img src="screenshots/05-funcionarios.png" alt="Funcionários" width="400"/> |
+| **🏢 Setores** — Estrutura organizacional | <img src="screenshots/06-setores.png" alt="Setores" width="400"/> |
+| **⛽ Abastecimento** — Controle de consumo | <img src="screenshots/07-abastecimento.png" alt="Abastecimento" width="400"/> |
+| **🔧 Manutenção** — Kanban visual de OS | <img src="screenshots/08-manutencao.png" alt="Manutenção" width="400"/> |
+| **📅 Escalas** — Agenda de trabalho | <img src="screenshots/09-escalas.png" alt="Escalas" width="400"/> |
+| **💬 Chat** — Comunicação interna | <img src="screenshots/10-chat.png" alt="Chat" width="400"/> |
+| **📈 Relatórios** — Estatísticas e gráficos | <img src="screenshots/11-relatorios.png" alt="Relatórios" width="400"/> |
+| **👤 Perfil** — Informações do usuário | <img src="screenshots/12-perfil.png" alt="Perfil" width="400"/> |
+| **⚙️ Configurações** — Operações + Infraestrutura | <img src="screenshots/13-settings.png" alt="Configurações" width="400"/> |
 
 ---
 
-## 📦 Variáveis de Ambiente
+## ✨ Funcionalidades
 
-O CityMotion utiliza um arquivo `.env` para configuração. Copie o `.env.example` para `.env`:
-
-```bash
-cp .env.example .env
-```
-
-| Variável | Obrigatória | Descrição |
-| :--- | :---: | :--- |
-| `JWT_SECRET` | ✅ | Chave secreta para assinatura de tokens JWT |
-| `PORT` | ❌ | Porta do backend (padrão: 3001) |
-| `DATABASE_URL` | ❌ | URL de conexão do banco (vazio = SQLite local) |
-| `CORS_ORIGIN` | ❌ | Origens permitidas separadas por vírgula |
-| `DEMO_MODE` | ❌ | `true` ativa reset diário dos dados |
-| `SMTP_HOST` | ❌ | Servidor SMTP para envio de e-mails |
-| `SMTP_PORT` | ❌ | Porta SMTP (padrão: 587) |
-| `SMTP_USER` | ❌ | Usuário SMTP |
-| `SMTP_PASS` | ❌ | Senha SMTP |
-| `SMTP_SECURE` | ❌ | Usar TLS/SSL (`true`/`false`) |
+| Módulo | Descrição | Perfis |
+| :--- | :--- | :--- |
+| **📊 Dashboard** | KPIs da frota, gráficos de atividade, alertas | Todos |
+| **🚗 Veículos** | Cadastro, status (Disponível/Em Viagem/Manutenção), histórico | Admin, Gestor, Motorista |
+| **👥 Funcionários** | Cadastro com matrícula, cargo, setor, soft delete, LGPD | Admin, Gestor |
+| **🗺️ Viagens** | Ciclo completo: solicitação → check-in → check-out → auditoria | Todos |
+| **⛽ Abastecimento** | Controle de consumo (km/l), valor total, histórico | Admin, Gestor, Motorista |
+| **🔧 Manutenção** | Kanban 3 colunas, solicitação de peças, prioridades | Admin, Gestor, Mecânico |
+| **📅 Escalas** | Agenda de trabalho diária/semanal/mensal/plantão | Admin, Gestor |
+| **🏢 Setores** | Estrutura organizacional e alocação | Admin |
+| **💬 Chat** | Mensagens internas com filtro por setor | Todos |
+| **📈 Relatórios** | Estatísticas, gráficos de telemetria (Chart.js) | Admin, Gestor |
+| **⚙️ Configurações** | Operações (regras) + Infraestrutura (DB, CORS, SMTP) | Dev/Admin |
+| **🖥️ Terminal Dev** | Console TTY para diagnóstico | Dev |
 
 ---
 
-## 🚀 Como Executar o Projeto (Desenvolvimento)
+## 🏗️ Arquitetura Técnica
 
-### Pré-requisitos
-- Node.js 18+ instalado.
+```
+[Navegador] ← HTTP + WebSocket → [Fastify :3001]
+                                    ├── API REST (/api/*)
+                                    ├── Socket.IO (tempo real)
+                                    ├── SPA Frontend (servido em /)
+                                    └── Swagger (/docs)
+                                           │
+                                    [SQLite / PostgreSQL]
+                                           │
+                                    Drizzle ORM (type-safe)
+```
 
-### Passo 1: Configurar Variáveis de Ambiente
+### Stack
+
+| Camada | Tecnologia |
+| :--- | :--- |
+| **Frontend** | SPA HTML/JS/CSS + Tailwind + Chart.js + Lucide Icons |
+| **Backend** | Fastify + TypeScript + Drizzle ORM |
+| **Autenticação** | JWT (@fastify/jwt) + Bcrypt |
+| **Segurança** | Rate Limiting + CORS + Zod Validation + RBAC (6 níveis) |
+| **Tempo Real** | Socket.IO (WebSockets + notificações) |
+| **Banco Padrão** | SQLite3 (better-sqlite3) — portátil, offline |
+| **Banco Nuvem** | PostgreSQL — produção escalável |
+| **Container** | Docker multi-estágio + Docker Compose |
+| **Hospedagem** | Render Blueprint, On-premise |
+| **Qualidade** | 189+ testes (Vitest + jsdom) |
+
+---
+
+## 🚀 Como Executar
+
+### Local (Desenvolvimento)
+
 ```bash
 cp .env.example .env
-# Edite o .env e defina pelo menos o JWT_SECRET
+# Preencha JWT_SECRET (gere com: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))")
+
+cd backend && npm install
+npx tsx src/index.ts
+# → http://localhost:3001
 ```
 
-### Passo 2: Iniciar o Ecossistema (Frontend + Backend)
+### Docker
+
 ```bash
-npm install
-npm run dev
+docker compose up citymotion
+# → http://localhost:3001
 ```
-O sistema iniciará automaticamente o frontend na porta `9002` e o backend na porta `3001`.
 
-### Passo 3: Inicializar o Banco de Dados (Primeira Execução)
-Caso os dados não apareçam ou o login falhe, rode o script de inicialização:
+### Render (Produção)
+
 ```bash
-cd backend
-npm run db:init
+# 1. Push para o GitHub
+# 2. Render Dashboard → New + → Blueprint
+# 3. Selecione o repositório
+# 4. Configure CORS_ORIGIN após o deploy
 ```
 
-### Credenciais Padrão (Desenvolvimento)
+---
+
+## 🔐 Credenciais de Teste
+
 | Perfil | E-mail | Senha |
 | :--- | :--- | :--- |
-| Desenvolvedor Root | `dev@dev.com` | `123456789` |
-| Administrador | `admin@citymotion.com` | `123456` |
-| Motorista | `driver@citymotion.com` | `123456` |
+| 👑 Desenvolvedor Root | `dev@dev.com` | `123456789` |
+| 👤 Administrador | `admin@citymotion.com` | `123456` |
+| 🚗 Motorista | `driver@citymotion.com` | `123456` |
+| 🧪 Demonstração | `demo@citymotion.com` | `nexus2024` |
 
 ---
 
-## 🐳 Docker
+## 🧪 Testes
 
 ```bash
-docker-compose up -d
+# Testes do frontend SPA (189 testes)
+npm run test:frontend
+
+# Testes do backend
+cd backend && npm test
 ```
 
-O container expõe as portas `9002` (frontend) e `3001` (backend). O banco de dados é persistido em `./backend/database/`.
-
 ---
 
-## 📊 Módulos do Sistema
+## 📚 Documentação
 
-- **📊 Dashboard:** Painel de controle adaptativo por perfil de usuário.
-- **🚗 Frota:** Gestão completa de veículos com status e telemetria.
-- **👥 Funcionários:** Cadastro, perfis e hierarquia de accesso.
-- **🗓️ Missões:** Ciclo de vida completo da viagem com checklists.
-- **⛽ Abastecimento:** Controle de consumo e histórico por veículo.
-- **🔧 Manutenção:** Ordens de serviço e pedidos de peças.
-- **📅 Escalas:** Agenda de trabalho e plantões.
-- **💬 Chat:** Comunicação interna entre colaboradores.
-- **💳 Crachá Virtual:** Identificação com QR Code dinâmico.
-- **🏗️ Infraestrutura:** Painel de configuração de banco, proxy, DNS e SMTP.
-
----
-
-## ✅ Documentação Adicional
-
-- [🚀 Referência da API Backend](./backend/API_REFERENCE.md)
-- [📊 Diagramas UML e Arquitetura](./docs/DIAGRAMS.md)
-- [🎨 Guia de UI e Layout](./docs/UI_LAYOUT_GUIDE.md)
+- [📊 Diagramas de Arquitetura](./docs/DIAGRAMS.md)
+- [🏗️ Guia do Backend](./docs/BACKEND_GUIDE.md)
+- [🎨 Design System NexusOS](./docs/UI_LAYOUT_GUIDE.md)
 - [🛠️ Ferramentas de Administração](./docs/ADMIN_TOOLS.md)
-- [🏗️ Guia de Implementação do Backend](./docs/BACKEND_GUIDE.md)
-- [📋 Roadmap e Tarefas](./TODO.md)
-- [📝 Proposta do Produto](./PROPOSAL.md)
+- [📋 Blueprint do Sistema](./docs/blueprint.md)
+- [📝 Proposta Comercial](./PROPOSAL.md)
+- [📊 Apresentação para Clientes](./docs/business/02-apresentacao-cliente.md)
+- [📋 Plano de Negócios](./docs/business/03-plano-de-negocios.md)
 
 ---
 
-**CityMotion — Inteligência em mobilidade para a gestão corporativa moderna.**
+## 🗺️ Roadmap
+
+### ✅ Fase 1 — Fundação
+Motor dual SQLite/PostgreSQL, segurança JWT/Bcrypt/Rate Limiting/CORS, 12 módulos, dashboard adaptativo, painel de configurações, terminal dev.
+
+### ✅ Fase 2 — Conectividade
+WebSockets (Socket.IO), notificações em tempo real, chat interno, toast notifications (42 alert() substituídos), relatórios Chart.js, 189+ testes.
+
+### 🔜 Fase 3 — Inteligência
+IA preditiva para manutenção, BI avançado, Google Maps, app mobile nativo.
+
+---
+
+**CityMotion — Mobilidade, transparência e eficiência para a gestão moderna.**

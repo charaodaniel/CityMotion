@@ -1,4 +1,3 @@
-
 {
   "name": "citymotion",
   "version": "1.0.0",
@@ -20,7 +19,9 @@
     "electron:dev": "concurrently -k \"npm:dev:frontend\" \"npm:dev:backend\" \"npm:electron\"",
     "electron": "wait-on tcp:9002 && electron .",
     "dev-server": "npm run dev:backend",
-    "db:init": "cd backend && npm run db:init"
+    "db:init": "cd backend && npm run db:init",
+    "test:frontend": "vitest run --config tests/vitest.config.ts",
+    "test:frontend:watch": "vitest --config tests/vitest.config.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
@@ -57,10 +58,12 @@
     "embla-carousel-react": "^8.6.0",
     "express": "^4.19.2",
     "framer-motion": "^11.11.11",
+    "genkit": "^1.39.0",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
     "jwt-decode": "^4.0.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.475.0",
     "next": "15.3.8",
     "nodemailer": "^6.9.13",
@@ -71,6 +74,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.2",
+    "react-leaflet": "^4.2.1",
     "recharts": "^2.15.1",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
@@ -81,15 +85,21 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.1",
     "@types/qrcode.react": "^1.0.5",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@vitest/ui": "^4.1.10",
     "electron": "^31.2.1",
     "electron-builder": "^25.0.0",
     "genkit-cli": "^1.20.0",
+    "jsdom": "^29.1.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }

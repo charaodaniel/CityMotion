@@ -3,6 +3,11 @@
 # =============================================================
 # Render: https://render.com/docs/blueprint-spec
 #
+# Arquitetura:
+#   Frontend: SPA HTML/JS/CSS servido pelo Fastify em /public
+#   Backend:  Fastify + Drizzle ORM + Socket.IO
+#   Banco:    PostgreSQL gerenciado pelo Render
+#
 # Para fazer o deploy:
 #   1. Faça push deste arquivo para o GitHub
 #   2. No Render Dashboard, clique em "New +" > "Blueprint"
@@ -19,18 +24,18 @@ databases:
     ipAllowList: [] # Apenas serviços internos do Render
 
 services:
-  # --- Web Service: CityMotion (Frontend + Backend) ---
+  # --- Web Service: CityMotion (Backend Fastify + SPA Frontend) ---
   - type: web
     name: citymotion
     runtime: node
     region: ohio
     plan: free
     branch: main
-    buildCommand: npm install --production=false && cd backend && npm install && cd .. && npm run build
-    startCommand: node backend/server.js
+    buildCommand: cd backend && npm install --include=dev && cd ..
+    startCommand: cd backend && npx tsx src/index.ts
     healthCheckPath: /api/health
 
-    # Fazer o build usar o Dockerfile se preferir:
+    # Para usar Docker em vez de build nativo, descomente:
     # dockerfilePath: ./Dockerfile
 
     envVars:
@@ -43,9 +48,11 @@ services:
           name: citymotion-db
           property: connectionString
       - key: CORS_ORIGIN
-        # Substitua pelo seu domínio Render após o deploy:
-        # https://seuprojeto.onrender.com
-        value: http://localhost:9002
+        # ⚠️ APÓS O DEPLOY, substitua pelo seu domínio Render:
+        #    Ex: https://citymotion.onrender.com
+        # Deixe vazio para aceitar todas as origens (apenas para teste inicial)
+        value: ""
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: DEMO_MODE

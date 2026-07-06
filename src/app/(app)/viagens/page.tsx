@@ -14,7 +14,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useApp } from '@/contexts/app-provider';
 import { ReportIncidentForm } from '@/components/forms/report-incident-form';
+import dynamic from 'next/dynamic';
+import { useDriverLocation } from '@/hooks/use-driver-location';
+import { MapIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const DriverMap = dynamic(() => import('@/components/driver-map'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[400px] rounded-lg border border-border/50 bg-sidebar/50 flex items-center justify-center">
+      <div className="text-center text-muted-foreground">
+        <MapIcon className="h-8 w-8 mx-auto mb-2 animate-pulse" />
+        <p className="text-xs font-mono uppercase tracking-widest">Carregando mapa...</p>
+      </div>
+    </div>
+  ),
+});
 
 type ModalState = 'details' | 'finish' | 'start-checklist' | 'form' | 'refueling' | 'incident' | null;
 
@@ -120,6 +135,23 @@ export default function ViagensPage() {
   const [finalMileage, setFinalMileage] = useState<number | string>('');
   const [checkedItems, setCheckedItems] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
+
+  // Mapa e geolocalização
+  const activeTrips = useMemo(() => 
+    schedules.filter(s => s.status === 'Em Andamento'),
+    [schedules]
+  );
+  
+  const {
+    driverLocations,
+    isTracking,
+    startTracking,
+    stopTracking,
+  } = useDriverLocation(
+    activeTrips,
+    currentUser?.id,
+    currentUser?.name
+  );
 
   const { toast } = useToast();
   
@@ -243,6 +275,15 @@ export default function ViagensPage() {
         <TabsList className="bg-sidebar/50 border border-border/50 p-1">
           <TabsTrigger value="general" className="text-xs uppercase font-bold tracking-widest">Gerais ({generalSchedules.length})</TabsTrigger>
           <TabsTrigger value="school" className="text-xs uppercase font-bold tracking-widest">Escolares ({schoolSchedules.length})</TabsTrigger>
+          <TabsTrigger value="map" className="text-xs uppercase font-bold tracking-widest">
+            <MapIcon className="h-3.5 w-3.5 mr-1.5" />
+            Mapa ao Vivo
+            {activeTrips.length > 0 && (
+              <span className="ml-1.5 inline-flex items-center justify-center px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500/20 text-emerald-400 rounded-full">
+                {activeTrips.length}
+              </span>
+            )}
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="general">
           <TripsView 
@@ -259,6 +300,89 @@ export default function ViagensPage() {
             onOpenChecklistModal={handleOpenChecklistModal}
             onOpenFinishModal={handleOpenFinishModal}
             />
+        </TabsContent>
+        <TabsContent value="map" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-primary">
+                🚗 Rastreamento ao Vivo
+              </h3>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {activeTrips.length > 0 
+                  ? `${activeTrips.length} viagem(ns) em andamento — ${driverLocations.length} localização(ões) capturada(s)`
+                  : 'Nenhuma viagem em andamento no momento.'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {isTracking ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={stopTracking}
+                  className="text-[10px] font-bold uppercase tracking-widest border-destructive/30 text-destructive hover:bg-destructive/10"
+                >
+                  <span className="h-2 w-2 rounded-full bg-destructive animate-pulse mr-2" />
+                  Parar Rastreio
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={startTracking}
+                  disabled={activeTrips.length === 0}
+                  className="text-[10px] font-bold uppercase tracking-widest border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10"
+                >
+                  <MapIcon className="h-3 w-3 mr-2" />
+                  Iniciar Rastreio
+                </Button>
+              )}
+            </div>
+          </div>
+          
+          {activeTrips.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2">
+                <DriverMap 
+                  locations={driverLocations}
+                  height="500px"
+                />
+              </div>
+              <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Veículos em Trânsito
+                </h4>
+                {activeTrips.map((trip) => {
+                  const loc = driverLocations.find(l => l.tripId === trip.id);
+                  return (
+                    <Card key={trip.id} className="bg-sidebar/50 border-border/30">
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-bold truncate">{trip.title}</span>
+                          <Badge variant="default" className="text-[8px] h-4 px-1.5">
+                            {loc ? '📍 Rastreado' : '⏳ Aguardando'}
+                          </Badge>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground space-y-0.5">
+                          <p>🚗 {trip.driver} — {trip.vehicle}</p>
+                          <p>📌 {trip.destination}</p>
+                          {loc?.address && (
+                            <p className="text-[9px] text-primary/60 truncate" title={loc.address}>
+                              📍 {loc.address}
+                            </p>
+                          )}
+                          {loc?.speed !== undefined && (
+                            <p className="text-emerald-400">
+                              ⚡ {(loc.speed * 3.6).toFixed(0)} km/h
+                            </p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
       

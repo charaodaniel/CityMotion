@@ -95,7 +95,9 @@ export async function initializeDatabase() {
 }
 
 // Executar diretamente
-if (require.main === module) {
+// Check if running directly
+const isMainModule = process.argv[1] && (process.argv[1].endsWith('seed.ts') || process.argv[1].endsWith('seed.js'));
+if (isMainModule) {
   initializeDatabase()
     .then(() => process.exit(0))
     .catch(() => process.exit(1));

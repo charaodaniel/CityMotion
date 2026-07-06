@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CityMotion - Login</title>
+  <meta name="theme-color" content="#09090b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="/manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#93c5fd', 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' },
+            sidebar: '#0f0f13',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #09090b; }
+    .scanlines::before {
+      content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.1) 50%);
+      background-size: 100% 2px; pointer-events: none; opacity: 0.15; z-index: 10;
+    }
+    .glass-card { background: rgba(15,15,19,0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
+    @keyframes pulse-slow { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .animate-pulse-slow { animation: pulse-slow 3s ease-in-out infinite; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md space-y-8">
+    <!-- Logo -->
+    <div class="flex justify-center">
+      <a href="/" class="flex items-center gap-3 text-zinc-100 no-underline">
+        <div class="bg-zinc-100 text-zinc-900 p-2.5 rounded-lg">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <h1 class="text-3xl font-bold tracking-tighter">CityMotion</h1>
+      </a>
+    </div>
+
+    <!-- Login Card -->
+    <div class="glass-card rounded-xl p-8 space-y-6 relative overflow-hidden scanlines">
+      <div class="relative z-10">
+        <h2 class="text-2xl font-bold text-zinc-100">Acessar o Painel</h2>
+        <p class="text-sm text-zinc-400 mt-1">Entre com suas credenciais para gerenciar a frota.</p>
+      </div>
+
+      <form id="loginForm" class="space-y-5 relative z-10">
+        <div class="space-y-2">
+          <label for="email" class="text-sm font-medium text-zinc-300">Identificador</label>
+          <input id="email" type="text" value="admin@citymotion.com"
+            class="w-full px-4 py-2.5 bg-zinc-900/80 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400/50 transition-all text-sm"
+            placeholder="E-mail, Matrícula ou Telefone" required>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label for="password" class="text-sm font-medium text-zinc-300">Senha</label>
+            <a href="/#/forgot-password" class="text-xs text-blue-400 hover:underline">Esqueceu sua senha?</a>
+          </div>
+          <input id="password" type="password" value="123456"
+            class="w-full px-4 py-2.5 bg-zinc-900/80 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400/50 transition-all text-sm"
+            placeholder="Sua senha" required>
+        </div>
+
+        <div id="loginError" class="text-red-400 text-xs hidden"></div>
+
+        <button type="submit" id="loginBtn"
+          class="w-full py-3 bg-blue-400 hover:bg-blue-300 text-zinc-900 font-bold uppercase tracking-widest text-xs rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+          Entrar no Sistema
+        </button>
+      </form>
+
+      <!-- Quick logins -->
+      <div class="relative z-10 pt-2 border-t border-zinc-800">
+        <p class="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-3">MODO DEMONSTRAÇÃO</p>
+        <div class="space-y-2 text-xs">
+          <button onclick="quickLogin('dev@dev.com','123456789')" class="w-full text-left text-blue-400 hover:text-blue-300 hover:underline">🔐 Desenvolvedor Root: dev@dev.com</button>
+          <button onclick="quickLogin('admin@citymotion.com','123456')" class="w-full text-left text-blue-400 hover:text-blue-300 hover:underline">👤 Admin Geral: admin@citymotion.com</button>
+          <button onclick="quickLogin('driver@citymotion.com','123456')" class="w-full text-left text-blue-400 hover:text-blue-300 hover:underline">🚗 Motorista: driver@citymotion.com</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-zinc-500">
+      Ao acessar, você concorda com nossos
+      <a href="#" class="underline hover:text-zinc-300">Termos de Uso</a> e
+      <a href="#" class="underline hover:text-zinc-300">Privacidade</a>.
+    </p>
+  </div>
+
+  <script>
+    const API_BASE = '';
+    let loginError = document.getElementById('loginError');
+    let loginBtn = document.getElementById('loginBtn');
+
+    async function doLogin(email, password) {
+      loginError.classList.add('hidden');
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Entrando...';
+
+      try {
+        const res = await fetch(API_BASE + '/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || 'Erro ao fazer login');
+
+        localStorage.setItem('citymotion_token', data.token);
+        localStorage.setItem('citymotion_user', JSON.stringify(data.user));
+        window.location.href = '/app.html#/dashboard';
+      } catch (err) {
+        loginError.textContent = err.message;
+        loginError.classList.remove('hidden');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Entrar no Sistema';
+      }
+    }
+
+    function quickLogin(email, pass) {
+      document.getElementById('email').value = email;
+      document.getElementById('password').value = pass;
+      doLogin(email, pass);
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      doLogin(email, password);
+    });
+
+    // Se já estiver logado, redireciona
+    if (localStorage.getItem('citymotion_token')) {
+      window.location.href = '/app.html#/dashboard';
+    }
+  </script>
+</body>
+</html>

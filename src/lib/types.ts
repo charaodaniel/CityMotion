@@ -149,6 +149,19 @@ export type AppNotification = {
   read: boolean;
 };
 
+export type DriverLocation = {
+  driverId: string;
+  driverName: string;
+  vehicleId: string;
+  vehiclePlate: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+  timestamp: string;
+  tripId?: string;
+  speed?: number;
+};
+
 export type Organization = {
   id: string;
   name: string;

@@ -1,98 +1,128 @@
-# 🛠️ Ferramentas de Administração e Manutenção - CityMotion
+# 🛠️ Ferramentas de Administração e Manutenção — CityMotion
 
-O CityMotion oferece uma suite de ferramentas avançadas para usuários de nível técnico (**Desenvolvedores, TI e Administradores**).
-
----
-
-## 🏗️ Painel de Infraestrutura
-
-O painel de infraestrutura é a interface central para configuração do sistema. Acesse via **Configurações → Infraestrutura**.
-
-### Banco de Dados
-- **Seletor de Motor:** Escolha entre SQLite3, PostgreSQL, MongoDB ou Supabase.
-- **Teste de Conexão:** Valida a conexão antes de salvar as configurações.
-- **URL de Conexão:** Campo para informar a string de conexão do banco.
-- **Status:** Exibe o motor ativo e a porta do backend.
-
-### Proxy & CORS
-- **Origens Permitidas:** Lista de domínios que podem acessar a API (separados por vírgula).
-- **Rate Limiting:** Status da proteção contra brute force (global e login).
-
-### SMTP (E-mail)
-- **Configuração Completa:** Host, porta, usuário, senha e TLS/SSL.
-- **Teste de Conexão:** Verifica as credenciais antes de salvar.
-- **Uso:** Envio de e-mails de recuperação de senha e notificações.
-
-### Servidor & Segurança
-- **Porta do Backend:** Configuração da porta do servidor Express.
-- **Modo Demonstração:** Toggle para ativar/desativar reset diário dos dados.
-- **Status de Segurança:** Indicadores visuais de JWT, CORS e Rate Limiting.
+O CityMotion oferece uma suíte de ferramentas avançadas para usuários de nível técnico (**Desenvolvedores, TI e Administradores**).
 
 ---
 
-## 🖥️ NexusOS Terminal (Kernel Shell)
+## 🏗️ Painel de Configurações
 
-O console do CityMotion não é apenas um simulador visual, mas uma interface de comando real conectada ao backend.
+Acesse via **Configurações → Infraestrutura** (visível apenas para Desenvolvedor Global e Administrador).
 
-### Como Acessar
-- Clique no ícone `>_` no cabeçalho (apenas visível para Admin/Dev).
-- Ou acesse diretamente via `/terminal`.
+### Aba: Operações
+- **Nome da Unidade:** Identificação visual do sistema
+- **Prioridade Padrão:** Prioridade atribuída a novas solicitações
+- **Exigir Destino:** Toggle para obrigatoriedade de destino nas viagens
+- **Tempo de Check-in:** Janela em minutos para check-in antecipado
 
-### Comandos de Manutenção
+### Aba: Infraestrutura
+
+#### 1. Banco de Dados
+- **Seletor de Motor:** SQLite (padrão) ou PostgreSQL
+- **URL de Conexão:** Campo para connection string do PostgreSQL
+- **Teste de Conexão:** Valida a conexão antes de salvar
+- **Status:** Card informativo com motor ativo e porta
+
+#### 2. Proxy & CORS
+- **Origens Permitidas:** Textarea para lista de domínios (separados por vírgula)
+- **Rate Limiting:** Card com status da proteção (global 100 req/15min, login 10 req/15min)
+
+#### 3. SMTP (E-mail)
+- **Configuração:** Host, porta, usuário, senha (com toggle de visibilidade) e TLS
+- **Teste SMTP:** Verifica as credenciais no servidor
+- **Uso:** Envio de e-mails de recuperação de senha e notificações
+
+#### 4. Servidor & Segurança
+- **Porta:** Porta do backend Fastify (padrão 3001)
+- **Modo Demonstração:** Toggle com aviso de segurança (reset diário dos dados)
+- **Status Cards:** JWT, CORS, Rate Limiting com indicadores visuais
+
+---
+
+## 🖥️ Terminal de Desenvolvimento (NexusOS Shell)
+
+Acessível pelo botão `>_` no cabeçalho ou via rota `/dev-terminal`. Implementado em `public/js/dev-terminal.js`.
+
+### Comandos
 
 | Comando | Nível | Descrição |
 | :--- | :--- | :--- |
-| `nexus-info` | Público | Exibe dados do kernel, arquitetura e operador logado. |
-| `nexus-health` | Público | Roda diagnósticos de integridade na Bridge e Banco. |
-| `nexus-db-stats` | Público | Mostra a contagem de registros em cada tabela SQLite. |
-| `nexus-logdb` | TI/Admin | Lista a trilha de auditoria em tempo real. |
-| `nexus-integrity` | TI/Admin | Verificação de integridade do banco (PRAGMA). |
-| `nexus-db-reset` | **ROOT** | **Operação Crítica:** Apaga o banco e restaura dados de fábrica. |
+| `help` | Público | Lista todos os comandos disponíveis |
+| `clear` | Público | Limpa o terminal |
+| `info` | Público | Exibe dados do kernel, versão, operador |
+| `health` | Público | Diagnóstico de integridade do sistema |
+| `db-stats` | Público | Contagem de registros por tabela |
+| `users` | Público | Lista usuários ativos |
+| `log` | TI/Admin | Últimas entradas de auditoria |
+| `db-reset` | **ROOT** | ⚠️ Apaga e recria o banco de dados |
 
-### Protocolo de Segurança "sudo"
-Comandos destrutivos exigem:
-1. Confirmação explícita (`y/n`).
-2. Digitação da senha do usuário logado no próprio terminal (validação via Bcrypt no backend).
+### Comando Crítico: `db-reset`
 
----
-
-## 📊 Auditoria Inviolável
-
-Cada vez que um registro de funcionário, veículo ou viagem é alterado, o backend registra uma entrada na tabela `audit_logs`:
-- **Timestamp:** Data e hora exata.
-- **Identidade:** Nome e cargo (extraído do JWT).
-- **Ação:** INSERT, UPDATE, SOFT_DELETE, etc.
-- **Detalhes:** JSON contendo os dados alterados.
+O comando `db-reset` exige:
+1. Confirmação explícita (`y/n`)
+2. Senha do usuário logado (validação via bcrypt no backend)
+3. Executa `DELETE` em todas as tabelas + re-seed
 
 ---
 
-## 🌉 NexusBridge Control
+## 🔔 Notificações em Tempo Real
 
-Interface visual para monitorar a saúde da ponte entre sistemas (`/nexus`):
-- **Traffic Analyzer:** Monitora latência e status HTTP de cada chamada.
-- **Mapeamento de Rotas:** Visualiza quais endpoints virtuais apontam para quais serviços reais.
-- **Console de Teste:** Permite executar requisições manuais para debugar o backend.
+O sistema utiliza **Socket.IO** para notificações instantâneas:
+
+- **Evento `notification`:** Nova solicitação, atualização de status, mensagem recebida
+- **Evento `entity-update`:** Atualiza dados na página sem refresh (create, update, delete)
+- **Sino de Notificações:** Badge com contagem de não lidas + dropdown com lista
+- **Toast Notifications:** Feedback visual não-intrusivo para ações do usuário
 
 ---
 
-## 🗄️ Gerenciamento do Banco
+## 🗄️ Gerenciamento do Banco de Dados
 
-### SQLite (Local)
-- O banco de dados reside em `backend/database/citymotion.db`.
-- **Portabilidade:** Ideal para instalações locais e totens sem dependência de internet constante.
+### SQLite (Padrão)
+- Arquivo: `database/citymotion.db`
+- Inicialização: `cd backend && npx tsx src/db/seed.ts`
+- Portátil: ideal para totens, instalações locais e desenvolvimento
 
-### PostgreSQL / Supabase (Nuvem)
-- Configure a URL de conexão no painel de infraestrutura ou via variável `DATABASE_URL` no `.env`.
-- **Vantagens:** Alta concorrência, backup automático, escalabilidade.
+### PostgreSQL (Nuvem)
+- Ativado via variável `DATABASE_URL`
+- Suporte a conexões SSL (Render, Supabase, Neon)
+- Backup automático (Render Blueprint)
+- Migrations: `cd backend && npm run db:migrate`
 
-### Reset do Banco
+### Drizzle ORM
+- Type-safe: schemas definidos em TypeScript com inferência automática
+- CLI: `drizzle-kit generate` (gera SQL de migrações)
+- CLI: `drizzle-kit migrate` (aplica migrações)
+- Studio: `drizzle-kit studio` (interface gráfica para o banco)
+
+---
+
+## 🧪 Testes e Qualidade
+
+O projeto possui **189+ testes unitários** que podem ser executados:
+
 ```bash
-# Via terminal
-cd backend && npm run db:init
+# Testes do backend (vitest)
+cd backend && npm test
 
-# Via NexusOS Terminal (ROOT)
-nexus-db-reset
+# Testes do frontend SPA
+npm run test:frontend
+
+# Modo watch
+npm run test:frontend:watch
 ```
+
+### Cobertura de Testes
+
+| Módulo | Arquivos | Testes |
+| :--- | :---: | :---: |
+| Store (estado global) | 1 | 15 |
+| API Client | 1 | 17 |
+| WebSocket Client | 1 | 16 |
+| App Router | 1 | 11 |
+| Toast Notifications | 1 | 39 |
+| Páginas SPA (12) | 12 | 83 |
+| Auth (backend) | 1 | 8+ |
+| **Total** | **18** | **189+** |
 
 ---
 
@@ -100,9 +130,11 @@ nexus-db-reset
 
 | Recurso | Descrição |
 | :--- | :--- |
-| JWT | Tokens com expiração de 8 horas |
-| Bcrypt | Hashing irreversível de senhas (salt 10) |
-| Rate Limiting | 100 req/15min (global), 10 tentativas/15min (login) |
-| CORS | Origens permitidas configuráveis via `.env` |
-| SQL Injection | Queries parametrizadas e sanitização de inputs |
-| Auditoria | Log automático de todas as alterações no banco |
+| **JWT** | Tokens com expiração de 8 horas, assinados com @fastify/jwt |
+| **Bcrypt** | Hashing de senhas com salt 10 |
+| **Rate Limiting** | 100 req/15min (global), 10 tentativas/15min (login) |
+| **CORS** | Origens permitidas configuráveis via `.env` |
+| **SQL Injection** | Prevenção via Drizzle ORM (queries parametrizadas) |
+| **Zod Validation** | Schemas de validação em todas as rotas e env vars |
+| **RBAC** | Controle de acesso baseado em cargo (6 perfis) |
+| **WebSocket** | Canal segregado por setor (`join-sector`) |

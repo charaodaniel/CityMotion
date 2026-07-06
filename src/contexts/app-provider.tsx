@@ -17,18 +17,29 @@ interface AppContextType {
   selectedSector: string | null;
   setSelectedSector: (sector: string | null) => void;
   login: (identifier: string, password?: string, shouldRedirect?: boolean, isTerminal?: boolean) => Promise<void>;
+  requestPasswordRecovery: (identifier: string) => Promise<void>;
+  resetPassword: (identifier: string, token: string, newPassword: string) => Promise<void>;
   logout: () => void;
   refreshData: () => Promise<void>;
   
   schedules: Schedule[];
+  setSchedules: React.Dispatch<React.SetStateAction<Schedule[]>>;
   vehicleRequests: VehicleRequest[];
   addVehicleRequest: (request: Partial<VehicleRequest>) => Promise<void>;
   
   employees: Employee[];
+  setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
+  vehicles: Vehicle[];
+  setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
+  addEmployee: (data: Partial<Employee>) => Promise<void>;
+  updateEmployee: (id: string, data: Partial<Employee>) => Promise<void>;
+  deleteEmployee: (id: string) => Promise<void>;
   vehicles: Vehicle[];
   sectors: Sector[];
+  setSectors: React.Dispatch<React.SetStateAction<Sector[]>>;
   workSchedules: WorkSchedule[];
   maintenanceRequests: MaintenanceRequest[];
+  updateMaintenanceRequestStatus: (id: string, status: MaintenanceRequestStatus) => void;
   refuelings: Refueling[];
   organizations: Organization[];
   messages: Message[];
@@ -134,6 +145,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return 'employee';
   };
 
+  const requestPasswordRecovery = async (identifier: string) => {
+    const res = await fetch('/api/nexus/auth/forgot-password', {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ email: identifier }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Erro ao solicitar recuperação');
+  };
+
+  const resetPassword = async (identifier: string, token: string, newPassword: string) => {
+    const res = await fetch('/api/nexus/auth/reset-password', {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ email: identifier, token, password: newPassword }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Erro ao redefinir senha');
+  };
+
   const login = async (identifier: string, password = '123456', shouldRedirect = false, isTerminal = false) => {
     setIsLoading(true);
     try {
@@ -170,13 +201,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await fetchData(true);
   };
 
+  const addEmployee = async (data: Partial<Employee>) => {
+    await fetch('/api/nexus/employees', { method: 'POST', headers: getHeaders(), body: JSON.stringify(data) });
+    await fetchData(true);
+  };
+
+  const updateEmployee = async (id: string, data: Partial<Employee>) => {
+    await fetch('/api/nexus/employees', { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ id, ...data }) });
+    await fetchData(true);
+  };
+
+  const deleteEmployee = async (id: string) => {
+    await fetch('/api/nexus/employees', { method: 'DELETE', headers: getHeaders(), body: JSON.stringify({ id }) });
+    await fetchData(true);
+  };
+
+  const updateMaintenanceRequestStatus = (id: string, status: MaintenanceRequestStatus) => {
+    setMaintenanceRequests(prev =>
+      prev.map(req => req.id === id ? { ...req, status } : req)
+    );
+  };
+
   return (
     <AppContext.Provider value={{ 
         isLoading, isRefreshing, userRole, currentUser, activeOrganization, 
         setActiveOrganization: setActiveOrganizationState,
-        selectedSector, setSelectedSector: setSelectedSectorState, login, logout, refreshData: () => fetchData(true),
-        schedules, vehicleRequests, addVehicleRequest,
-        employees, vehicles, sectors, workSchedules, maintenanceRequests, refuelings, organizations,
+        selectedSector, setSelectedSector: setSelectedSectorState, login, requestPasswordRecovery, resetPassword, logout, refreshData: () => fetchData(true),
+        schedules, setSchedules, vehicleRequests, addVehicleRequest,
+        employees, setEmployees, addEmployee, updateEmployee, deleteEmployee,        vehicles, setVehicles, sectors, setSectors, workSchedules, maintenanceRequests, updateMaintenanceRequestStatus, refuelings, organizations,
         messages, sendMessage, notifications, markNotificationAsRead, clearNotifications, addNotification, telemetryData
     }}>
       {children}

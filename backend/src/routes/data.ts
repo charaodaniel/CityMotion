@@ -12,6 +12,21 @@ import {
 } from '../schemas';
 import { getIO } from '../plugins/websocket';
 
+/** Helpers para broadcast WebSocket */
+function broadcastAll(event: string, data: any) {
+  const io = getIO();
+  if (io) io.emit(event, data);
+}
+
+function broadcastToSector(event: string, sectors: string[], data: any) {
+  const io = getIO();
+  if (io && sectors?.length) {
+    sectors.forEach(s => io.to(s).emit(event, data));
+  } else if (io) {
+    io.emit(event, data);
+  }
+}
+
 function sanitizeSector(sector: any): string[] {
   if (!sector) return [];
   if (Array.isArray(sector)) return sector;
@@ -134,7 +149,11 @@ export async function dataRoutes(fastify: FastifyInstance) {
       .values({ ...data, password: hashedPassword })
       .returning();
 
-    return result[0];
+    const { password, ...employee } = result[0];
+    const sanitized = { ...employee, sector: sanitizeSector(employee.sector) };
+    broadcastAll('entity-update', { entity: 'employees', action: 'create', data: sanitized });
+
+    return sanitized;
   });
 
   fastify.put('/api/employees/:id', {
@@ -157,8 +176,10 @@ export async function dataRoutes(fastify: FastifyInstance) {
       return reply.status(404).send({ message: 'Funcionário não encontrado.' });
     }
 
-    const { password, ...userWithoutPassword } = result[0];
-    return userWithoutPassword;
+    const { password, ...employee } = result[0];
+    broadcastAll('entity-update', { entity: 'employees', action: 'update', data: { ...employee, sector: sanitizeSector(employee.sector) } });
+
+    return employee;
   });
 
   fastify.delete('/api/employees/:id', {
@@ -171,11 +192,13 @@ export async function dataRoutes(fastify: FastifyInstance) {
       await (db as any)
         .delete(schema.employees)
         .where(eq(schema.employees.id, Number(id)));
+      broadcastAll('entity-update', { entity: 'employees', action: 'delete', data: { id: Number(id) } });
     } else {
       await (db as any)
         .update(schema.employees)
         .set({ status: 'Desativado' })
         .where(eq(schema.employees.id, Number(id)));
+      broadcastAll('entity-update', { entity: 'employees', action: 'update', data: { id: Number(id), status: 'Desativado' } });
     }
 
     return { success: true };
@@ -198,6 +221,7 @@ export async function dataRoutes(fastify: FastifyInstance) {
       .insert(schema.vehicles)
       .values(data)
       .returning();
+    broadcastAll('entity-update', { entity: 'vehicles', action: 'create', data: result[0] });
     return result[0];
   });
 
@@ -222,6 +246,7 @@ export async function dataRoutes(fastify: FastifyInstance) {
       .insert(schema.refuelings)
       .values(data)
       .returning();
+    broadcastAll('entity-update', { entity: 'refuelings', action: 'create', data: result[0] });
     return result[0];
   });
 
@@ -255,6 +280,18 @@ export async function dataRoutes(fastify: FastifyInstance) {
       .values({ senderId: String(user.id), receiverId, content })
       .returning();
 
+    // Notificar destinatário via WebSocket
+    broadcastAll('entity-update', { entity: 'messages', action: 'create', data: result[0] });
+    broadcastAll('notification', {
+      id: 'notif-' + Date.now(),
+      type: 'message',
+      title: 'Nova Mensagem',
+      message: `${user.name} enviou: "${content.substring(0, 60)}${content.length > 60 ? '...' : ''}"`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      link: '/chat',
+    });
+
     return result[0];
   });
 
@@ -272,15 +309,26 @@ export async function dataRoutes(fastify: FastifyInstance) {
       .values({ ...data, requester: user.name })
       .returning();
 
-    // Notificar via WebSocket
-    const io = getIO();
-    if (io && data.sector) {
-      io.to(data.sector).emit('new-request', {
-        id: result[0].id,
-        title: data.title,
-        requester: user.name,
-        priority: data.priority || 'Média',
-      });
+    // Notificar via WebSocket com notificação de alerta
+    const sectorList = data.sector ? (Array.isArray(data.sector) ? data.sector : [data.sector]) : [];
+    const notifPayload = {
+      id: 'notif-' + Date.now(),
+      type: 'request',
+      title: 'Nova Solicitação de Viagem',
+      message: `${user.name} solicitou "${data.title}"`,
+      priority: data.priority || 'Média',
+      timestamp: new Date().toISOString(),
+      read: false,
+      link: '/viagens',
+    };
+    const entityPayload = { entity: 'vehicleRequests', action: 'create', data: result[0] };
+
+    if (sectorList.length > 0) {
+      broadcastToSector('notification', sectorList, notifPayload);
+      broadcastToSector('entity-update', sectorList, entityPayload);
+    } else {
+      broadcastAll('notification', notifPayload);
+      broadcastAll('entity-update', entityPayload);
     }
 
     return { success: true, id: result[0].id };

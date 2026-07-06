@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { drizzle } from 'drizzle-orm/pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import { drizzle as drizzleSqlite } from 'drizzle-orm/better-sqlite3';
 import { Pool } from 'pg';
 import Database from 'better-sqlite3';
@@ -7,6 +7,9 @@ import path from 'path';
 import * as pgSchema from './pg-schema';
 import * as sqliteSchema from './sqlite-schema';
 import { getEnv, isPostgresEnabled } from '../config/env';
+import { esmDirname } from '../utils/path';
+
+const __dirname = esmDirname(import.meta.url);
 
 type DbType = ReturnType<typeof drizzle<typeof pgSchema>> | ReturnType<typeof drizzleSqlite<typeof sqliteSchema>>;
 type Schema = typeof pgSchema | typeof sqliteSchema;

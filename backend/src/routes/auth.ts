@@ -5,7 +5,7 @@ import { eq, or } from 'drizzle-orm';
 import { getDb, getSchema } from '../db';
 import { getEnv } from '../config/env';
 import { loginSchema, forgotPasswordSchema, resetPasswordSchema } from '../schemas';
-import { sendPasswordResetEmail } from '../services/emailService';
+import { sendPasswordResetEmail } from '../../services/emailService.js';
 
 export async function authRoutes(fastify: FastifyInstance) {
   const db = getDb();

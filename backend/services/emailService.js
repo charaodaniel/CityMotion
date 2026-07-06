@@ -1,5 +1,5 @@
 
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
 /**
  * Serviço de E-mail CityMotion
@@ -38,7 +38,7 @@ async function getTransporter() {
     });
 }
 
-async function sendPasswordResetEmail(to, name, code) {
+export async function sendPasswordResetEmail(to, name, code) {
     try {
         const transporter = await getTransporter();
         
@@ -77,7 +77,3 @@ async function sendPasswordResetEmail(to, name, code) {
         return false;
     }
 }
-
-module.exports = {
-    sendPasswordResetEmail
-};

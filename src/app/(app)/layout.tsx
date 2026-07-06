@@ -20,7 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   // Se for uma rota pública e o usuário não estiver logado, usamos o layout público com cabeçalho simples
   const publicRoutes = ['/docs'];
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+  const isPublicRoute = pathname ? publicRoutes.some(route => pathname.startsWith(route)) : false;
 
   if (!currentUser && isPublicRoute) {
     return (
@@ -50,7 +50,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <DevTerminal 
           isOpen={isTerminalOpen} 
           onClose={() => setIsTerminalOpen(false)} 
-          onOpenChange={setIsTerminalOpen} 
         />
       )}
     </SidebarProvider>

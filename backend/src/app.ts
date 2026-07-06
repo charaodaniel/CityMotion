@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import fastifyStatic from '@fastify/static';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
@@ -111,10 +112,28 @@ export async function buildApp() {
   await infrastructureRoutes(app);
 
   // =============================================================
-  // Swagger redirect
+  // Static Files (Novo Frontend HTML/JS/CSS)
   // =============================================================
-  app.get('/', async (_request, reply) => {
-    return reply.redirect('/docs');
+  await app.register(fastifyStatic, {
+    root: new URL('../../public', import.meta.url),
+    prefix: '/',
+    wildcard: false,
+  });
+
+  // Fallback SPA: app.html e index.html
+  app.setNotFoundHandler(async (request, reply) => {
+    if (request.url.startsWith('/api/')) {
+      return reply.status(404).send({ message: 'Rota não encontrada' });
+    }
+    // Servir app.html para rotas SPA
+    return reply.sendFile('app.html');
+  });
+
+  // =============================================================
+  // Alias /api/sync-all → /api/data
+  // =============================================================
+  app.get('/api/sync-all', async (request, reply) => {
+    return reply.redirect('/api/data');
   });
 
   return app;

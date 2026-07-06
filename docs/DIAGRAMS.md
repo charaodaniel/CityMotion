@@ -1,68 +1,136 @@
-# 📊 Diagramas de Arquitetura e Fluxo - CityMotion
+# 📊 Diagramas de Arquitetura e Fluxo — CityMotion
 
-Este documento detalha a estrutura técnica do sistema utilizando UML (Mermaid.js).
+Este documento detalha a estrutura técnica do sistema utilizando diagramas Mermaid.js.
 
 ---
 
-## 1. Fluxo de Autenticação e Autorização (JWT)
-Representa como o sistema valida a identidade sem confiar cegamente no frontend.
+## 1. Arquitetura Geral do Sistema
+
+```mermaid
+graph TB
+    subgraph "Navegador (SPA)"
+        A[App Shell - app.html]
+        B[Store.js - Gerenciamento de Estado]
+        C[API.js - Cliente HTTP]
+        D[WS.js - Socket.IO Client]
+        E[Toast.js - Notificações]
+        F[Pages - Dashboard, Veículos, ...]
+    end
+
+    subgraph "Backend Fastify (Porta 3001)"
+        G[Fastify Server]
+        H[Auth Plugin - @fastify/jwt]
+        I[Rate Limit - @fastify/rate-limit]
+        J[CORS - @fastify/cors]
+        K[Static - @fastify/static → /public]
+        L[Swagger - /docs]
+        M[Socket.IO Server]
+        N[Routes Auth]
+        O[Routes Data]
+        P[Routes Infrastructure]
+    end
+
+    subgraph "Banco de Dados"
+        Q[(SQLite / PostgreSQL)]
+        R[Drizzle ORM Engine]
+    end
+
+    F --> B
+    F --> C
+    F --> D
+    B --> C
+    D --> M
+    C --> G
+    G --> N
+    G --> O
+    G --> P
+    N --> R --> Q
+    O --> R --> Q
+    P --> R --> Q
+    M --> D
+    G --> K --> A
+```
+
+---
+
+## 2. Fluxo de Autenticação e Autorização (JWT)
 
 ```mermaid
 sequenceDiagram
     participant User as Usuário (Browser)
-    participant Bridge as NexusBridge (Next.js)
-    participant Node as Backend (Express)
-    participant RL as Rate Limiter
+    participant Store as Store.js
+    participant API as API.js
+    participant Fastify as Backend Fastify
     participant DB as Banco de Dados
 
-    User->>Bridge: POST /api/nexus/auth/login {email, pass}
-    Bridge->>Node: POST /api/login
-    Node->>RL: Verificar Rate Limit (10 req/15min)
-    RL-->>Node: Permitido / Bloqueado
+    User->>Store: login(email, password)
+    Store->>API: POST /api/login {email, password}
+    API->>Fastify: HTTP Request
+    Fastify->>Fastify: Verificar Rate Limit (10 req/15min)
     alt Rate Limit Excedido
-        Node-->>User: 429 Too Many Requests
+        Fastify-->>API: 429 Too Many Requests
+        API-->>Store: Erro
+        Store-->>User: Toast "Muitas tentativas"
     else Permitido
-        Node->>DB: SELECT * FROM employees WHERE email=$1
-        DB-->>Node: user_data (hashed_pass)
-        Node->>Node: Bcrypt.compare(pass, hashed_pass)
-        Note over Node: Se válido, gera JWT com Role inclusa
-        Node-->>Bridge: 200 OK {token, user}
-        Bridge-->>User: Armazena Token no LocalStorage
+        Fastify->>DB: SELECT * FROM employees WHERE email=$1
+        DB-->>Fastify: user_data (hashed password)
+        Fastify->>Fastify: Bcrypt.compare(password, hash)
+        alt Senha Inválida
+            Fastify-->>API: 401 Unauthorized
+        else Senha Válida
+            Fastify->>Fastify: @fastify/jwt.sign({id, name, role, sector})
+            Fastify-->>API: 200 {token, user}
+            API-->>Store: Salva token + user
+            Store-->>User: Redireciona para Dashboard
+        end
     end
 ```
 
 ---
 
-## 2. Diagrama de Entidade-Relacionamento (ERD)
-Estrutura lógica das tabelas no banco de dados.
+## 3. Diagrama de Entidade-Relacionamento (ERD)
 
 ```mermaid
 erDiagram
-    EMPLOYEES ||--o{ AUDIT_LOGS : gera
     EMPLOYEES ||--o{ TRIPS : conduz
     EMPLOYEES ||--o{ MESSAGES : envia
+    EMPLOYEES ||--o{ WORK_SCHEDULES : possui
     VEHICLES ||--o{ TRIPS : utilizado_em
     VEHICLES ||--o{ MAINTENANCE_REQUESTS : requer
     VEHICLES ||--o{ REFUELINGS : recebe
     SECTORS ||--o{ EMPLOYEES : possui
     SECTORS ||--o{ VEHICLES : aloca
+    ORGANIZATIONS ||--o{ SECTORS : possui
     ORGANIZATIONS ||--o{ EMPLOYEES : gerencia
-```
 
----
-
-## 3. Arquitetura NexusBridge
-Visão de componentes da camada de adaptação.
-
-```mermaid
-graph TD
-    A[Frontend React/Next.js] -->|Request Virtual| B[NexusBridge Engine]
-    B -->|Match Route| C{Router Resolver}
-    C -->|Adapter HTTP| D[Backend Express.js]
-    D -->|SQL/NoSQL| E[(Banco de Dados)]
-    D -->|Config| F[.env File]
-    C -->|Mock| G[JSON Local Files]
-    D -->|WebSocket| H[Socket.IO Events]
+    EMPLOYEES {
+        int id PK
+        string name
+        string email UK
+        string password
+        string role
+        string sector
+        string status
+        string matricula UK
+        int is_demo
+    }
+    VEHICLES {
+        int id PK
+        string vehicle_model
+        string license_plate UK
+        string sector
+        int mileage
+        string status
+    }
+    TRIPS {
+        int id PK
+        string title
+        string driver
+        string vehicle
+        string origin
+        string destination
+        string status
+    }
 ```
 
 ---
@@ -71,97 +139,130 @@ graph TD
 
 ```mermaid
 graph LR
-    A[Requisição] --> B{CORS Check}
-    B -->|Origem Inválida| X[Bloqueado]
+    A[Requisição HTTP] --> B{CORS Check}
+    B -->|Origem Inválida| X[Bloqueado 403]
     B -->|Origem Válida| C{Rate Limit}
     C -->|Excedido| Y[429 Too Many Requests]
-    C -->|Dentro do Limite| D{JWT Token}
-    D -->|Token Inválido| Z[401/403]
-    D -->|Token Válido| E{RBAC Check}
-    E -->|Sem Permissão| W[403 Forbidden]
-    E -->|Com Permissão| F[Executar Rota]
-    F --> G[Auditoria no DB]
+    C -->|OK| D{JWT válido?}
+    D -->|Sem token| Z[401 Unauthorized]
+    D -->|Token inválido| Z
+    D -->|Token válido| E{role autorizada?}
+    E -->|Sem permissão| W[403 Forbidden]
+    E -->|OK| F[Executar Handler]
+    F --> G[Socket.IO Broadcast]
+    F --> H[Retornar JSON]
 ```
 
 ---
 
-## 5. Estados do Veículo (Telemetria)
-Ciclo de vida de um ativo na frota.
+## 5. Estados do Veículo (Ciclo de Vida)
 
 ```mermaid
 stateDiagram-v2
     [*] --> Disponivel
     Disponivel --> EmViagem : Iniciar Missão
-    EmViagem --> Disponivel : Finalizar Checklist
-    Disponivel --> Manutencao : Relatar Defeito
+    EmViagem --> Disponivel : Finalizar (checklist OK)
+    Disponivel --> Manutencao : Solicitar Manutenção
     Manutencao --> Disponivel : Concluir OS
     Disponivel --> Abastecendo : Registrar Abastecimento
-    Abastecendo --> Disponivel : Confirmar Litros
+    Abastecendo --> Disponivel : Confirmar
+    Disponivel --> Inativo : Desativar
+    Inativo --> Disponivel : Reativar
 ```
 
 ---
 
-## 6. Arquitetura de Segurança
+## 6. Fluxo de Notificações em Tempo Real (WebSocket)
+
+```mermaid
+sequenceDiagram
+    participant Page as Página SPA
+    participant WS as WS.js (Socket.IO)
+    participant Server as Backend (Socket.IO)
+    participant Route as Rota API
+    participant DB as Banco
+
+    Page->>WS: init(user.sectors)
+    WS->>Server: connect + join-sector
+    Note over WS,Server: Conexão estabelecida
+
+    alt Usuário cria registro
+        Page->>API: POST /api/requests
+        API->>Route: Criar solicitação
+        Route->>DB: INSERT
+        Route->>Server: io.emit('notification', {title, message, sector})
+        Server-->>WS: Event 'notification'
+        WS-->>Page: notificacoes.unshift(data)
+        Page->>Page: Atualiza badge do sino
+    else Atualização de entidade
+        Route->>Server: io.emit('entity-update', {type, action, data})
+        Server-->>WS: Event 'entity-update'
+        WS-->>Page: Store.set(type, data)
+        Page->>Page: Re-renderiza
+
+    end
+```
+
+---
+
+## 7. Arquitetura de Segurança e Deploy
 
 ```mermaid
 graph TB
-    subgraph "Frontend (Porta 9002)"
-        A[Next.js App] --> B[NexusBridge]
+    subgraph "Docker / Render"
+        A[Fastify Server :3001]
+        B[SQLite Volume]
     end
-    
-    subgraph "Backend (Porta 3001)"
-        C[Express Server]
-        D[CORS Middleware]
-        E[Rate Limiter]
-        F[Auth Middleware JWT]
-        G[Infrastructure Routes]
+
+    subgraph "Middleware Stack"
+        C[CORS]
+        D[Rate Limiter]
+        E[JWT Auth]
+        F[RBAC Check]
     end
-    
-    subgraph "Banco de Dados"
-        H[(SQLite)]
-        I[(PostgreSQL)]
-        J[(Supabase)]
+
+    subgraph "Serviços"
+        G[Socket.IO]
+        H[Swagger /docs]
+        I[Static Files /public]
     end
-    
-    B --> D
+
+    A --> C
+    C --> D
     D --> E
     E --> F
-    F --> C
-    C --> H
-    C --> I
-    C --> J
-    G --> K[.env Config]
+    F --> G
+    F --> H
+    F --> I
+    A --> B
 ```
 
 ---
 
-## 7. Fluxo de Configuração de Infraestrutura
+## 8. Fluxo de Configuração de Infraestrutura
 
 ```mermaid
 sequenceDiagram
     participant Admin as Admin (DEV/TI)
-    participant UI as Painel Infraestrutura
-    participant Bridge as NexusBridge
-    participant API as Backend API
-    participant Env as .env File
+    participant UI as Painel Config
+    participant API as API Infraestrutura
+    participant Env as .env / DB
 
-    Admin->>UI: Acessa Configurações → Infraestrutura
-    UI->>Bridge: GET /api/nexus/infrastructure/config
-    Bridge->>API: GET /api/infrastructure/config
-    API->>Env: Ler configurações
-    Env-->>API: Config completa
-    API-->>UI: Config (senhas mascaradas)
-    
+    Admin->>UI: Aba Infraestrutura
+    UI->>API: GET /api/infrastructure/config
+    API->>Env: Ler configurações atuais
+    Env-->>API: Config (senhas mascaradas)
+    API-->>UI: Renderizar painel
+
     Admin->>UI: Clica "Testar Conexão"
-    UI->>Bridge: POST /api/nexus/infrastructure/test-db
-    Bridge->>API: POST /api/infrastructure/test-db
-    API->>API: Testar conexão com banco
-    API-->>UI: {success: true, message: "..."}
-    
+    UI->>API: POST /api/infrastructure/test-db {url}
+    API->>API: Tentar conectar com nova URL
+    API-->>UI: {success: true/false, message}
+
     Admin->>UI: Clica "Salvar"
-    UI->>Bridge: POST /api/nexus/infrastructure/save
-    Bridge->>API: POST /api/infrastructure/save
-    API->>Env: Atualizar variáveis
-    Env-->>API: Salvo com sucesso
-    API-->>UI: "Reinicie o servidor para aplicar"
+    UI->>API: POST /api/infrastructure/save {config}
+    API->>Env: Persiste configurações
+    Env-->>API: Salvo
+    API-->>UI: {success: true}
+    Note over Admin,UI: Requer reinicialização do servidor
 ```

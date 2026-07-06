@@ -11,7 +11,14 @@
  *   JWT_SECRET    → obrigatório
  *   PORT          → padrão 3001
  */
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Carrega .env da raiz do projeto
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 import { startServer } from './app';
 
 startServer();

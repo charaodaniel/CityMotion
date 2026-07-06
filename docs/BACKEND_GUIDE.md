@@ -1,215 +1,359 @@
-# 🏗️ Guia de Implementação do Back-end (Node.js/SQLite)
+# 🏗️ Guia de Implementação do Backend — Fastify + Drizzle + Socket.IO
 
-Este guia detalha como o backend do CityMotion foi construído para ser seguro e resiliente.
-
----
-
-## 1. Camada de Segurança (The Guard)
-
-Nunca armazene senhas em texto claro. Utilizamos a biblioteca `bcryptjs` para criar hashes irreversíveis.
-
-### Fluxo de Registro de Senha
-```javascript
-const salt = bcrypt.genSaltSync(10);
-const hashedPassword = bcrypt.hashSync(password, salt);
-// Armazena 'hashedPassword' no banco de dados
-```
-
-### Fluxo de Login
-```javascript
-const isMatch = bcrypt.compareSync(providedPassword, storedHash);
-if (isMatch) {
-    // Gera JWT assinado com a chave secreta do .env
-    const token = jwt.sign(
-        { id: user.id, name: user.name, role: user.role },
-        JWT_SECRET,
-        { expiresIn: '8h' }
-    );
-}
-```
+Este guia detalha a arquitetura, segurança e manutenção do backend CityMotion.
 
 ---
 
-## 2. Variáveis de Ambiente (.env)
-
-Mantenha segredos fora do Git. O arquivo `.env` é carregado automaticamente via `dotenv`:
-
-```bash
-# Copiar template
-cp .env.example .env
-
-# Gerar JWT_SECRET seguro
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-```
-
-### Variáveis Obrigatórias
-| Variável | Descrição |
-| :--- | :--- |
-| `JWT_SECRET` | Chave secreta para assinatura de tokens JWT |
-
-### Variáveis Opcionais
-| Variável | Padrão | Descrição |
-| :--- | :--- | :--- |
-| `PORT` | `3001` | Porta do servidor Express |
-| `DATABASE_URL` | *(vazio)* | URL de conexão do banco (vazio = SQLite local) |
-| `CORS_ORIGIN` | `http://localhost:9002` | Origens permitidas (separadas por vírgula) |
-| `DEMO_MODE` | `false` | Ativa reset diário dos dados |
-| `SMTP_HOST` | *(vazio)* | Servidor SMTP para e-mails |
-| `SMTP_PORT` | `587` | Porta SMTP |
-| `SMTP_USER` | *(vazio)* | Usuário SMTP |
-| `SMTP_PASS` | *(vazio)* | Senha SMTP |
-| `SMTP_SECURE` | `false` | Usar TLS/SSL |
-
----
-
-## 3. Gestão de Estado e JWT
-
-O token JWT contém as declarações de identidade (Claims) do usuário. O backend utiliza o middleware `authMiddleware.js` para interceptar toda requisição:
-
-1. Extrai o token do Header `Authorization`.
-2. Verifica a assinatura com o `JWT_SECRET`.
-3. Anexa o objeto do usuário (id, name, role, sector) ao objeto `req.user`.
-4. As rotas seguintes decidem se permitem a ação com base em `req.user.role`.
-
-### Exemplo de Proteção de Rota
-```javascript
-router.get('/admin-only', authMiddleware, (req, res) => {
-    if (req.user.role !== 'Desenvolvedor Global') {
-        return res.status(403).json({ message: 'Acesso negado.' });
-    }
-    // Lógica administrativa...
-});
-```
-
----
-
-## 4. Rate Limiting
-
-O backend utiliza `express-rate-limit` para proteção contra ataques:
-
-### Configuração Global
-```javascript
-const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,  // 15 minutos
-    max: 100,                    // 100 requisições por IP
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-app.use(globalLimiter);
-```
-
-### Rate Limiting Específico (Login)
-```javascript
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 10,                      // 10 tentativas por IP
-    skipSuccessfulRequests: true, // Logins OK não contam
-});
-```
-
----
-
-## 5. CORS (Cross-Origin Resource Sharing)
-
-Origens permitidas são configuradas via variável `CORS_ORIGIN`:
-
-```env
-# Produção: apenas o domínio real
-CORS_ORIGIN=https://citymotion.seudominio.com
-
-# Desenvolvimento: localhost
-CORS_ORIGIN=http://localhost:9002
-
-# Múltiplas origens
-CORS_ORIGIN=http://localhost:9002,https://citymotion.seudominio.com
-```
-
----
-
-## 6. Banco de Dados Multi-Engine
-
-O `db_manager.js` suporta múltiplos motores de persistência:
-
-### SQLite (Local)
-- Padrão quando `DATABASE_URL` não está definido.
-- Banco local em `backend/database/citymotion.db`.
-- Ideal para pendrives e servidores isolados.
-
-### PostgreSQL (Nuvem)
-- Ativado quando `DATABASE_URL` está definido.
-- Suporte a transações e rollback.
-- Configuração via connection string:
-  ```
-  postgresql://usuario:senha@host:5432/nomedb
-  ```
-
-### Supabase
-- Usa o driver PostgreSQL (compatível).
-- URL do painel Supabase → Settings → Database → Connection string.
-
-### MongoDB
-- Validação de formato de URL implementada.
-- Para uso completo, instale o driver: `npm install mongoose`.
-
----
-
-## 7. Proteção contra SQL Injection
-
-Todas as queries utilizam parâmetros:
-
-```javascript
-// CORRETO: Query parametrizada
-const sql = 'SELECT * FROM employees WHERE email = $1';
-const { rows } = await db.query(sql, [email]);
-
-// ERRADO: Interpolação de strings (NUNCA faça isso)
-// const sql = `SELECT * FROM employees WHERE email = '${email}'`;
-```
-
----
-
-## 8. Banco de Dados SQLite e SQL Nativo
-
-Diferente de Mocks em JSON, o SQLite permite integridade referencial:
-
-- **FK Constraints:** Garante que você não apague um setor que ainda possui veículos.
-- **Audit Triggers:** O backend registra o "autor" de cada mudança usando a identidade do JWT.
-- **Soft Delete:** Registros são marcados como desativados em vez de excluídos.
-
----
-
-## 9. Manutenção
-
-### Reset do Banco de Dados
-```bash
-cd backend
-npm run db:init
-```
-Isso reconstruirá as tabelas e reiniciará a sequência de IDs.
-
-### Reset via Terminal (ROOT)
-```
-nexus-db-reset
-```
-Requer confirmação de senha (validação via Bcrypt).
-
----
-
-## 10. Estrutura de Rotas
+## 📁 Estrutura de Diretórios
 
 ```
 backend/
-├── server.js              # Servidor Express principal
-├── routes/
-│   ├── auth.js            # Autenticação (login, forgot/reset password)
-│   ├── data.js            # Dados (sync, employees, vehicles, trips)
-│   └── infrastructure.js  # Infraestrutura (DB test, config, SMTP test)
-├── middleware/
-│   └── authMiddleware.js  # Validação JWT
-├── database/
-│   ├── db_manager.js      # Gerenciador de banco multi-engine
-│   ├── init_db.js         # Inicialização e seed do banco
-│   └── citymotion.db      # Banco SQLite (gitignored)
-└── services/
-    └── emailService.js    # Serviço de envio de e-mails
+├── src/                        # Código-fonte TypeScript
+│   ├── index.ts                # Ponto de entrada (carrega .env, inicia server)
+│   ├── app.ts                  # Factory do Fastify + plugins + rotas
+│   ├── config/
+│   │   └── env.ts              # Validação Zod das variáveis de ambiente
+│   ├── db/
+│   │   ├── index.ts            # Conexão multi-engine (SQLite / PostgreSQL)
+│   │   ├── pg-schema.ts        # Schema Drizzle para PostgreSQL
+│   │   ├── sqlite-schema.ts    # Schema Drizzle para SQLite
+│   │   └── seed.ts             # Popula banco com dados iniciais
+│   ├── plugins/
+│   │   ├── auth.ts             # Plugin JWT do Fastify
+│   │   └── websocket.ts        # Socket.IO server
+│   ├── routes/
+│   │   ├── auth.ts             # Login, forgot/reset password
+│   │   ├── data.ts             # Employees, vehicles, trips, etc.
+│   │   └── infrastructure.ts   # Config, DB test, SMTP test
+│   ├── schemas/
+│   │   └── index.ts            # Schemas Zod compartilhados
+│   └── tests/
+│       ├── setup.ts            # Setup de testes vitest
+│       └── auth.test.ts        # Testes de autenticação
+├── server.js                   # ⚠️ Legado (Express, mantido para referência)
+├── services/
+│   └── emailService.js         # Serviço de e-mail (Nodemailer)
+├── drizzle.config.ts           # Configuração Drizzle Kit
+├── vitest.config.ts            # Configuração de testes
+└── package.json
+```
+
+---
+
+## 1. 🔐 Segurança
+
+### 1.1 JWT com @fastify/jwt
+
+O Fastify utiliza o plugin `@fastify/jwt` para autenticação stateless:
+
+```typescript
+// plugins/auth.ts
+import fp from 'fastify-plugin';
+import { FastifyInstance } from 'fastify';
+
+export default fp(async function (fastify: FastifyInstance) {
+  const env = getEnv();
+  
+  await fastify.register(import('@fastify/jwt'), {
+    secret: env.JWT_SECRET,
+    sign: { expiresIn: '8h' },
+  });
+
+  // Decorator para verificação em rotas
+  fastify.decorate('authenticate', async function (request, reply) {
+    try {
+      await request.jwtVerify();
+    } catch (err) {
+      reply.status(401).send({ message: 'Token inválido ou expirado.' });
+    }
+  });
+});
+```
+
+### 1.2 Senhas com Bcrypt
+
+```typescript
+import bcrypt from 'bcryptjs';
+
+// Hash (cadastro)
+const salt = bcrypt.genSaltSync(10);
+const hashedPassword = bcrypt.hashSync(password, salt);
+
+// Verificação (login)
+const isMatch = bcrypt.compareSync(providedPassword, storedHash);
+```
+
+### 1.3 RBAC (Controle de Acesso)
+
+Cada rota verifica o perfil do usuário extraído do JWT:
+
+```typescript
+app.get('/api/admin-only', {
+  preHandler: [app.authenticate],
+}, async (request, reply) => {
+  const user = request.user as any;
+  if (user.role !== 'Desenvolvedor Global') {
+    return reply.status(403).send({ message: 'Acesso negado.' });
+  }
+  // Lógica administrativa...
+});
+```
+
+---
+
+## 2. 🌐 Variáveis de Ambiente
+
+Validadas com Zod em `config/env.ts`:
+
+| Variável | Obrigatória | Padrão | Descrição |
+| :--- | :---: | :--- | :--- |
+| `JWT_SECRET` | ✅ | — | Chave secreta JWT (mín. 32 caracteres) |
+| `PORT` | ❌ | `3001` | Porta do servidor Fastify |
+| `DATABASE_URL` | ❌ | `''` | URL PostgreSQL (vazio = SQLite) |
+| `CORS_ORIGIN` | ❌ | `http://localhost:3001` | Origens permitidas |
+| `DEMO_MODE` | ❌ | `false` | Reset diário automático |
+| `NODE_ENV` | ❌ | `development` | environment |
+| `SMTP_HOST` | ❌ | `''` | Servidor SMTP |
+| `SMTP_PORT` | ❌ | `587` | Porta SMTP |
+| `SMTP_USER` | ❌ | `''` | Usuário SMTP |
+| `SMTP_PASS` | ❌ | `''` | Senha SMTP |
+| `SMTP_SECURE` | ❌ | `false` | TLS/SSL |
+
+```bash
+# Gerar JWT_SECRET
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+---
+
+## 3. 🗄️ Banco de Dados — Drizzle ORM
+
+### 3.1 Multi-Engine (SQLite / PostgreSQL)
+
+O sistema suporta dois motores com o mesmo código graças ao Drizzle ORM:
+
+```typescript
+// db/index.ts
+export function getDb() {
+  if (isPostgresEnabled()) {
+    const pool = new Pool({ connectionString: env.DATABASE_URL });
+    return drizzle(pool, { schema: pgSchema });
+  } else {
+    const sqliteDb = new Database('database/citymotion.db');
+    return drizzle(sqliteDb, { schema: sqliteSchema });
+  }
+}
+```
+
+### 3.2 Schemas
+
+Definidos em arquivos separados por engine, com tipos correspondentes:
+
+- **SQLite:** `db/sqlite-schema.ts` (12 tabelas: employees, vehicles, trips, etc.)
+- **PostgreSQL:** `db/pg-schema.ts` (mesma estrutura, adaptada para PG)
+
+### 3.3 Seed
+
+```bash
+cd backend && npx tsx src/db/seed.ts
+```
+
+Popula:
+- 4 usuários (dev root, admin, motorista, demo)
+- 3 organizações
+- Setores padrão
+
+---
+
+## 4. 🔄 WebSocket — Notificações em Tempo Real
+
+### 4.1 Servidor (Socket.IO)
+
+Configurado em `plugins/websocket.ts`:
+
+```typescript
+import { Server } from 'socket.io';
+
+export function setupWebSocket(app: FastifyInstance) {
+  const io = new Server(app.server, {
+    cors: { origin: '*' },
+  });
+
+  io.on('connection', (socket) => {
+    socket.on('join-sector', (sector) => {
+      socket.join(`sector:${sector}`);
+    });
+  });
+
+  return io;
+}
+```
+
+### 4.2 Emissão de Eventos
+
+O backend emite notificações quando dados são criados:
+
+```typescript
+io.to(`sector:${record.sector}`).emit('notification', {
+  title: 'Novo veículo cadastrado',
+  message: `${record.vehicle_model} — ${record.license_plate}`,
+  type: 'vehicle',
+  timestamp: new Date().toISOString(),
+});
+
+io.emit('entity-update', {
+  type: 'vehicles',
+  action: 'create',
+  data: record,
+});
+```
+
+---
+
+## 5. 🚦 Rate Limiting
+
+```typescript
+import rateLimit from '@fastify/rate-limit';
+
+await app.register(rateLimit, {
+  global: true,
+  max: 100,
+  timeWindow: '15 minutes',
+});
+
+// Rota de login: 10 tentativas por IP
+app.post('/api/login', {
+  config: { rateLimit: { max: 10, timeWindow: '15 minutes' } },
+}, loginHandler);
+```
+
+---
+
+## 6. 🌍 CORS
+
+```typescript
+import cors from '@fastify/cors';
+
+await app.register(cors, {
+  origin: env.CORS_ORIGIN
+    ? env.CORS_ORIGIN.split(',').map(o => o.trim())
+    : ['http://localhost:3001', 'http://127.0.0.1:3001'],
+  credentials: true,
+});
+```
+
+---
+
+## 7. 📚 Documentação da API (Swagger)
+
+```typescript
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
+
+await app.register(swagger, { openapi: { info: { title: 'CityMotion API', version: '1.0.0' } } });
+await app.register(swaggerUi, { routePrefix: '/docs' });
+```
+
+Acesse `http://localhost:3001/docs` para a interface Swagger UI.
+
+---
+
+## 8. 🧪 Testes
+
+O backend usa **Vitest** para testes unitários:
+
+```bash
+cd backend
+npm test              # Executa uma vez
+npm run test:watch    # Modo watch
+```
+
+### Testes Existentes
+
+| Arquivo | Descrição |
+| :--- | :--- |
+| `src/tests/auth.test.ts` | Login, token inválido, rotas protegidas |
+| `src/tests/setup.ts` | Setup global (env vars de teste) |
+
+### Testes do Frontend SPA (189 testes)
+
+```bash
+npm run test:frontend
+```
+
+Cobrem Store, API, WebSocket, App Router, Toast e 12 páginas.
+
+---
+
+## 9. 🚀 Execução
+
+### Desenvolvimento
+```bash
+cd backend && npm run dev
+# tsx watch src/index.ts — reload automático
+```
+
+### Produção
+```bash
+cd backend && npx tsx src/index.ts
+# Ou via Docker
+```
+
+### Health Check
+```bash
+curl http://localhost:3001/api/health
+# { "status": "operational", "kernel": "Nexus-Dual", "uptime": 123.45 }
+```
+
+---
+
+## 10. 📡 Rotas da API
+
+### Autenticação
+| Método | Rota | Descrição |
+| :--- | :--- | :--- |
+| POST | `/api/login` | Login (email + senha) |
+| POST | `/api/forgot-password` | Solicitar recuperação |
+| POST | `/api/reset-password` | Resetar senha |
+
+### Dados
+| Método | Rota | Descrição |
+| :--- | :--- | :--- |
+| GET | `/api/data` | Sync all (employees, vehicles, trips, etc.) |
+| POST | `/api/requests` | Criar solicitação |
+| GET | `/api/requests` | Listar solicitações |
+
+### Infraestrutura
+| Método | Rota | Descrição |
+| :--- | :--- | :--- |
+| GET | `/api/infrastructure/config` | Config atual (senhas mascaradas) |
+| POST | `/api/infrastructure/test-db` | Testar conexão DB |
+| POST | `/api/infrastructure/save` | Salvar configuração |
+| POST | `/api/infrastructure/test-smtp` | Testar SMTP |
+
+### Sistema
+| Método | Rota | Descrição |
+| :--- | :--- | :--- |
+| GET | `/api/health` | Health check |
+| GET | `/docs` | Swagger UI |
+| GET | `/api/sync-all` | Redirect → `/api/data` |
+
+---
+
+## 🛠️ Manutenção
+
+### Reset do Banco
+```bash
+cd backend && npx tsx src/db/seed.ts
+```
+
+### Executar Testes
+```bash
+npm run test              # Backend
+npm run test:frontend     # Frontend SPA
+```
+
+### Type Check
+```bash
+cd backend && npx tsc --noEmit
 ```

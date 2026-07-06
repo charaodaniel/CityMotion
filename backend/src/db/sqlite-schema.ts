@@ -4,6 +4,7 @@ import {
   integer,
   real,
 } from 'drizzle-orm/sqlite-core';
+import { sql } from 'drizzle-orm';
 
 // =============================================================
 // Employees (Funcionários)
@@ -21,7 +22,7 @@ export const employees = sqliteTable('employees', {
   cnh: text('cnh'),
   isDemo: integer('is_demo').default(0),
   resetToken: text('reset_token'),
-  createdAt: text('created_at').default("datetime('now')"),
+  createdAt: text('created_at').default(sql`(datetime('now'))`),
 });
 
 // =============================================================
@@ -34,7 +35,7 @@ export const vehicles = sqliteTable('vehicles', {
   sector: text('sector').notNull(),
   mileage: integer('mileage').default(0),
   status: text('status').default('Disponível'),
-  createdAt: text('created_at').default("datetime('now')"),
+  createdAt: text('created_at').default(sql`(datetime('now'))`),
 });
 
 // =============================================================
@@ -69,7 +70,7 @@ export const organizations = sqliteTable('organizations', {
   adminEmail: text('admin_email'),
   activeVehicles: integer('active_vehicles').default(0),
   activeUsers: integer('active_users').default(0),
-  createdAt: text('created_at').default("datetime('now')"),
+  createdAt: text('created_at').default(sql`(datetime('now'))`),
 });
 
 // =============================================================
@@ -81,7 +82,7 @@ export const messages = sqliteTable('messages', {
   receiverId: text('receiver_id').notNull(),
   content: text('content').notNull(),
   isRead: integer('is_read').default(0),
-  timestamp: text('timestamp').default("datetime('now')"),
+  timestamp: text('timestamp').default(sql`(datetime('now'))`),
 });
 
 // =============================================================
@@ -92,7 +93,7 @@ export const refuelings = sqliteTable('refuelings', {
   vehicleId: text('vehicle_id').notNull(),
   vehicleModel: text('vehicle_model'),
   licensePlate: text('license_plate'),
-  date: text('date').default("datetime('now')"),
+  date: text('date').default(sql`(datetime('now'))`),
   mileage: integer('mileage'),
   liters: real('liters'),
   price: real('price'),
@@ -108,7 +109,7 @@ export const refuelings = sqliteTable('refuelings', {
 // =============================================================
 export const auditLogs = sqliteTable('audit_logs', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  timestamp: text('timestamp').default("datetime('now')"),
+  timestamp: text('timestamp').default(sql`(datetime('now'))`),
   userIdentity: text('user_identity'),
   action: text('action'),
   tableName: text('table_name'),
@@ -124,7 +125,7 @@ export const maintenanceRequests = sqliteTable('maintenance_requests', {
   vehicleModel: text('vehicle_model'),
   licensePlate: text('license_plate'),
   requesterName: text('requester_name'),
-  requestDate: text('request_date').default("datetime('now')"),
+  requestDate: text('request_date').default(sql`(datetime('now'))`),
   type: text('type'),
   description: text('description'),
   status: text('status').default('Pendente'),
@@ -155,7 +156,7 @@ export const vehicleRequests = sqliteTable('vehicle_requests', {
   priority: text('priority').default('Média'),
   requester: text('requester'),
   status: text('status').default('Pendente'),
-  createdAt: text('created_at').default("datetime('now')"),
+  createdAt: text('created_at').default(sql`(datetime('now'))`),
 });
 
 // =============================================================
@@ -165,5 +166,5 @@ export const sectors = sqliteTable('sectors', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   organizationId: text('organization_id'),
-  createdAt: text('created_at').default("datetime('now')"),
+  createdAt: text('created_at').default(sql`(datetime('now'))`),
 });
