@@ -6,6 +6,7 @@ import {
   createEmployeeSchema,
   updateEmployeeSchema,
   createVehicleSchema,
+  updateVehicleSchema,
   sendMessageSchema,
   createRefuelingSchema,
   createRequestSchema,
@@ -222,6 +223,26 @@ export async function dataRoutes(fastify: FastifyInstance) {
       .values(data)
       .returning();
     broadcastAll('entity-update', { entity: 'vehicles', action: 'create', data: result[0] });
+    return result[0];
+  });
+
+  fastify.put('/api/vehicles/:id', {
+    schema: { description: 'Atualizar veículo', tags: ['Vehicles'] },
+  }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const data = updateVehicleSchema.parse(request.body);
+
+    const result = await (db as any)
+      .update(schema.vehicles)
+      .set(data)
+      .where(eq(schema.vehicles.id, Number(id)))
+      .returning();
+
+    if (!result.length) {
+      return reply.status(404).send({ message: 'Veículo não encontrado.' });
+    }
+
+    broadcastAll('entity-update', { entity: 'vehicles', action: 'update', data: result[0] });
     return result[0];
   });
 

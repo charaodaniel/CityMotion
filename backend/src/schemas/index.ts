@@ -44,6 +44,8 @@ export const createVehicleSchema = z.object({
   status: z.string().optional(),
 });
 
+export const updateVehicleSchema = createVehicleSchema.partial();
+
 // =============================================================
 // Message Schemas
 // =============================================================
