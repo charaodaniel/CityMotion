@@ -1,0 +1,1100 @@
+<h1 id="plano-de-negócios-citymotion">📋 Plano de Negócios —
+CityMotion</h1>
+<p><strong>Sistema SaaS de Gestão Inteligente de Frota e Mobilidade
+Corporativa</strong></p>
+<blockquote>
+<p><strong>Versão:</strong> 2.0<br />
+<strong>Data:</strong> Julho de 2026<br />
+<strong>Empresa:</strong> CityMotion Tecnologia Ltda.<br />
+<strong>Modelo de Negócio:</strong> B2B SaaS + Licenciamento White
+Label</p>
+</blockquote>
+<hr />
+<h2 id="sumário-executivo">1. Sumário Executivo</h2>
+<h3 id="visão-geral">1.1 Visão Geral</h3>
+<p>O <strong>CityMotion</strong> é uma plataforma SaaS de gestão de
+frotas veiculares que oferece uma solução completa e modular para
+organizações que possuem frotas de veículos — desde prefeituras e órgãos
+públicos até empresas privadas de logística, transporte e serviços.</p>
+<p>Diferentemente de concorrentes que oferecem apenas rastreamento
+básico, o CityMotion funciona como um <strong>sistema operacional
+completo para a logística da organização</strong>, integrando em uma
+única plataforma: controle de veículos, gestão de colaboradores,
+agendamento de viagens, abastecimento, manutenção, relatórios,
+comunicação interna e notificações em tempo real.</p>
+<h3 id="proposta-de-valor">1.2 Proposta de Valor</h3>
+<blockquote>
+<p>“Reduzir custos operacionais de frota em até 30% enquanto aumenta a
+transparência, a conformidade regulatória e a eficiência logística —
+tudo em uma plataforma white label que carrega a marca do cliente.”</p>
+</blockquote>
+<h3 id="diferenciais-estratégicos">1.3 Diferenciais Estratégicos</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Diferencial</th>
+<th style="text-align: left;">Vantagem Competitiva</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>White Label</strong></td>
+<td style="text-align: left;">Cliente usa a própria marca — ideal para
+revenda e grandes contas</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Dual Engine (SQLite +
+PostgreSQL)</strong></td>
+<td style="text-align: left;">Funciona offline ou em nuvem — único no
+mercado</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Tempo Real
+(Socket.IO)</strong></td>
+<td style="text-align: left;">Notificações instantâneas sem polling</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>LGPD Nativa</strong></td>
+<td style="text-align: left;">Conformidade integrada — reduz risco legal
+do cliente</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>189+ Testes
+Automatizados</strong></td>
+<td style="text-align: left;">Qualidade e confiabilidade garantidas</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Deploy Simplificado</strong></td>
+<td style="text-align: left;">Docker + Render Blueprint — deploy em 1
+comando</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="análise-de-mercado">2. Análise de Mercado</h2>
+<h3 id="tamanho-do-mercado">2.1 Tamanho do Mercado</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Indicador</th>
+<th style="text-align: left;">Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Mercado Global de Gestão de Frotas
+(2026)</strong></td>
+<td style="text-align: left;">~US$ 35 bilhões</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>CAGR (2024-2030)</strong></td>
+<td style="text-align: left;">15-18% ao ano</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Mercado Brasileiro</strong></td>
+<td style="text-align: left;">~R$ 5 bilhões</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Frota Total de Veículos
+Corporativos no Brasil</strong></td>
+<td style="text-align: left;">~4,5 milhões de unidades</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Prefeituras
+Brasileiras</strong></td>
+<td style="text-align: left;">5.570 municípios</td>
+</tr>
+</tbody>
+</table>
+<h3 id="segmentos-alvo-priorizados">2.2 Segmentos-Alvo Priorizados</h3>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 23%" />
+<col style="width: 29%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Segmento</th>
+<th style="text-align: left;">TAM (Brasil)</th>
+<th style="text-align: center;">Prioridade</th>
+<th style="text-align: left;">Estratégia de Entrada</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">🏛️ <strong>Prefeituras
+(Pequenas/Médias)</strong></td>
+<td style="text-align: left;">~4.500 municípios</td>
+<td style="text-align: center;">⭐⭐⭐⭐⭐</td>
+<td style="text-align: left;">Licitação + Convênio</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">🚚 <strong>Transportadoras e
+Logística</strong></td>
+<td style="text-align: left;">~100.000 empresas</td>
+<td style="text-align: center;">⭐⭐⭐⭐</td>
+<td style="text-align: left;">Venda direta + Parceiros</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">🏥 <strong>Planos de Saúde /
+Hospitais</strong></td>
+<td style="text-align: left;">~1.500 operadoras</td>
+<td style="text-align: center;">⭐⭐⭐⭐</td>
+<td style="text-align: left;">Vertical saúde</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">🏗️ <strong>Construtoras (Médio
+Porte)</strong></td>
+<td style="text-align: left;">~50.000 empresas</td>
+<td style="text-align: center;">⭐⭐⭐</td>
+<td style="text-align: left;">Venda direta</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">🏫 <strong>Redes de Ensino (Transporte
+Escolar)</strong></td>
+<td style="text-align: left;">~5.000 redes</td>
+<td style="text-align: center;">⭐⭐⭐</td>
+<td style="text-align: left;">Parcerias educacionais</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">🛒 <strong>Varejo com Frota
+Própria</strong></td>
+<td style="text-align: left;">~20.000 empresas</td>
+<td style="text-align: center;">⭐⭐</td>
+<td style="text-align: left;">Indireto</td>
+</tr>
+</tbody>
+</table>
+<h3 id="concorrência">2.3 Concorrência</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Concorrente</th>
+<th style="text-align: left;">Força</th>
+<th style="text-align: left;">Fraqueza</th>
+<th style="text-align: left;">Como o CityMotion Ganha</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Sascar</strong></td>
+<td style="text-align: left;">Líder de mercado, rastreamento</td>
+<td style="text-align: left;">Caro, fechado, sem white label</td>
+<td style="text-align: left;">Preço acessível + White Label</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Omnilink</strong></td>
+<td style="text-align: left;">Rastreamento consolidado</td>
+<td style="text-align: left;">Sem gestão de
+manutenção/abastecimento</td>
+<td style="text-align: left;">Ecossistema completo</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Sistemas de
+Planilhas</strong></td>
+<td style="text-align: left;">Gratuito, customizável</td>
+<td style="text-align: left;">Erro humano, sem automação</td>
+<td style="text-align: left;">Automatização total</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Soluções
+Customizadas</strong></td>
+<td style="text-align: left;">Feito sob medida</td>
+<td style="text-align: left;">Caro, lento, difícil manutenção</td>
+<td style="text-align: left;">SaaS pronto + customizável</td>
+</tr>
+</tbody>
+</table>
+<h3 id="análise-swot">2.4 Análise SWOT</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Forças (S)</th>
+<th style="text-align: left;">Fraquezas (W)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">• Arquitetura dual engine (SQLite +
+PG)</td>
+<td style="text-align: left;">• Marca ainda não consolidada</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">• White Label nativo</td>
+<td style="text-align: left;">• Equipe comercial reduzida</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">• LGPD integrado</td>
+<td style="text-align: left;">• Sem aplicativo mobile nativo
+(ainda)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">• Custo competitivo</td>
+<td style="text-align: left;">• Dependência de canal de revenda</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">• Stack moderna
+(Fastify/Drizzle/Vitest)</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">• 189+ testes automatizados</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Oportunidades (O)</th>
+<th style="text-align: left;">Ameaças (T)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">• Mercado em crescimento 15%+ ao ano</td>
+<td style="text-align: left;">• Concorrentes com budget de marketing
+maior</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">• Lei de licitações exige
+transparência</td>
+<td style="text-align: left;">• Mudanças na LGPD</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">• Prefeituras digitalizando gestão</td>
+<td style="text-align: left;">• Soluções open source emergindo</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">• ESG e sustentabilidade como driver</td>
+<td style="text-align: left;">• Crise econômica reduzindo orçamento</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="modelo-de-negócio">3. Modelo de Negócio</h2>
+<h3 id="planos-e-preços">3.1 Planos e Preços</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Característica</th>
+<th style="text-align: center;">🟢 Basic</th>
+<th style="text-align: center;">🔵 Pro</th>
+<th style="text-align: center;">⭐ Enterprise</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Preço Mensal</strong></td>
+<td style="text-align: center;">R$ 497</td>
+<td style="text-align: center;">R$ 1.497</td>
+<td style="text-align: center;">R$ 4.997+</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Veículos</strong></td>
+<td style="text-align: center;">Até 5</td>
+<td style="text-align: center;">Até 20</td>
+<td style="text-align: center;">Ilimitado</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Usuários</strong></td>
+<td style="text-align: center;">Até 10</td>
+<td style="text-align: center;">Até 50</td>
+<td style="text-align: center;">Ilimitado</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Módulos</strong></td>
+<td style="text-align: center;">Essenciais</td>
+<td style="text-align: center;">Todos</td>
+<td style="text-align: center;">Todos + Premium</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>White Label</strong></td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Suporte</strong></td>
+<td style="text-align: center;">Email</td>
+<td style="text-align: center;">Email + Chat</td>
+<td style="text-align: center;">Dedicado 24/7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>SLA</strong></td>
+<td style="text-align: center;">99.0%</td>
+<td style="text-align: center;">99.5%</td>
+<td style="text-align: center;">99.9%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Treinamento</strong></td>
+<td style="text-align: center;">Guia online</td>
+<td style="text-align: center;">Online ao vivo</td>
+<td style="text-align: center;">Presencial</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fontes-de-receita">3.2 Fontes de Receita</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Fonte</th>
+<th style="text-align: center;">% Receita Projetada</th>
+<th style="text-align: left;">Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Assinaturas SaaS</strong></td>
+<td style="text-align: center;">70%</td>
+<td style="text-align: left;">Mensalidades recorrentes dos planos</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Setup/Implantação</strong></td>
+<td style="text-align: center;">10%</td>
+<td style="text-align: left;">Taxa única de implantação e migração</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>White Label</strong></td>
+<td style="text-align: center;">10%</td>
+<td style="text-align: left;">Taxa adicional para personalização
+total</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Treinamento</strong></td>
+<td style="text-align: center;">5%</td>
+<td style="text-align: left;">Cursos e workshops presenciais</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Suporte Premium</strong></td>
+<td style="text-align: center;">5%</td>
+<td style="text-align: left;">Suporte dedicado além do plano</td>
+</tr>
+</tbody>
+</table>
+<h3 id="projeção-financeira-3-anos">3.3 Projeção Financeira (3
+Anos)</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Ano</th>
+<th style="text-align: center;">Clientes</th>
+<th style="text-align: center;">MRR (R<span
+class="math inline">)|<em>A</em><em>R</em><em>R</em>(<em>R</em></span>)</th>
+<th style="text-align: center;">Custos (R<span
+class="math inline">)|<em>L</em><em>u</em><em>c</em><em>r</em><em>o</em>(<em>R</em></span>)</th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Ano 1</strong></td>
+<td style="text-align: center;">25</td>
+<td style="text-align: center;">37.425</td>
+<td style="text-align: center;">449.100</td>
+<td style="text-align: center;">380.000</td>
+<td style="text-align: center;">69.100</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Ano 2</strong></td>
+<td style="text-align: center;">80</td>
+<td style="text-align: center;">119.760</td>
+<td style="text-align: center;">1.437.120</td>
+<td style="text-align: center;">720.000</td>
+<td style="text-align: center;">717.120</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Ano 3</strong></td>
+<td style="text-align: center;">200</td>
+<td style="text-align: center;">299.400</td>
+<td style="text-align: center;">3.592.800</td>
+<td style="text-align: center;">1.500.000</td>
+<td style="text-align: center;">2.092.800</td>
+</tr>
+</tbody>
+</table>
+<p><em>Premissas: Ticket médio ponderado de R$ 1.497/mês. Churn rate de
+3% ao mês (média SaaS).</em></p>
+<h3 id="métricas-chave-kpis">3.4 Métricas-Chave (KPIs)</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">KPI</th>
+<th style="text-align: center;">Meta Ano 1</th>
+<th style="text-align: center;">Meta Ano 2</th>
+<th style="text-align: center;">Meta Ano 3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>MRR</strong></td>
+<td style="text-align: center;">R$ 37.425</td>
+<td style="text-align: center;">R$ 119.760</td>
+<td style="text-align: center;">R$ 299.400</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>ARR</strong></td>
+<td style="text-align: center;">R$ 449.100</td>
+<td style="text-align: center;">R$ 1.437.120</td>
+<td style="text-align: center;">R$ 3.592.800</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>CAC</strong></td>
+<td style="text-align: center;">R$ 5.000</td>
+<td style="text-align: center;">R$ 3.000</td>
+<td style="text-align: center;">R$ 2.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>LTV</strong></td>
+<td style="text-align: center;">R$ 53.892</td>
+<td style="text-align: center;">R$ 53.892</td>
+<td style="text-align: center;">R$ 53.892</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>LTV/CAC</strong></td>
+<td style="text-align: center;">10.8x</td>
+<td style="text-align: center;">18x</td>
+<td style="text-align: center;">27x</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Churn Rate</strong></td>
+<td style="text-align: center;">5%</td>
+<td style="text-align: center;">3%</td>
+<td style="text-align: center;">2%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>NPS</strong></td>
+<td style="text-align: center;">50</td>
+<td style="text-align: center;">65</td>
+<td style="text-align: center;">75+</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="estratégia-de-go-to-market">4. Estratégia de Go-to-Market</h2>
+<h3 id="canais-de-distribuição">4.1 Canais de Distribuição</h3>
+<pre><code>🎯 CANAIS PRINCIPAIS
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  1. VENDA DIRETA (40%)                                  │
+│     → Equipe comercial própria                          │
+│     → Demonstrações personalizadas                      │
+│     → Foco em prefeituras de médio porte                │
+│                                                         │
+│  2. PARCEIROS DE REVENDA (35%)                          │
+│     → Empresas de software contábil                     │
+│     → Consultorias de gestão pública                    │
+│     → Fornecedores de equipamentos de rastreamento      │
+│                                                         │
+│  3. MARKETING DIGITAL (15%)                             │
+│     → LinkedIn Ads (gestores de frota)                  │
+│     → Google Ads (palavras-chave: gestão de frota)      │
+│     → Conteúdo SEO (LGPD, frota pública)               │
+│                                                         │
+│  4. LICITAÇÕES PÚBLICAS (10%)                           │
+│     → Pregões eletrônicos                               │
+│     → Convênios com entidades municipalistas            │
+│                                                         │
+└─────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="funil-de-vendas-pipeline">4.2 Funil de Vendas (Pipeline)</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Estágio</th>
+<th style="text-align: center;">Taxa de Conversão</th>
+<th style="text-align: center;">Dias no Estágio</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Lead → Demonstração</td>
+<td style="text-align: center;">30%</td>
+<td style="text-align: center;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Demo → Trial</td>
+<td style="text-align: center;">60%</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Trial → Proposta</td>
+<td style="text-align: center;">50%</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Proposta → Fechamento</td>
+<td style="text-align: center;">40%</td>
+<td style="text-align: center;">10</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Lead → Cliente</strong></td>
+<td style="text-align: center;"><strong>3,6%</strong></td>
+<td style="text-align: center;"><strong>18 dias</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="estratégia-de-precificação">4.3 Estratégia de Precificação</h3>
+<p><strong>Filosofia:</strong> Preço baseado em valor, não em custo. O
+CityMotion reduz custos de frota em ~30%, o que para uma frota de 20
+veículos representa economia de ~R$ 200.000+/ano. O investimento de R$
+1.497/mês (Pro) representa <strong>~9% da economia gerada</strong>.</p>
+<p><strong>Estratégia de penetração:</strong> Preço competitivo no
+primeiro ano para acelerar adoção, com aumentos anuais de 10-15%.</p>
+<hr />
+<h2 id="operações">5. Operações</h2>
+<h3 id="estrutura-da-equipe">5.1 Estrutura da Equipe</h3>
+<div class="line-block">Ano 1 | Função | Qtde | Custo Mensal (R$)
+|<br />
+:— | :— | :—: | :—: |<br />
+🛠️ | Desenvolvimento (Full Stack) | 2 | 24.000 |<br />
+💼 | Comercial (SDR + Account Exec) | 2 | 12.000 |<br />
+🎨 | UI/UX (Meio período) | 1 | 5.000 |<br />
+☁️ | DevOps/Infra (Meio período) | 1 | 5.000 |<br />
+📞 | Suporte (Meio período) | 1 | 3.000 |<br />
+<strong>Total</strong> | | <strong>7</strong> | <strong>R$
+49.000</strong> |</div>
+<h3 id="custos-operacionais-mensais-ano-1">5.2 Custos Operacionais
+Mensais (Ano 1)</h3>
+<div class="line-block">Categoria | Valor Mensal (R$) |<br />
+:— | :—: |<br />
+Folha de Pagamento | 49.000 |<br />
+Infraestrutura (Cloud/Hospedagem) | 3.000 |<br />
+Marketing (Ads, conteúdo) | 5.000 |<br />
+Ferramentas (SaaS, licenças) | 2.000 |<br />
+Despesas Gerais | 3.000 |<br />
+<strong>Total</strong> | <strong>R$ 62.000</strong> |</div>
+<h3 id="tecnologia-e-infraestrutura">5.3 Tecnologia e
+Infraestrutura</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Recurso</th>
+<th style="text-align: left;">Fornecedor</th>
+<th style="text-align: center;">Custo Mensal</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Hospedagem</strong></td>
+<td style="text-align: left;">Render / VPS próprio</td>
+<td style="text-align: center;">R$ 500 - 2.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Domínio</strong></td>
+<td style="text-align: left;">Registro.br</td>
+<td style="text-align: center;">R$ 40/ano</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Email</strong></td>
+<td style="text-align: left;">Google Workspace</td>
+<td style="text-align: center;">R$ 30/usuario</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Monitoramento</strong></td>
+<td style="text-align: left;">Sentry (gratuito inicial)</td>
+<td style="text-align: center;">Grátis</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>CDN</strong></td>
+<td style="text-align: left;">Cloudflare</td>
+<td style="text-align: center;">Grátis</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="riscos-e-mitigações">6. Riscos e Mitigações</h2>
+<h3 id="matriz-de-riscos">6.1 Matriz de Riscos</h3>
+<table>
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Risco</th>
+<th style="text-align: center;">Probabilidade</th>
+<th style="text-align: center;">Impacto</th>
+<th style="text-align: left;">Mitigação</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Baixa adoção no segmento
+público</strong></td>
+<td style="text-align: center;">Média</td>
+<td style="text-align: center;">Alto</td>
+<td style="text-align: left;">Parcerias com consultorias de
+licitação</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Concorrência reduz
+preços</strong></td>
+<td style="text-align: center;">Média</td>
+<td style="text-align: center;">Médio</td>
+<td style="text-align: left;">Foco em White Label + LGPD (diferenciais
+únicos)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Dependência de um grande
+cliente</strong></td>
+<td style="text-align: center;">Baixa</td>
+<td style="text-align: center;">Alto</td>
+<td style="text-align: left;">Pulverizar base (máx 20% receita por
+cliente)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Problemas de
+segurança</strong></td>
+<td style="text-align: center;">Baixa</td>
+<td style="text-align: center;">Crítico</td>
+<td style="text-align: left;">Auditoria externa, 189+ testes
+automatizados</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Churn alto</strong></td>
+<td style="text-align: center;">Média</td>
+<td style="text-align: center;">Alto</td>
+<td style="text-align: left;">Programa de Customer Success
+estruturado</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Mudança regulatória
+(LGPD)</strong></td>
+<td style="text-align: center;">Baixa</td>
+<td style="text-align: center;">Médio</td>
+<td style="text-align: left;">Assessoria jurídica especializada</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Crise econômica</strong></td>
+<td style="text-align: center;">Média</td>
+<td style="text-align: center;">Médio</td>
+<td style="text-align: left;">Plano Basic acessível mantém receita
+base</td>
+</tr>
+</tbody>
+</table>
+<h3 id="plano-de-contingência">6.2 Plano de Contingência</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Cenário</th>
+<th style="text-align: left;">Ação</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>MRR abaixo de 50% da meta no mês
+6</strong></td>
+<td style="text-align: left;">Reduzir custos de marketing, focar em
+venda direta</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Churn &gt; 8% ao mês</strong></td>
+<td style="text-align: left;">Investigar causas, implementar programa de
+fidelidade</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Concorrente lança white
+label</strong></td>
+<td style="text-align: left;">Acelerar roadmap de IA e IoT como novo
+diferencial</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Demanda explode (&gt; 200
+clientes)</strong></td>
+<td style="text-align: left;">Migrar para infraestrutura escalável na
+AWS/GCP</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="marcos-e-metas-milestones">7. Marcos e Metas (Milestones)</h2>
+<h3 id="ano-1-validação-e-tração">Ano 1 — Validação e Tração</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Mês</th>
+<th style="text-align: left;">Marco</th>
+<th style="text-align: center;">Meta</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Mês 1</strong></td>
+<td style="text-align: left;">MVP completo validado</td>
+<td style="text-align: center;">0 clientes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Mês 2</strong></td>
+<td style="text-align: left;">Primeiro cliente pago</td>
+<td style="text-align: center;">1 cliente</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Mês 3</strong></td>
+<td style="text-align: left;">Programa de parceiros lançado</td>
+<td style="text-align: center;">3 clientes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Mês 6</strong></td>
+<td style="text-align: left;">10 clientes ativos</td>
+<td style="text-align: center;">10 clientes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Mês 9</strong></td>
+<td style="text-align: left;">Break-even operacional</td>
+<td style="text-align: center;">15 clientes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Mês 12</strong></td>
+<td style="text-align: left;">25 clientes, MRR R$ 37k</td>
+<td style="text-align: center;">25 clientes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ano-2-crescimento">Ano 2 — Crescimento</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Trimestre</th>
+<th style="text-align: left;">Marco</th>
+<th style="text-align: center;">Meta</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Q1</strong></td>
+<td style="text-align: left;">App mobile nativo (React Native)</td>
+<td style="text-align: center;">35 clientes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Q2</strong></td>
+<td style="text-align: left;">IA Preditiva em beta</td>
+<td style="text-align: center;">50 clientes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Q3</strong></td>
+<td style="text-align: left;">Otimização de rotas (Google Maps)</td>
+<td style="text-align: center;">65 clientes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Q4</strong></td>
+<td style="text-align: left;">80 clientes ativos</td>
+<td style="text-align: center;">80 clientes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ano-3-escala">Ano 3 — Escala</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Trimestre</th>
+<th style="text-align: left;">Marco</th>
+<th style="text-align: center;">Meta</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Q1</strong></td>
+<td style="text-align: left;">Expansão internacional (América
+Latina)</td>
+<td style="text-align: center;">100 clientes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Q2</strong></td>
+<td style="text-align: left;">Marketplace de integrações</td>
+<td style="text-align: center;">130 clientes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Q3</strong></td>
+<td style="text-align: left;">150 clientes</td>
+<td style="text-align: center;">150 clientes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Q4</strong></td>
+<td style="text-align: left;">200 clientes, ARR R$ 3,6M</td>
+<td style="text-align: center;">200 clientes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="análise-de-roi-para-o-cliente">8. Análise de ROI para o
+Cliente</h2>
+<h3 id="calculadora-de-roi">8.1 Calculadora de ROI</h3>
+<p><strong>Exemplo: Frota de 20 veículos — Prefeitura de Médio
+Porte</strong></p>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 26%" />
+<col style="width: 26%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Item</th>
+<th style="text-align: center;">Antes (sem CityMotion)</th>
+<th style="text-align: center;">Depois (com CityMotion)</th>
+<th style="text-align: center;">Economia Anual</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Combustível (R<span
+class="math inline">)|360.000|270.000|90.000(25</span>)</td>
+<td style="text-align: center;">120.000</td>
+<td style="text-align: center;">84.000</td>
+<td style="text-align: center;">36.000 (30%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Horas Administrativas</td>
+<td style="text-align: center;">80h/mês</td>
+<td style="text-align: center;">15h/mês</td>
+<td style="text-align: center;">65h/mês</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Multas/Infrações</td>
+<td style="text-align: center;">15/ano</td>
+<td style="text-align: center;">3/ano</td>
+<td style="text-align: center;">12/ano</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Veículos Parados</td>
+<td style="text-align: center;">12 dias/ano</td>
+<td style="text-align: center;">4 dias/ano</td>
+<td style="text-align: center;">8 dias/ano</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Custo Operacional
+Total</strong></td>
+<td style="text-align: center;"><strong>R$ 580.000</strong></td>
+<td style="text-align: center;"><strong>R$ 405.000</strong></td>
+<td style="text-align: center;"><strong>R$ 175.000</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Investimento CityMotion (Pro):</strong> R$ 17.964/ano<br />
+<strong>ROI:</strong> <strong>974%</strong> (economia de R$ 175.000 ÷
+investimento de R$ 17.964)<br />
+<strong>Payback:</strong> Menos de 2 meses</p>
+</blockquote>
+<h3 id="benefícios-não-financeiros">8.2 Benefícios Não-Financeiros</h3>
+<ul>
+<li>✅ <strong>Transparência pública</strong> — Atende Lei de Acesso à
+Informação</li>
+<li>✅ <strong>Conformidade LGPD</strong> — Evita multas de até 2% do
+faturamento</li>
+<li>✅ <strong>Sustentabilidade</strong> — Redução de emissões por
+otimização de rotas<br />
+</li>
+<li>✅ <strong>Segurança dos colaboradores</strong> — Checklist
+obrigatório antes de cada viagem</li>
+<li>✅ <strong>Digitalização</strong> — Elimina papel e planilhas
+manuais</li>
+<li>✅ <strong>Tomada de decisão</strong> — Dados em tempo real para
+gestores</li>
+</ul>
+<hr />
+<h2 id="aspectos-legais">9. Aspectos Legais</h2>
+<h3 id="estrutura-societária">9.1 Estrutura Societária</h3>
+<ul>
+<li><strong>Tipo:</strong> Sociedade Limitada (LTDA)</li>
+<li><strong>CNPJ:</strong> A definir</li>
+<li><strong>Sócios:</strong> A definir</li>
+<li><strong>Capital Social:</strong> A definir</li>
+</ul>
+<h3 id="contratos">9.2 Contratos</h3>
+<ul>
+<li><strong>Contrato de Adesão SaaS:</strong> Termos de uso e SLA</li>
+<li><strong>Contrato White Label:</strong> Direitos de marca e
+personalização</li>
+<li><strong>LGPD:</strong> DPO (Encarregado de Dados) designado</li>
+<li><strong>Termos de Privacidade:</strong> Política em conformidade com
+Lei 13.709/2018</li>
+</ul>
+<h3 id="propriedade-intelectual">9.3 Propriedade Intelectual</h3>
+<ul>
+<li><strong>Código-fonte:</strong> Propriedade exclusiva da CityMotion
+Tecnologia</li>
+<li><strong>Marca:</strong> Registro INPI (Classes 9, 38, 42)</li>
+<li><strong>Licenciamento:</strong> Concedido por assinatura, não por
+venda</li>
+</ul>
+<hr />
+<h2 id="conclusão">10. Conclusão</h2>
+<h3 id="resumo-da-oportunidade">10.1 Resumo da Oportunidade</h3>
+<p>O CityMotion está posicionado em um mercado de <strong>R$ 5 bilhões
+no Brasil</strong>, crescendo 15%+ ao ano, com um produto que oferece
+<strong>diferenciais competitivos únicos</strong> (White Label,
+SQLite+PostgreSQL, LGPD Nativa, Socket.IO Real-time). O modelo de
+negócio SaaS gera <strong>receita recorrente previsível</strong> com
+margens crescentes.</p>
+<h3 id="fatores-críticos-de-sucesso">10.2 Fatores Críticos de
+Sucesso</h3>
+<ol type="1">
+<li>✅ <strong>Produto maduro</strong> — 12+ módulos funcionais, 189+
+testes</li>
+<li>✅ <strong>Diferenciais únicos</strong> — White Label + Dual Engine
++ LGPD + Tempo Real</li>
+<li>✅ <strong>TAM significativo</strong> — Milhares de prefeituras e
+empresas</li>
+<li>✅ <strong>ROI comprovado</strong> — 974% de retorno para o
+cliente</li>
+<li>✅ <strong>Stack moderna</strong> — Fastify + Drizzle + Socket.IO +
+Docker</li>
+</ol>
+<h3 id="pedido-de-investimento-se-aplicável">10.3 Pedido de Investimento
+(Se Aplicável)</h3>
+<p>Para acelerar o crescimento, o CityMotion busca:</p>
+<table>
+<colgroup>
+<col style="width: 44%" />
+<col style="width: 55%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Item</th>
+<th style="text-align: center;">Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Rodada Seed</strong></td>
+<td style="text-align: center;">R$ 500.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Equity Offering</strong></td>
+<td style="text-align: center;">15-20%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Uso dos Recursos</strong></td>
+<td style="text-align: center;">Equipe comercial (40%), Marketing (30%),
+Desenvolvimento (20%), Operações (10%)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<blockquote>
+<p><strong>“Mobilidade, transparência e eficiência para a gestão
+moderna.”</strong></p>
+</blockquote>
+<hr />
+<p><em>Documento confidencial — CityMotion Tecnologia Ltda.</em><br />
+<em>Este plano de negócios contém informações proprietárias. Não
+distribuir sem autorização.</em></p>
+<hr />
+<h2 id="apêndices">📋 Apêndices</h2>
+<h3 id="a.-glossário">A. Glossário</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Termo</th>
+<th style="text-align: left;">Definição</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>SaaS</strong></td>
+<td style="text-align: left;">Software as a Service — software por
+assinatura</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>White Label</strong></td>
+<td style="text-align: left;">Produto que pode ser rebranded com a marca
+do cliente</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>RBAC</strong></td>
+<td style="text-align: left;">Role-Based Access Control — controle por
+papéis</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>LGPD</strong></td>
+<td style="text-align: left;">Lei Geral de Proteção de Dados (Lei
+13.709/2018)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Fastify</strong></td>
+<td style="text-align: left;">Framework Node.js de alto desempenho para
+APIs</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Drizzle ORM</strong></td>
+<td style="text-align: left;">ORM type-safe para TypeScript</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Socket.IO</strong></td>
+<td style="text-align: left;">Biblioteca para WebSockets e tempo
+real</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>MRR</strong></td>
+<td style="text-align: left;">Monthly Recurring Revenue — receita mensal
+recorrente</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>ARR</strong></td>
+<td style="text-align: left;">Annual Recurring Revenue — receita anual
+recorrente</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>CAC</strong></td>
+<td style="text-align: left;">Customer Acquisition Cost — custo de
+aquisição de cliente</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>LTV</strong></td>
+<td style="text-align: left;">Lifetime Value — valor do tempo de vida do
+cliente</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Churn</strong></td>
+<td style="text-align: left;">Taxa de cancelamento de clientes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b.-referências">B. Referências</h3>
+<ul>
+<li>Lei 13.709/2018 (LGPD)</li>
+<li>Lei 12.527/2011 (Lei de Acesso à Informação)</li>
+<li>Lei 8.666/1993 (Lei de Licitações)</li>
+<li>ISO 55000 (Gestão de Ativos)</li>
+</ul>
+<hr />
+<p><strong>CityMotion — Inteligência em mobilidade para a gestão
+corporativa moderna.</strong></p>
