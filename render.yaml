@@ -31,7 +31,7 @@ services:
     region: ohio
     plan: free
     branch: main
-    buildCommand: cd backend && npm install --include=dev && cd ..
+    buildCommand: cd backend && npm install --include=dev && npx drizzle-kit push && npx tsx src/db/seed.ts && cd ..
     startCommand: cd backend && npx tsx src/index.ts
     healthCheckPath: /api/health
 
