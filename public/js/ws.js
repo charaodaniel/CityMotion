@@ -97,20 +97,38 @@ const WS = {
         if (!current) return;
 
         let updated;
-        switch (action) {
-          case 'create':
-            updated = [data, ...current];
-            break;
-          case 'update':
-            updated = current.map(item =>
-              item.id === data.id ? { ...item, ...data } : item
-            );
-            break;
-          case 'delete':
-            updated = current.filter(item => item.id !== data.id);
-            break;
-          default:
-            updated = current;
+
+        // Mensagens: ordenar por timestamp e evitar duplicatas
+        if (entity === 'messages') {
+          const dataId = String(data.id);
+          const exists = current.some(m => String(m.id) === dataId);
+          if (exists) return; // já existe, ignorar
+
+          switch (action) {
+            case 'create':
+              updated = [...current, data].sort((a, b) =>
+                new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()
+              );
+              break;
+            default:
+              updated = current;
+          }
+        } else {
+          switch (action) {
+            case 'create':
+              updated = [data, ...current];
+              break;
+            case 'update':
+              updated = current.map(item =>
+                String(item.id) === String(data.id) ? { ...item, ...data } : item
+              );
+              break;
+            case 'delete':
+              updated = current.filter(item => String(item.id) !== String(data.id));
+              break;
+            default:
+              updated = current;
+          }
         }
 
         Store.set(entity, updated);

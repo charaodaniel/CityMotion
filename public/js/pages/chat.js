@@ -7,9 +7,27 @@ export default function ChatPage(container, Store, API) {
     selectedUserId: null,
     search: '',
     newMessage: '',
+    unreadMap: {}, // { userId: count }
   };
 
   function upd(partial) { state = { ...state, ...partial }; }
+
+  // Calcular mensagens não lidas por contato
+  function computeUnread() {
+    const user = Store.get('user');
+    const messages = Store.get('messages') || [];
+    if (!user) return {};
+    const userIdStr = String(user.id);
+    const unread = {};
+    for (const m of messages) {
+      // Mensagens de OUTROS para MIM, não lidas
+      if (String(m.receiverId) === userIdStr && !m.isRead) {
+        const sender = String(m.senderId);
+        unread[sender] = (unread[sender] || 0) + 1;
+      }
+    }
+    return unread;
+  }
 
   function getRoleBadge(role) {
     const r = (role || '').toLowerCase();
@@ -106,16 +124,20 @@ export default function ChatPage(container, Store, API) {
           </div>
           <div class="flex-1 overflow-y-auto p-2 space-y-0.5" id="contactList">
             ${filtered.length > 0 ? filtered.map(e => {
-              const isActive = e.id === state.selectedUserId;
+              const eid = String(e.id);
+              const isActive = eid === state.selectedUserId;
+              const unreadCount = state.unreadMap[eid] || 0;
               return `
               <button class="w-full flex items-center gap-3 p-2.5 rounded-lg transition-all text-left group ${isActive ? 'bg-primary/10 border border-primary/20' : 'hover:bg-zinc-800/30 border border-transparent'}" data-user-id="${e.id}">
                 <div class="relative shrink-0">
                   <div class="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center text-sm font-bold text-zinc-400 border border-zinc-700/50">${(e.name || '?')[0]}</div>
+                  ${unreadCount > 0 && !isActive ? `<div class="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-primary text-white text-[8px] font-bold flex items-center justify-center shadow-lg shadow-primary/30">${unreadCount > 9 ? '9+' : unreadCount}</div>` : ''}
                   <div class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-zinc-950 ${e.status === 'Disponível' ? 'bg-emerald-500' : 'bg-zinc-600'}"></div>
                 </div>
                 <div class="flex-1 overflow-hidden text-left">
                   <p class="text-xs font-bold truncate text-zinc-200">${e.name}</p>
                   <p class="text-[9px] text-zinc-500 uppercase tracking-widest truncate">${e.role}</p>
+                  ${unreadCount > 0 && !isActive ? `<p class="text-[8px] text-primary font-bold mt-0.5">${unreadCount} mensagem(ns) nova(s)</p>` : ''}
                 </div>
               </button>`;
             }).join('') : `
@@ -208,7 +230,11 @@ export default function ChatPage(container, Store, API) {
     container.addEventListener('click', e => {
       const btn = e.target.closest('[data-user-id]');
       if (btn) {
-        upd({ selectedUserId: btn.dataset.userId });
+        const userId = btn.dataset.userId;
+        // Limpar não-lidas para este contato
+        const unreadMap = { ...state.unreadMap };
+        delete unreadMap[userId];
+        upd({ selectedUserId: userId, unreadMap });
         render();
         setTimeout(() => {
           const ca = document.getElementById('chatMessages');
@@ -242,15 +268,16 @@ export default function ChatPage(container, Store, API) {
   // ----------------------------------------------------------
   //  Subscriptions
   // ----------------------------------------------------------
-  const unsubEmployees = Store.on('employees', render);
+  const unsubEmployees = Store.on('employees', () => { upd({ unreadMap: computeUnread() }); render(); });
   const unsubMessages = Store.on('messages', () => {
+    upd({ unreadMap: computeUnread() });
     render();
     setTimeout(() => {
       const ca = document.getElementById('chatMessages');
       if (ca) ca.scrollTop = ca.scrollHeight;
     }, 50);
   });
-  const unsubUser = Store.on('user', render);
+  const unsubUser = Store.on('user', () => { upd({ unreadMap: computeUnread() }); render(); });
 
   // ----------------------------------------------------------
   //  Render inicial
