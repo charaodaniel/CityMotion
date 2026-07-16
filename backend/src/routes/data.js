@@ -10,6 +10,7 @@ import {
   createRefuelingSchema,
   createRequestSchema
 } from "../schemas/index.js";
+import { isPostgresEnabled } from "../config/env.js";
 import { getIO } from "../plugins/websocket.js";
 import { getRlsClient, withRlsFallback } from "../supabase/rls-helper.js";
 import { createSupabaseAuthUser, isSupabaseEnabled } from "../supabase/client.js";
@@ -337,8 +338,11 @@ async function dataRoutes(fastify) {
   }, async () => {
     try {
       const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+      const monthExpr = isPostgresEnabled()
+        ? sql`EXTRACT(MONTH FROM date)`
+        : sql`strftime('%m', date)`;
       const refuelingStats = await db.select({
-        month: sql`strftime('%m', date)`.as("month_num"),
+        month: monthExpr.as("month_num"),
         totalSpent: sql`SUM(total_value)`.as("total_spent"),
         count: sql`COUNT(*)`.as("count")
       }).from(schema.refuelings).groupBy(sql`month_num`).orderBy(sql`month_num ASC`);
