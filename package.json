@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "npm run db:init && concurrently -k -n \"FRONT,BACK\" -c \"blue,green\" \"npm:dev:frontend\" \"npm:dev:backend\"",
     "dev:frontend": "npx kill-port 9002 || true; sleep 2; next dev --turbopack -p 9002",
+    "build:spa": "npx tailwindcss -c tailwind.public.config.js -i ./public/css/input.css -o ./public/css/tailwind.css --minify",
     "dev:backend": "cd backend && (npx kill-port 3001 || true) && npm run dev",
     "genkit:dev": "genkit start -- node src/ai/dev.js",
     "genkit:watch": "genkit start -- node --watch src/ai/dev.js",
