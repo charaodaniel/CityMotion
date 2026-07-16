@@ -12,27 +12,49 @@ O CityMotion possui duas interfaces: a **SPA Clássica** (HTML/JS/CSS) servida p
 public/
 ├── app.html                  # Shell da aplicação (layout + injeção de páginas)
 ├── index.html                # Página de login (/login)
+├── offline.html              # Página offline para PWA
+├── sw.js                     # Service Worker (cache offline, PWA)
+├── manifest.json             # Manifest PWA
+├── icons/                    # Ícones PWA (SVG)
 ├── css/
-│   └── styles.css            # Estilos globais NexusOS (dark theme)
+│   ├── styles.css            # Estilos globais NexusOS (dark theme)
+│   └── tailwind.css          # Tailwind CSS compilado
 ├── js/
 │   ├── app.js                # Roteador SPA + injeção de conteúdo
 │   ├── store.js              # Gerenciamento de estado global (pub/sub)
-│   ├── api.js                # Cliente HTTP (fetch wrapper + JWT)
+│   ├── api.js                # Cliente HTTP (fetch wrapper + JWT, _request centralizado)
 │   ├── ws.js                 # Cliente Socket.IO (notificações em tempo real)
 │   ├── toast.js              # Sistema de notificações Toast
-│   └── pages/                # Páginas da aplicação
-│       ├── dashboard.js      # Dashboard com KPIs e gráficos
-│       ├── veiculos.js       # Gestão da frota
-│       ├── funcionarios.js   # Gestão de pessoas
-│       ├── setores.js        # Setores da organização
-│       ├── viagens.js        # Agendamento e controle de viagens
-│       ├── abastecimento.js  # Registro de abastecimentos
-│       ├── manutencao.js     # Kanban de manutenção
-│       ├── escalas.js        # Escalas de trabalho
-│       ├── chat.js           # Mensagens entre funcionários
-│       ├── relatorios.js     # Relatórios e estatísticas
-│       ├── perfil.js         # Perfil do usuário
-│       └── settings.js       # Configurações (operações + infraestrutura)
+│   ├── format-utils.js       # Helpers compartilhados: formatDate, formatDateTime, formatCurrency
+│   ├── color-utils.js        # Helpers: hexToRgb
+│   ├── dom-utils.js          # Helpers: loadScript, loadStylesheet
+│   ├── pwa-install.js        # Gerenciador de instalação PWA (beforeinstallprompt)
+│   └── pages/                # Páginas da aplicação (modulares)
+│       ├── dashboard.js      # Dashboard (monolítico, 142 linhas)
+│       ├── veiculos.js       # Re-export → veiculos/index.js
+│       │   └── veiculos/
+│       │       ├── index.js  # Estado, CRUD, eventos
+│       │       └── modals.js # HTML puro (formulários, tabelas)
+│       ├── funcionarios.js   # Re-export → funcionarios/index.js
+│       │   └── funcionarios/
+│       │       ├── index.js
+│       │       └── modals.js
+│       ├── viagens.js        # Re-export → viagens/index.js
+│       │   └── viagens/
+│       │       ├── index.js  # Estado, geo, PDF, mapa Leaflet, eventos
+│       │       ├── modals.js # Modais de checklist, detalhes, incidentes
+│       │       ├── kanban.js # Kanban boards + mapa
+│       │       └── data.js   # Constantes (checklists, categorias)
+│       ├── abastecimento/    # Modular (index.js + modals.js)
+│       ├── chat/             # Modular (index.js + modals.js)
+│       ├── escalas/          # Modular (index.js + modals.js)
+│       ├── manutencao/       # Modular (index.js + modals.js)
+│       ├── meus-relatorios/  # Modular (index.js + modals.js)
+│       ├── perfil/           # Modular (index.js + modals.js)
+│       ├── setores/          # Modular (index.js + modals.js)
+│       ├── settings/         # Modular (index.js + modals.js)
+│       ├── relatorios.js     # Relatórios (monolítico, 145 linhas)
+│       └── perfil.js         # Re-export
 ```
 
 ### Roteamento SPA

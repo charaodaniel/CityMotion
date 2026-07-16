@@ -41,9 +41,12 @@
 | **📅 Escalas** | Agenda de trabalho diária/semanal/mensal/plantão | Admin, Gestor |
 | **🏢 Setores** | Estrutura organizacional e alocação | Admin |
 | **💬 Chat** | Mensagens internas com filtro por setor | Todos |
-| **📈 Relatórios** | Estatísticas, gráficos de telemetria (Chart.js) | Admin, Gestor |
+| **📈 Relatórios** | Estatísticas, gráficos de telemetria, exportação PDF | Admin, Gestor |
+| **📄 Meus Relatórios** | Histórico pessoal de viagens + exportação PDF para motoristas | Motorista |
+| **💬 Chat** | Mensagens internas em tempo real via WebSocket com indicador de digitação | Todos |
 | **⚙️ Configurações** | Operações (regras) + Infraestrutura (DB, CORS, SMTP) | Dev/Admin |
 | **🖥️ Terminal Dev** | Console TTY para diagnóstico | Dev |
+| **📱 PWA** | Instalável como app, service worker com cache offline, banner de instalação | Todos |
 
 ---
 
@@ -52,13 +55,16 @@
 ```
 [Navegador] ← HTTP + WebSocket → [Fastify :3001]
                                     ├── API REST (/api/*)
-                                    ├── Socket.IO (tempo real)
+                                    ├── Socket.IO (tempo real, digitação)
                                     ├── SPA Frontend (servido em /)
+                                    ├── PWA Service Worker (cache + offline)
                                     └── Swagger (/docs)
                                            │
-                                    [SQLite / PostgreSQL]
+                              [SQLite (dev) / PostgreSQL (prod)]
                                            │
-                                    Drizzle ORM (type-safe)
+                              Drizzle ORM (multi-engine)
+                                           │
+                              [Supabase Auth — opcional]
 ```
 
 ### Stack
@@ -66,15 +72,18 @@
 | Camada | Tecnologia |
 | :--- | :--- |
 | **Frontend** | SPA HTML/JS/CSS + Tailwind + Chart.js + Lucide Icons |
-| **Backend** | Fastify + TypeScript + Drizzle ORM |
-| **Autenticação** | JWT (@fastify/jwt) + Bcrypt |
-| **Segurança** | Rate Limiting + CORS + Zod Validation + RBAC (6 níveis) |
-| **Tempo Real** | Socket.IO (WebSockets + notificações) |
+| **Frontend** | SPA HTML/JS/CSS modular (refatorado em módulos) + Tailwind + Lucide Icons |
+| **Backend** | Fastify + JavaScript (ESM) + Drizzle ORM |
+| **Autenticação** | JWT (jsonwebtoken) + Supabase Auth (dual mode) + Bcrypt |
+| **Segurança** | Rate Limiting + CORS + Zod Validation + RBAC (6 níveis) + RLS |
+| **Tempo Real** | Socket.IO (WebSockets + notificações + indicador digitação) |
 | **Banco Padrão** | SQLite3 (better-sqlite3) — portátil, offline |
 | **Banco Nuvem** | PostgreSQL — produção escalável |
 | **Container** | Docker multi-estágio + Docker Compose |
-| **Hospedagem** | Render Blueprint, On-premise |
+| **Hospedagem** | Render Blueprint + deploy automático via GitHub |
+| **Banco Nuvem** | PostgreSQL gerenciado pelo Render (free tier) |
 | **Qualidade** | 189+ testes (Vitest + jsdom) |
+| **PWA** | Service Worker com cache, instalável, offline page |
 
 ---
 
@@ -151,9 +160,15 @@ cd backend && npm test
 Motor dual SQLite/PostgreSQL, segurança JWT/Bcrypt/Rate Limiting/CORS, 12 módulos, dashboard adaptativo, painel de configurações, terminal dev.
 
 ### ✅ Fase 2 — Conectividade
-WebSockets (Socket.IO), notificações em tempo real, chat interno, toast notifications (42 alert() substituídos), relatórios Chart.js, 189+ testes.
+WebSockets (Socket.IO), notificações em tempo real, chat interno com digitação, toast notifications (42 alert() substituídos), 189+ testes.
 
-### 🔜 Fase 3 — Inteligência
+### ✅ Fase 3 — Refatoração & PWA
+Todas as 12 páginas refatoradas em módulos (index.js + modals.js), Service Worker com cache offline, instalável como PWA, helpers centralizados (format-utils, color-utils, dom-utils), otimizações backend (Promise.allSettled, utils/role.js, utils/employee.js).
+
+### ✅ Fase 4 — Deploy & Infraestrutura
+drizzle-kit push automático no build do Render, Supabase Auth opcional (dual mode), render.yaml como Infrastructure as Code, Docker multi-estágio.
+
+### 🔜 Fase 5 — Inteligência
 IA preditiva para manutenção, BI avançado, Google Maps, app mobile nativo.
 
 ---

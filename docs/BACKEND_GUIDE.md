@@ -8,33 +8,44 @@ Este guia detalha a arquitetura, segurança e manutenção do backend CityMotion
 
 ```
 backend/
-├── src/                        # Código-fonte TypeScript
-│   ├── index.ts                # Ponto de entrada (carrega .env, inicia server)
-│   ├── app.ts                  # Factory do Fastify + plugins + rotas
+├── src/                        # Código-fonte JavaScript (ESM)
+│   ├── index.js                # Ponto de entrada (carrega .env, inicia server)
+│   ├── app.js                  # Factory do Fastify + plugins + rotas
 │   ├── config/
-│   │   └── env.ts              # Validação Zod das variáveis de ambiente
+│   │   └── env.js              # Validação Zod das variáveis de ambiente
 │   ├── db/
-│   │   ├── index.ts            # Conexão multi-engine (SQLite / PostgreSQL)
-│   │   ├── pg-schema.ts        # Schema Drizzle para PostgreSQL
-│   │   ├── sqlite-schema.ts    # Schema Drizzle para SQLite
-│   │   └── seed.ts             # Popula banco com dados iniciais
+│   │   ├── index.js            # Conexão multi-engine (SQLite / PostgreSQL)
+│   │   ├── pg-schema.js        # Schema Drizzle para PostgreSQL
+│   │   ├── sqlite-schema.js    # Schema Drizzle para SQLite
+│   │   └── seed.js             # Popula banco com dados iniciais
 │   ├── plugins/
-│   │   ├── auth.ts             # Plugin JWT do Fastify
-│   │   └── websocket.ts        # Socket.IO server
+│   │   ├── auth-supabase.js    # Plugin de autenticação (dual: Supabase + JWT fallback)
+│   │   └── websocket.js        # Socket.IO server
 │   ├── routes/
-│   │   ├── auth.ts             # Login, forgot/reset password
-│   │   ├── data.ts             # Employees, vehicles, trips, etc.
-│   │   └── infrastructure.ts   # Config, DB test, SMTP test
+│   │   ├── auth.js             # Login, forgot/reset password
+│   │   ├── data.js             # Employees, vehicles, trips, messages, refuelings, etc.
+│   │   ├── infrastructure.js   # Config, DB test, SMTP test
+│   │   └── report-templates.js # Templates de relatório personalizados
 │   ├── schemas/
-│   │   └── index.ts            # Schemas Zod compartilhados
+│   │   └── index.js            # Schemas Zod compartilhados
+│   ├── supabase/
+│   │   ├── client.js           # Clientes Supabase (admin, user, RLS)
+│   │   └── rls-helper.js       # withRlsFallback() para rotas com RLS
+│   ├── utils/
+│   │   ├── role.js             # hasRole() e hasInfraAccess() centralizados
+│   │   ├── employee.js         # stripPassword() para remover senha de objetos
+│   │   └── sector.js           # sanitizeSector() para parse de JSON de setores
 │   └── tests/
-│       ├── setup.ts            # Setup de testes vitest
-│       └── auth.test.ts        # Testes de autenticação
-├── server.js                   # ⚠️ Legado (Express, mantido para referência)
-├── services/
-│   └── emailService.js         # Serviço de e-mail (Nodemailer)
-├── drizzle.config.ts           # Configuração Drizzle Kit
-├── vitest.config.ts            # Configuração de testes
+│       ├── setup.js            # Setup de testes vitest
+│       ├── auth.test.js        # Testes de autenticação
+│       └── sector.test.js      # Testes do helper sanitizeSector
+├── scripts/
+│   ├── migrate.js              # Migrações cirúrgicas (ex: ADD COLUMN supabase_user_id)
+│   └── init-db.cjs             # Script legado de inicialização SQLite
+├── drizzle/
+│   └── migrations/             # Migrações Drizzle geradas
+├── drizzle.config.js           # Configuração Drizzle Kit
+├── vitest.config.js            # Configuração de testes
 └── package.json
 ```
 
@@ -42,32 +53,41 @@ backend/
 
 ## 1. 🔐 Segurança
 
-### 1.1 JWT com @fastify/jwt
+### 1.1 Autenticação Dual (Supabase + JWT fallback)
 
-O Fastify utiliza o plugin `@fastify/jwt` para autenticação stateless:
+O Fastify utiliza `auth-supabase.js` com modo dual:
+- **Supabase Auth:** Quando `SUPABASE_URL` está configurado, usa `@supabase/server` para verificar tokens
+- **JWT manual:** Fallback com `jsonwebtoken` quando Supabase não está disponível
 
-```typescript
-// plugins/auth.ts
-import fp from 'fastify-plugin';
-import { FastifyInstance } from 'fastify';
+```javascript
+// plugins/auth-supabase.js
+import fp from "fastify-plugin";
+import { verifyAuth } from "@supabase/server/core";
+import jwt from "jsonwebtoken";
 
-export default fp(async function (fastify: FastifyInstance) {
-  const env = getEnv();
-  
-  await fastify.register(import('@fastify/jwt'), {
-    secret: env.JWT_SECRET,
-    sign: { expiresIn: '8h' },
-  });
+async function supabaseAuthPlugin(fastify) {
+  const useSupabase = isSupabaseEnabled();
 
-  // Decorator para verificação em rotas
-  fastify.decorate('authenticate', async function (request, reply) {
+  fastify.decorate("authenticate", async (request, reply) => {
+    const token = authHeader && authHeader.split(" ")[1];
+    if (!token) return reply.status(401).send({ message: "Token não fornecido." });
+
     try {
-      await request.jwtVerify();
+      if (useSupabase) {
+        // Verifica token no Supabase
+        const { data: authData } = await verifyAuth(webRequest, { auth: "user" });
+        // Busca employee pelo email
+        request.user = { ... };
+      } else {
+        // Fallback JWT manual
+        const decoded = jwt.verify(token, getEnv().JWT_SECRET);
+        request.user = decoded;
+      }
     } catch (err) {
-      reply.status(401).send({ message: 'Token inválido ou expirado.' });
+      return reply.status(403).send({ message: "Token inválido." });
     }
   });
-});
+}
 ```
 
 ### 1.2 Senhas com Bcrypt
@@ -118,6 +138,10 @@ Validadas com Zod em `config/env.ts`:
 | `SMTP_USER` | ❌ | `''` | Usuário SMTP |
 | `SMTP_PASS` | ❌ | `''` | Senha SMTP |
 | `SMTP_SECURE` | ❌ | `false` | TLS/SSL |
+| `SUPABASE_URL` | ❌ | `''` | URL do projeto Supabase |
+| `SUPABASE_ANON_KEY` | ❌ | `''` | Chave anônima Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | ❌ | `''` | Chave de serviço Supabase (admin) |
+| `SUPABASE_JWKS_URL` | ❌ | `''` | JWKS URL para verificação de tokens |
 
 ```bash
 # Gerar JWT_SECRET
