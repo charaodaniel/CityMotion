@@ -1,149 +1,194 @@
 /**
- * Tests for GET /api/analytics/telemetry
+ * Unit tests for GET /api/analytics/telemetry
  *
- * Builds the full Fastify app with SQLite in-memory,
- * inserts test refueling data, and verifies the telemetry
- * endpoint returns correct month-by-month cost/volume aggregation.
+ * Uses vi.mock() to mock the database and config layers,
+ * allowing controlled test scenarios without a real database.
+ *
+ * The drizzle query chain is mocked at the module level:
+ *   db.select().from().groupBy().orderBy() → Promise
+ *
+ * The route handler captures `db` and `schema` during buildApp(),
+ * so mocking getDb() AFTER buildApp() has no effect.
+ * Instead, we control the query result via mockDbResult.value
+ * and a shouldReject flag inside the mock chain itself.
  */
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { buildApp } from "../app.js";
-import { getDb, getSchema } from "../db/index.js";
-import { eq } from "drizzle-orm";
+import { vi, describe, it, expect, beforeAll, afterAll } from "vitest";
 import jwt from "jsonwebtoken";
 
-const TEST_JWT_SECRET = "test-secret-key-for-unit-tests-min-32-chars!!";
+// ── Mock state (shared via vi.hoisted, mutable between tests) ──
+const mockDbResult = vi.hoisted(() => ({ value: [], shouldReject: false }));
+const mockIsPostgres = vi.hoisted(() => ({ value: false }));
 
+// ── Mock database module ───────────────────────────────────
+// The mock chain returns a Promise (drizzle queries are thenable).
+// We use mockDbResult.value for data and mockDbResult.shouldReject for errors.
+vi.mock("../db/index.js", () => ({
+  getDb: () => ({
+    select: () => ({
+      from: () => ({
+        groupBy: () => ({
+          orderBy: () =>
+            mockDbResult.shouldReject
+              ? Promise.reject(new Error("Simulated database error"))
+              : Promise.resolve(mockDbResult.value),
+        }),
+      }),
+    }),
+  }),
+  getSchema: () => ({ refuelings: {} }),
+  pgSchema: {},
+  sqliteSchema: {},
+}));
+
+// ── Mock config module ─────────────────────────────────────
+// Override isPostgresEnabled to use mockIsPostgres.value
+vi.mock("../config/env.js", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    isPostgresEnabled: () => mockIsPostgres.value,
+  };
+});
+
+// ── Imports after mocks ────────────────────────────────────
+import { buildApp } from "../app.js";
+
+const TEST_JWT_SECRET = "test-secret-key-for-unit-tests-min-32-chars!!";
 let app;
 let token;
-let testIds = [];
 
 beforeAll(async () => {
   process.env.JWT_SECRET = TEST_JWT_SECRET;
+  // DATABASE_URL is irrelevant because config/env is mocked,
+  // but we keep it empty for safety
   process.env.DATABASE_URL = "";
   app = await buildApp();
-
-  // Generate a valid JWT for authentication
   token = jwt.sign(
     { id: 999, name: "Test Admin", role: "Desenvolvedor Global" },
     TEST_JWT_SECRET
   );
-
-  // Insert test refueling data directly into SQLite
-  const db = getDb();
-  const schema = getSchema();
-
-  // Clear any existing refuelings first (to keep test isolated)
-  await db.delete(schema.refuelings);
-
-  // Insert refuelings across 3 different months
-  const refuelings = [
-    { vehicleId: "1", vehicleModel: "Test Car", licensePlate: "TEST-001", date: "2024-01-15", liters: 50, price: 6.0, totalValue: 300, fuelType: "Gasolina", gasStation: "Posto Teste", driverName: "João", notes: "" },
-    { vehicleId: "1", vehicleModel: "Test Car", licensePlate: "TEST-001", date: "2024-01-20", liters: 40, price: 6.0, totalValue: 240, fuelType: "Gasolina", gasStation: "Posto Teste", driverName: "João", notes: "" },
-    { vehicleId: "2", vehicleModel: "Test Van", licensePlate: "TEST-002", date: "2024-02-10", liters: 60, price: 5.5, totalValue: 330, fuelType: "Diesel", gasStation: "Posto Teste", driverName: "Maria", notes: "" },
-    { vehicleId: "2", vehicleModel: "Test Van", licensePlate: "TEST-002", date: "2024-03-05", liters: 45, price: 5.5, totalValue: 247.5, fuelType: "Diesel", gasStation: "Posto Teste", driverName: "Maria", notes: "" },
-    { vehicleId: "1", vehicleModel: "Test Car", licensePlate: "TEST-001", date: "2024-03-25", liters: 55, price: 6.0, totalValue: 330, fuelType: "Gasolina", gasStation: "Posto Teste", driverName: "João", notes: "" },
-  ];
-
-  for (const r of refuelings) {
-    const result = await db.insert(schema.refuelings).values(r).returning();
-    testIds.push(result[0].id);
-  }
 });
 
 afterAll(async () => {
-  // Clean up test data BEFORE closing app
-  const db = getDb();
-  const schema = getSchema();
-  for (const id of testIds) {
-    try { await db.delete(schema.refuelings).where(eq(schema.refuelings.id, id)); } catch {}
-  }
   await app.close();
 });
 
 describe("GET /api/analytics/telemetry", () => {
+  // ── Reset mock state before each test ──────────────────
+  beforeEach(() => {
+    mockDbResult.value = [];
+    mockDbResult.shouldReject = false;
+    mockIsPostgres.value = false;
+  });
+
+  // ── Auth ─────────────────────────────────────────────────
   it("should return 401 without authentication", async () => {
-    const response = await app.inject({
-      method: "GET",
-      url: "/api/analytics/telemetry",
-    });
-    expect(response.statusCode).toBe(401);
+    const res = await app.inject({ method: "GET", url: "/api/analytics/telemetry" });
+    expect(res.statusCode).toBe(401);
   });
 
-  it("should return telemetry data grouped by month", async () => {
-    const response = await app.inject({
+  // ── Empty database ──────────────────────────────────────
+  it("should return empty array when database returns no data", async () => {
+    mockDbResult.value = [];
+
+    const res = await app.inject({
       method: "GET",
       url: "/api/analytics/telemetry",
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    expect(response.statusCode).toBe(200);
-    const body = JSON.parse(response.body);
-    expect(Array.isArray(body)).toBe(true);
-    expect(body.length).toBeGreaterThanOrEqual(3);
-
-    // January should have 2 refuelings: 300 + 240 = 540
-    const jan = body.find((d) => d.month === "Jan");
-    expect(jan).toBeDefined();
-    expect(jan.cost).toBeCloseTo(540, 0);
-    expect(jan.volume).toBe(2);
-
-    // February should have 1 refueling: 330
-    const feb = body.find((d) => d.month === "Fev");
-    expect(feb).toBeDefined();
-    expect(feb.cost).toBeCloseTo(330, 0);
-    expect(feb.volume).toBe(1);
-
-    // March should have 2 refuelings: 247.5 + 330 = 577.5
-    const mar = body.find((d) => d.month === "Mar");
-    expect(mar).toBeDefined();
-    expect(mar.cost).toBeCloseTo(577.5, 0);
-    expect(mar.volume).toBe(2);
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body)).toEqual([]);
   });
 
-  it("should use SQLite engine in test environment", async () => {
-    const response = await app.inject({
+  // ── Real data (SQLite path) ────────────────────────────
+  it("should return telemetry grouped by month with correct cost/volume", async () => {
+    mockDbResult.value = [
+      { month: "01", totalSpent: "540", count: "2" },
+      { month: "02", totalSpent: "330", count: "1" },
+      { month: "03", totalSpent: "577.5", count: "2" },
+    ];
+    mockIsPostgres.value = false;
+
+    const res = await app.inject({
       method: "GET",
       url: "/api/analytics/telemetry",
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    expect(response.statusCode).toBe(200);
-    const body = JSON.parse(response.body);
-    expect(body.length).toBeGreaterThanOrEqual(1);
-    // Every entry should have the expected shape
-    body.forEach((entry) => {
-      expect(entry).toHaveProperty("month");
-      expect(entry).toHaveProperty("cost");
-      expect(entry).toHaveProperty("volume");
-      expect(typeof entry.cost).toBe("number");
-      expect(typeof entry.volume).toBe("number");
-    });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body).toHaveLength(3);
+
+    expect(body[0]).toEqual({ month: "Jan", cost: 540, volume: 2 });
+    expect(body[1]).toEqual({ month: "Fev", cost: 330, volume: 1 });
+    expect(body[2]).toEqual({ month: "Mar", cost: 577.5, volume: 2 });
   });
 
-  it("should return empty array when no refuelings match", async () => {
-    // Insert a record with a date far in the past so month is unknown
-    const db = getDb();
-    const schema = getSchema();
-    const result = await db.insert(schema.refuelings).values({
-      vehicleId: "0", vehicleModel: "Ghost", licensePlate: "GHOST-000",
-      date: "1900-12-31", liters: 1, price: 1, totalValue: 1,
-      fuelType: "Test", gasStation: "Test", driverName: "Test", notes: "temp"
-    }).returning();
+  // ── Real data (PostgreSQL path) ─────────────────────────
+  it("should work correctly with PostgreSQL engine (EXTRACT path)", async () => {
+    mockDbResult.value = [
+      { month: "01", totalSpent: "540", count: "2" },
+      { month: "02", totalSpent: "330", count: "1" },
+    ];
+    mockIsPostgres.value = true;
 
-    // Delete the temp record so test isolation is maintained
-    await db.delete(schema.refuelings).where(eq(schema.refuelings.id, result[0].id));
-
-    // The main dataset still has 3+ months of data
-    const response = await app.inject({
+    const res = await app.inject({
       method: "GET",
       url: "/api/analytics/telemetry",
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    expect(response.statusCode).toBe(200);
-    const body = JSON.parse(response.body);
-    expect(Array.isArray(body)).toBe(true);
-    // Should still have the original test data (3+ months)
-    expect(body.length).toBeGreaterThanOrEqual(3);
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body).toHaveLength(2);
+    expect(body[0]).toEqual({ month: "Jan", cost: 540, volume: 2 });
+    expect(body[1]).toEqual({ month: "Fev", cost: 330, volume: 1 });
+  });
+
+  // ── Database error ──────────────────────────────────────
+  it("should return empty array when database query throws", async () => {
+    mockDbResult.shouldReject = true;
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/analytics/telemetry",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body)).toEqual([]);
+  });
+
+  // ── null/undefined totalSpent ────────────────────────────
+  it("should default cost to 0 when totalSpent is null", async () => {
+    mockDbResult.value = [{ month: "06", totalSpent: null, count: "3" }];
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/analytics/telemetry",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body[0].cost).toBe(0);
+    expect(body[0].volume).toBe(3);
+    expect(body[0].month).toBe("Jun");
+  });
+
+  // ── Invalid month number ────────────────────────────────
+  it("should return '???' for out-of-range month", async () => {
+    mockDbResult.value = [{ month: "13", totalSpent: "100", count: "1" }];
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/analytics/telemetry",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body[0].month).toBe("???");
   });
 });
