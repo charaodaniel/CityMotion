@@ -31,7 +31,7 @@ services:
     region: ohio
     plan: free
     branch: main
-    buildCommand: cd backend && npm install --include=dev && cd .. && npm install && npm run build:spa
+    buildCommand: cd backend && npm install --include=dev && npx drizzle-kit push && cd .. && npm install && npm run build:spa
     startCommand: cd backend && node scripts/migrate.js && node src/index.js
     healthCheckPath: /api/health
 
