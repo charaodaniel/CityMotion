@@ -13,6 +13,9 @@ import {
 import { getIO } from "../plugins/websocket.js";
 import { getRlsClient } from "../supabase/rls-helper.js";
 import { createSupabaseAuthUser, isSupabaseEnabled } from "../supabase/client.js";
+import { sanitizeSector } from "../utils/sector.js";
+import { withRlsFallback } from "../supabase/rls-helper.js";
+
 function broadcastAll(event, data) {
   const io = getIO();
   if (io) io.emit(event, data);
@@ -23,16 +26,6 @@ function broadcastToSector(event, sectors, data) {
     sectors.forEach((s) => io.to(s).emit(event, data));
   } else if (io) {
     io.emit(event, data);
-  }
-}
-function sanitizeSector(sector) {
-  if (!sector) return [];
-  if (Array.isArray(sector)) return sector;
-  try {
-    const parsed = JSON.parse(sector);
-    return Array.isArray(parsed) ? parsed : [sector];
-  } catch {
-    return [sector];
   }
 }
 async function dataRoutes(fastify) {
@@ -48,38 +41,53 @@ async function dataRoutes(fastify) {
   }, async (request, reply) => {
     try {
       const results = {};
-      const queries = {
-        trips: db.select().from(schema.trips).orderBy(desc(schema.trips.id)),
-        vehicles: db.select().from(schema.vehicles).orderBy(schema.vehicles.id),
-        employees: db.select().from(schema.employees).orderBy(schema.employees.name),
-        sectors: db.select().from(schema.sectors).orderBy(schema.sectors.name),
-        maintenanceRequests: db.select().from(schema.maintenanceRequests).orderBy(desc(schema.maintenanceRequests.id)),
-        refuelings: db.select().from(schema.refuelings).orderBy(desc(schema.refuelings.date)).limit(100),
-        workSchedules: db.select().from(schema.workSchedules).orderBy(desc(schema.workSchedules.id)),
-        organizations: db.select().from(schema.organizations).orderBy(schema.organizations.name),
-        vehicleRequests: db.select().from(schema.vehicleRequests).orderBy(desc(schema.vehicleRequests.id))
-      };
       const userId = request.user?.id;
-      for (const [key, query] of Object.entries(queries)) {
-        try {
-          results[key] = await query;
-        } catch (e) {
-          console.warn(`[Sync Warning] Failed to fetch ${key}:`, e.message);
-          results[key] = [];
-        }
-      }
-      try {
-        if (userId) {
-          results.messages = await db.select().from(schema.messages).where(
+
+      // Montar lista de queries com suas chaves
+      const queryEntries = [
+        { key: "trips", query: db.select().from(schema.trips).orderBy(desc(schema.trips.id)) },
+        { key: "vehicles", query: db.select().from(schema.vehicles).orderBy(schema.vehicles.id) },
+        { key: "employees", query: db.select().from(schema.employees).orderBy(schema.employees.name) },
+        { key: "sectors", query: db.select().from(schema.sectors).orderBy(schema.sectors.name) },
+        { key: "maintenanceRequests", query: db.select().from(schema.maintenanceRequests).orderBy(desc(schema.maintenanceRequests.id)) },
+        { key: "refuelings", query: db.select().from(schema.refuelings).orderBy(desc(schema.refuelings.date)).limit(100) },
+        { key: "workSchedules", query: db.select().from(schema.workSchedules).orderBy(desc(schema.workSchedules.id)) },
+        { key: "organizations", query: db.select().from(schema.organizations).orderBy(schema.organizations.name) },
+        { key: "vehicleRequests", query: db.select().from(schema.vehicleRequests).orderBy(desc(schema.vehicleRequests.id)) }
+      ];
+
+      // Incluir messages condicionalmente (só do usuário logado)
+      if (userId) {
+        queryEntries.push({
+          key: "messages",
+          query: db.select().from(schema.messages).where(
             or(
               eq(schema.messages.senderId, String(userId)),
               eq(schema.messages.receiverId, String(userId))
             )
-          ).orderBy(schema.messages.timestamp);
+          ).orderBy(schema.messages.timestamp)
+        });
+      }
+
+      // Executar TODAS as queries em PARALELO via Promise.allSettled
+      // Tempo total ≈ o tempo da query mais lenta (não a soma de todas)
+      const settledResults = await Promise.allSettled(
+        queryEntries.map((entry) => entry.query)
+      );
+
+      // Mapear resultados de volta para o objeto results
+      queryEntries.forEach((entry, index) => {
+        const settled = settledResults[index];
+        if (settled.status === "fulfilled") {
+          results[entry.key] = settled.value;
         } else {
-          results.messages = [];
+          console.warn(`[Sync Warning] Failed to fetch ${entry.key}:`, settled.reason?.message || settled.reason);
+          results[entry.key] = [];
         }
-      } catch {
+      });
+
+      // Garantir que messages sempre exista no resultado
+      if (!results.messages) {
         results.messages = [];
       }
       results.employees = results.employees?.map((emp) => {
@@ -95,22 +103,24 @@ async function dataRoutes(fastify) {
   fastify.get("/api/employees", {
     schema: { description: "Listar funcion\xE1rios (RLS: pr\xF3prio perfil ou admin)", tags: ["Employees"] }
   }, async (request) => {
-    const supabase = getRlsClient(request);
-    if (supabase) {
-      const { data, error } = await supabase.from("employees").select("*").order("name", { ascending: true });
-      if (!error && data) {
+    return withRlsFallback(
+      request,
+      async (supabase) => {
+        const { data, error } = await supabase.from("employees").select("*").order("name", { ascending: true });
+        if (error) throw error;
         return data.map((emp) => {
           const { password, ...rest } = emp;
           return { ...rest, sector: sanitizeSector(emp.sector) };
         });
+      },
+      async () => {
+        const rows = await db.select().from(schema.employees).orderBy(schema.employees.name);
+        return rows.map((emp) => {
+          const { password, ...rest } = emp;
+          return { ...rest, sector: sanitizeSector(emp.sector) };
+        });
       }
-      console.warn("[RLS] employees select falhou, fallback Drizzle:", error?.message);
-    }
-    const rows = await db.select().from(schema.employees).orderBy(schema.employees.name);
-    return rows.map((emp) => {
-      const { password, ...rest } = emp;
-      return { ...rest, sector: sanitizeSector(emp.sector) };
-    });
+    );
   });
   fastify.post("/api/employees", {
     schema: { description: "Criar funcion\xE1rio (com v\xEDnculo Supabase Auth)", tags: ["Employees"] }
@@ -227,60 +237,72 @@ async function dataRoutes(fastify) {
     schema: { description: "Listar mensagens do usu\xE1rio (RLS: pr\xF3prio)", tags: ["Messages"] }
   }, async (request) => {
     const user = request.user;
-    const supabase = getRlsClient(request);
-    if (supabase) {
-      const { data, error } = await supabase.from("messages").select("*").order("timestamp", { ascending: true });
-      if (!error && data) {
+    return withRlsFallback(
+      request,
+      async (supabase) => {
+        const { data, error } = await supabase.from("messages").select("*").order("timestamp", { ascending: true });
+        if (error) throw error;
         return data;
+      },
+      async () => {
+        return db.select().from(schema.messages).where(
+          or(
+            eq(schema.messages.senderId, String(user.id)),
+            eq(schema.messages.receiverId, String(user.id))
+          )
+        ).orderBy(schema.messages.timestamp);
       }
-      console.warn("[RLS] messages select falhou, fallback Drizzle:", error?.message);
-    }
-    return db.select().from(schema.messages).where(
-      or(
-        eq(schema.messages.senderId, String(user.id)),
-        eq(schema.messages.receiverId, String(user.id))
-      )
-    ).orderBy(schema.messages.timestamp);
+    );
   });
+  // Helper para criar payload de notificação de mensagem
+  function buildMessageNotification(user, content) {
+    return {
+      id: "notif-" + Date.now(),
+      type: "message",
+      title: "Nova Mensagem",
+      message: `${user.name} enviou: "${content.substring(0, 60)}${content.length > 60 ? "..." : ""}"`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      link: "/chat"
+    };
+  }
+
   fastify.post("/api/messages", {
     schema: { description: "Enviar mensagem (RLS: sender_id = auth.uid)", tags: ["Messages"] }
   }, async (request, reply) => {
     const user = request.user;
     const { receiverId, content } = sendMessageSchema.parse(request.body);
-    const supabase = getRlsClient(request);
-    if (supabase) {
-      const { data, error } = await supabase.from("messages").insert({
-        sender_id: user.supabaseUserId || String(user.id),
-        receiver_id: receiverId,
-        content
-      }).select().single();
-      if (!error && data) {
-        broadcastAll("entity-update", { entity: "messages", action: "create", data });
-        broadcastAll("notification", {
-          id: "notif-" + Date.now(),
-          type: "message",
-          title: "Nova Mensagem",
-          message: `${user.name} enviou: "${content.substring(0, 60)}${content.length > 60 ? "..." : ""}"`,
-          timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-          read: false,
-          link: "/chat"
-        });
-        return data;
+
+    const notification = buildMessageNotification(user, content);
+    let result;
+
+    // Tentar via RLS (Supabase) primeiro, fallback para Drizzle
+    const supabaseClient = getRlsClient(request);
+    if (supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient.from("messages").insert({
+          sender_id: user.supabaseUserId || String(user.id),
+          receiver_id: receiverId,
+          content
+        }).select().single();
+        if (!error && data) {
+          result = data;
+        } else {
+          console.warn("[RLS] messages insert falhou, fallback Drizzle:", error?.message);
+        }
+      } catch (err) {
+        console.warn("[RLS] messages insert exception, fallback Drizzle:", err.message);
       }
-      console.warn("[RLS] messages insert falhou, fallback Drizzle:", error?.message);
     }
-    const result = await db.insert(schema.messages).values({ senderId: String(user.id), receiverId, content }).returning();
-    broadcastAll("entity-update", { entity: "messages", action: "create", data: result[0] });
-    broadcastAll("notification", {
-      id: "notif-" + Date.now(),
-      type: "message",
-      title: "Nova Mensagem",
-      message: `${user.name} enviou: "${content.substring(0, 60)}${content.length > 60 ? "..." : ""}"`,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-      read: false,
-      link: "/chat"
-    });
-    return result[0];
+
+    if (!result) {
+      const drizzleResult = await db.insert(schema.messages).values({ senderId: String(user.id), receiverId, content }).returning();
+      result = drizzleResult[0];
+    }
+
+    broadcastAll("entity-update", { entity: "messages", action: "create", data: result });
+    broadcastAll("notification", notification);
+    return result;
   });
   fastify.post("/api/requests", {
     schema: { description: "Criar solicita\xE7\xE3o de ve\xEDculo", tags: ["Requests"] }

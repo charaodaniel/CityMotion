@@ -12,6 +12,8 @@
  *   doc.save('relatorio.pdf');
  */
 
+import { hexToRgb as sharedHexToRgb } from '/js/color-utils.js';
+
 const REP_TEMPLATE_CACHE_KEY = 'citymotion_report_template';
 let _templateCache = null;
 
@@ -206,12 +208,8 @@ export function applyReportTemplate(doc, tmpl = null, opts = {}) {
 
 /**
  * Converte cor hex (#fff, #ffffff) para RGB.
+ * Delega ao módulo compartilhado.
  */
 function hexToRgb(hex) {
-  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-  hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
-    : { r: 59, g: 130, b: 246 }; // fallback: primary blue
+  return sharedHexToRgb(hex);
 }

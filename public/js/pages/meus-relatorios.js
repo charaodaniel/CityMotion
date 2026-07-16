@@ -54,12 +54,15 @@ export default function MeusRelatoriosPage(container, Store, API) {
     return filtered.sort((a, b) => new Date(b[dateField] || b.createdAt || b.date) - new Date(a[dateField] || a.createdAt || a.date));
   }
 
+  // Usar módulo compartilhado (com fallback se falhar carregar)
   function formatDate(d) {
+    if (window._formatDate) return window._formatDate(d);
     if (!d) return '-';
-    return new Date(d).toLocaleDateString('pt-BR');
+    try { return new Date(d).toLocaleDateString('pt-BR'); } catch { return '-'; }
   }
 
   function formatCurrency(val) {
+    if (window._formatCurrency) return window._formatCurrency(val);
     return (val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
@@ -196,9 +199,11 @@ export default function MeusRelatoriosPage(container, Store, API) {
   }
 
   function hexToRgb(hex) {
+    // Usar módulo compartilhado se disponível, caso contrário fallback local
+    if (window._hexToRgb) return window._hexToRgb(hex);
     const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    const h = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
     return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 59, g: 130, b: 246 };
   }
 
@@ -432,6 +437,16 @@ export default function MeusRelatoriosPage(container, Store, API) {
   // Pré-carregar template
   import('/js/pdf-template.js').then(mod => {
     mod.fetchReportTemplate().then(tmpl => upd({ template: tmpl }));
+  }).catch(() => {});
+
+  // Importar módulos compartilhados
+  import('/js/color-utils.js').then(mod => {
+    window._hexToRgb = mod.hexToRgb;
+  }).catch(() => {});
+
+  import('/js/format-utils.js').then(mod => {
+    window._formatDate = mod.formatDate;
+    window._formatCurrency = mod.formatCurrency;
   }).catch(() => {});
 
   render();

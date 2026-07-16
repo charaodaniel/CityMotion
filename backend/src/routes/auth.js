@@ -6,6 +6,7 @@ import { getEnv, isSupabaseEnabled } from "../config/env.js";
 import { createSupabaseClient } from "../supabase/client.js";
 import { loginSchema, forgotPasswordSchema, resetPasswordSchema } from "../schemas/index.js";
 import { sendPasswordResetEmail } from "../../services/emailService.js";
+import { sanitizeSector } from "../utils/sector.js";
 async function authRoutes(fastify) {
   const db = getDb();
   const schema = getSchema();
@@ -180,16 +181,6 @@ async function authRoutes(fastify) {
     await db.update(schema.employees).set({ password: hashedPassword, resetToken: null }).where(eq(schema.employees.id, user.id));
     return { message: "Senha redefinida com sucesso." };
   });
-}
-function sanitizeSector(sector) {
-  if (!sector) return [];
-  if (Array.isArray(sector)) return sector;
-  try {
-    const parsed = JSON.parse(sector);
-    return Array.isArray(parsed) ? parsed : [sector];
-  } catch {
-    return [sector];
-  }
 }
 export {
   authRoutes

@@ -2,6 +2,8 @@
  * CityMotion — Página: Perfil
  * Informações do usuário, dados LGPD e histórico de solicitações
  */
+import { formatDate } from '/js/format-utils.js';
+
 export default function ProfilePage(container, Store, API) {
   let state = {};
 
@@ -186,7 +188,7 @@ export default function ProfilePage(container, Store, API) {
                     ${userRequests.map(req => `
                       <tr class="hover:bg-zinc-800/20 transition-colors">
                         <td class="px-6 py-3 font-medium">${req.title}</td>
-                        <td class="px-6 py-3 text-zinc-400 font-mono">${new Date(req.requestDate).toLocaleDateString('pt-BR')}</td>
+                        <td class="px-6 py-3 text-zinc-400 font-mono">${formatDate(req.requestDate)}</td>
                         <td class="px-6 py-3">
                           <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[9px] font-bold ${getBadgeClass(getStatusVariant(req.status))}">
                             ${req.status}

@@ -3,6 +3,8 @@
  * Kanban 3 colunas (Pendentes, Em Andamento, Concluídas),
  * modal detalhes com ações de status, formulário de pedido de peças
  */
+import { formatDate } from '/js/format-utils.js';
+
 export default function MaintenancePage(container, Store, API) {
   let state = {
     selectedRequest: null,
@@ -65,7 +67,7 @@ export default function MaintenancePage(container, Store, API) {
         <div class="flex items-center justify-between mb-6">
           <div>
             <h2 class="text-2xl sm:text-3xl font-black tracking-tight">${req.vehicleModel} (${req.licensePlate})</h2>
-            <p class="text-[10px] font-mono uppercase tracking-widest text-primary/60 mt-1">Protocolo MNT-${(req.id || '').replace(/\D/g, '')} // Solicitado em ${req.requestDate ? new Date(req.requestDate).toLocaleDateString('pt-BR') : ''}</p>
+            <p class="text-[10px] font-mono uppercase tracking-widest text-primary/60 mt-1">Protocolo MNT-${(req.id || '').replace(/\D/g, '')} // Solicitado em ${formatDate(req.requestDate)}</p>
           </div>
           <button onclick="document.getElementById('manutencaoModalOverlay').dispatchEvent(new CustomEvent('closeModal'))" class="text-zinc-500 hover:text-zinc-300">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -197,7 +199,7 @@ export default function MaintenancePage(container, Store, API) {
                       <div class="flex items-center gap-2 text-[9px] font-mono font-bold uppercase tracking-widest text-primary/50 mt-1">
                         <span class="inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold bg-primary/10 text-primary border border-primary/30">${r.licensePlate}</span>
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        ${r.requestDate ? new Date(r.requestDate).toLocaleDateString('pt-BR') : ''}
+                        ${formatDate(r.requestDate)}
                       </div>
                     </div>
                     <div class="px-4 pb-3">

@@ -17,7 +17,10 @@ function getDb() {
     if (isPostgresEnabled()) {
       const pool = new Pool({
         connectionString: env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false }
+        ssl: { rejectUnauthorized: false },
+        max: 10,                        // máximo de conexões simultâneas no pool
+        idleTimeoutMillis: 30000,       // 30s de inatividade → fecha conexão
+        connectionTimeoutMillis: 5000   // 5s timeout para estabelecer nova conexão
       });
       _db = drizzle(pool, { schema: pgSchema });
       _schema = pgSchema;

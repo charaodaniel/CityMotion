@@ -2,6 +2,8 @@
  * CityMotion — Página: Abastecimento
  * Stats cards, grid de registros, busca, formulário com cálculo ao vivo
  */
+import { formatDate, formatCurrency } from '/js/format-utils.js';
+
 export default function RefuelingPage(container, Store, API) {
   let state = {
     isModalOpen: false,
@@ -153,7 +155,7 @@ export default function RefuelingPage(container, Store, API) {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="glass-card rounded-xl p-5 scanlines">
             <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Total Investido (Mês)</p>
-            <p class="text-4xl font-black tracking-tighter text-primary mt-2">R$ ${totalSpent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+            <p class="text-4xl font-black tracking-tighter text-primary mt-2">${formatCurrency(totalSpent)}</p>
             <p class="text-[10px] font-mono text-emerald-500 font-bold mt-1 uppercase">Sincronizado com Financeiro</p>
           </div>
           <div class="glass-card rounded-xl p-5">
@@ -186,7 +188,7 @@ export default function RefuelingPage(container, Store, API) {
                     <span class="text-[10px] font-mono text-zinc-500 uppercase">${log.licensePlate}</span>
                   </div>
                   <div class="text-right">
-                    <div class="text-lg font-black tracking-tighter">R$ ${(log.totalValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                    <div class="text-lg font-black tracking-tighter">${formatCurrency(log.totalValue || 0)}</div>
                     <span class="inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold bg-primary/10 text-primary border border-primary/20">${log.fuelType}</span>
                   </div>
                 </div>
@@ -201,7 +203,7 @@ export default function RefuelingPage(container, Store, API) {
                   </div>
                   <div class="flex items-center gap-1 text-[9px] font-mono text-zinc-600">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    ${log.date ? new Date(log.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : ''}
+                    ${formatDate(log.date, { day: '2-digit', month: 'short' })}
                   </div>
                 </div>
               </div>
