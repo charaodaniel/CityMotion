@@ -10,18 +10,17 @@
     "dev": "npm run db:init && concurrently -k -n \"FRONT,BACK\" -c \"blue,green\" \"npm:dev:frontend\" \"npm:dev:backend\"",
     "dev:frontend": "npx kill-port 9002 || true; sleep 2; next dev --turbopack -p 9002",
     "dev:backend": "cd backend && (npx kill-port 3001 || true) && npm run dev",
-    "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
-    "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
+    "genkit:dev": "genkit start -- node src/ai/dev.js",
+    "genkit:watch": "genkit start -- node --watch src/ai/dev.js",
     "build": "NODE_ENV=production next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
     "electron:dev": "concurrently -k \"npm:dev:frontend\" \"npm:dev:backend\" \"npm:electron\"",
     "electron": "wait-on tcp:9002 && electron .",
     "dev-server": "npm run dev:backend",
     "db:init": "cd backend && npm run db:init",
-    "test:frontend": "vitest run --config tests/vitest.config.ts",
-    "test:frontend:watch": "vitest --config tests/vitest.config.ts"
+    "test:frontend": "vitest run --config tests/vitest.config.js",
+    "test:frontend:watch": "vitest --config tests/vitest.config.js"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
@@ -85,13 +84,6 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/leaflet": "^1.9.21",
-    "@types/node": "^20",
-    "@types/nodemailer": "^8.0.1",
-    "@types/qrcode.react": "^1.0.5",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
     "@vitest/ui": "^4.1.10",
     "electron": "^31.2.1",
     "electron-builder": "^25.0.0",
@@ -99,7 +91,6 @@
     "jsdom": "^29.1.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5",
     "vitest": "^4.1.10"
   }
 }

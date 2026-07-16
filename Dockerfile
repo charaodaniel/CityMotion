@@ -3,7 +3,7 @@
 # =============================================================
 # Arquitetura:
 #   Frontend: SPA HTML/JS/CSS em /public (servido pelo backend)
-#   Backend:  Fastify + Drizzle ORM + Socket.IO (TypeScript)
+#   Backend:  Fastify + Drizzle ORM + Socket.IO
 #   Banco:    SQLite (padrão) ou PostgreSQL externo
 # =============================================================
 
@@ -16,12 +16,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 make g++ curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Dependências da raiz (apenas as necessárias para o backend via workspace)
+# Dependências do backend
 COPY backend/package*.json ./backend/
 WORKDIR /app/backend
 RUN npm install
 
-# Dependências da raiz (para tsx e ferramentas globais)
+# Dependências da raiz
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --omit=optional
@@ -41,7 +41,7 @@ COPY --from=deps /app/backend /app/backend
 # Copiar frontend SPA (HTML/JS/CSS estático servido pelo Fastify)
 COPY public /app/public
 
-# Copiar tsx da raiz para rodar TypeScript
+# Copiar node_modules da raiz
 COPY --from=deps /app/node_modules /app/node_modules
 COPY --from=deps /app/package.json /app/package.json
 

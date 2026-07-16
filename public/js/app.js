@@ -17,6 +17,7 @@ const App = {
     '/escalas': { title: 'Escalas', roles: ['dev', 'ti', 'admin', 'manager'] },
     '/chat': { title: 'Chat', roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
     '/relatorios': { title: 'Relatórios', roles: ['dev', 'ti', 'admin', 'manager'] },
+    '/meus-relatorios': { title: 'Meus Relatórios', roles: ['employee'] },
     '/perfil': { title: 'Perfil', roles: ['dev', 'ti', 'admin', 'manager', 'employee'] },
     '/settings': { title: 'Configurações', roles: ['dev', 'ti', 'admin'] },
   },
@@ -140,6 +141,7 @@ const App = {
       '/escalas': 'Agenda de trabalho e plantões da equipe.',
       '/chat': 'Comunicação interna entre colaboradores.',
       '/relatorios': 'Exportação de dados operacionais.',
+      '/meus-relatorios': 'Histórico de viagens e exportação PDF para motoristas.',
       '/perfil': 'Suas informações e histórico.',
       '/settings': 'Configurações do sistema.',
     };

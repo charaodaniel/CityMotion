@@ -32,7 +32,7 @@ services:
     plan: free
     branch: main
     buildCommand: cd backend && npm install --include=dev && cd ..
-    startCommand: cd backend && npx drizzle-kit push && npx tsx src/index.ts
+    startCommand: cd backend && npx drizzle-kit push && node src/index.js
     healthCheckPath: /api/health
 
     # Para usar Docker em vez de build nativo, descomente:
@@ -53,3 +53,16 @@ services:
         generateValue: true
       - key: DEMO_MODE
         value: "false"
+      # ── Supabase Auth ────────────────────────────────────
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_JWKS_URL
+        sync: false

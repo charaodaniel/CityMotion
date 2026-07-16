@@ -1,0 +1,94 @@
+"use client";
+import { Button } from "@/components/ui/button";
+import { Card, CardTitle } from "@/components/ui/card";
+import { Plus, Building, Edit, Wrench, Search, Filter, Download, MoreVertical, Zap, Route, Activity, ChevronRight } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RegisterVehicleForm } from "@/components/forms/register-vehicle-form";
+import { useState, useMemo } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { useApp } from "@/contexts/app-provider";
+import { RequestMaintenanceForm } from "@/components/forms/request-maintenance-form";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+function getStatusStyles(status) {
+  switch (status) {
+    case "Em Servi\xE7o":
+    case "Em Viagem":
+      return "border-primary/30 bg-primary/10 text-primary";
+    case "Dispon\xEDvel":
+      return "border-emerald-500/30 bg-emerald-500/10 text-emerald-400";
+    case "Manuten\xE7\xE3o":
+      return "border-destructive/30 bg-destructive/10 text-destructive";
+    default:
+      return "border-border bg-muted/50 text-muted-foreground";
+  }
+}
+function VehiclesPage() {
+  const { vehicles, setVehicles, userRole, selectedSector } = useApp();
+  const [activeModal, setActiveModal] = useState(null);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredVehicles = useMemo(() => {
+    let result = vehicles;
+    if (userRole === "manager" && selectedSector) {
+      result = result.filter((v) => v.sector === selectedSector);
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (v) => v.vehicleModel.toLowerCase().includes(q) || v.licensePlate.toLowerCase().includes(q) || v.sector.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [vehicles, userRole, selectedSector, searchQuery]);
+  const openModal = (modal, vehicle = null) => {
+    setSelectedVehicle(vehicle);
+    setActiveModal(modal);
+  };
+  const handleFormSubmit = (newVehicleData) => {
+    if (activeModal === "edit" && selectedVehicle) {
+      setVehicles(vehicles.map((v) => v.id === selectedVehicle.id ? { ...v, ...newVehicleData } : v));
+    } else {
+      const newVehicle = {
+        id: `V${vehicles.length + 1}`,
+        status: "Dispon\xEDvel",
+        ...newVehicleData
+      };
+      setVehicles([...vehicles, newVehicle]);
+    }
+    openModal(null);
+  };
+  return /* @__PURE__ */ React.createElement("div", { className: "container mx-auto p-4 sm:p-8 space-y-8" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row justify-between items-start md:items-end gap-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { className: "text-5xl font-black tracking-tighter text-on-surface" }, "Gest\xE3o de Frota"), /* @__PURE__ */ React.createElement("p", { className: "text-muted-foreground text-lg mt-1 font-medium" }, "Controle de ativos e telemetria NexusOS.")), /* @__PURE__ */ React.createElement(Button, { onClick: () => openModal("register"), className: "bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-6 rounded-lg font-bold uppercase tracking-widest text-xs" }, /* @__PURE__ */ React.createElement(Plus, { className: "mr-2 h-4 w-4" }), "Novo Ve\xEDculo")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6" }, [
+    { label: "Prontos para Sa\xEDda", count: vehicles.filter((v) => v.status === "Dispon\xEDvel").length, color: "emerald" },
+    { label: "Rotas Ativas", count: vehicles.filter((v) => v.status === "Em Viagem").length, color: "primary" },
+    { label: "Oficina / Manuten\xE7\xE3o", count: vehicles.filter((v) => v.status === "Manuten\xE7\xE3o").length, color: "destructive" }
+  ].map((stat, i) => /* @__PURE__ */ React.createElement(Card, { key: i, className: "border-border/50 bg-sidebar/50 rounded-xl p-6 relative overflow-hidden group" }, /* @__PURE__ */ React.createElement("div", { className: cn(
+    "absolute right-0 top-0 w-32 h-32 rounded-bl-full -z-0 transition-transform group-hover:scale-110",
+    stat.color === "emerald" ? "bg-emerald-500/10" : stat.color === "primary" ? "bg-primary/10" : "bg-destructive/10"
+  ) }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-6 relative z-10" }, /* @__PURE__ */ React.createElement("div", { className: cn(
+    "p-3 rounded-lg border",
+    stat.color === "emerald" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : stat.color === "primary" ? "bg-primary/20 text-primary border-primary/30" : "bg-destructive/20 text-destructive border-destructive/30"
+  ) }, stat.color === "emerald" ? /* @__PURE__ */ React.createElement(Building, { className: "h-5 w-5" }) : stat.color === "primary" ? /* @__PURE__ */ React.createElement(Route, { className: "h-5 w-5" }) : /* @__PURE__ */ React.createElement(Wrench, { className: "h-5 w-5" }))), /* @__PURE__ */ React.createElement("div", { className: "relative z-10" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1" }, stat.label), /* @__PURE__ */ React.createElement("p", { className: "text-4xl font-black tracking-tighter" }, stat.count))))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-4 gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "lg:col-span-3" }, /* @__PURE__ */ React.createElement(Card, { className: "border-border/50 bg-sidebar/50 rounded-xl overflow-hidden flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "p-6 border-b border-border/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-accent/20" }, /* @__PURE__ */ React.createElement(CardTitle, { className: "text-xl font-bold tracking-tight" }, "Frota Ativa"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 w-full md:w-auto" }, /* @__PURE__ */ React.createElement("div", { className: "relative flex-1 md:w-64" }, /* @__PURE__ */ React.createElement(Search, { className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" }), /* @__PURE__ */ React.createElement(
+    Input,
+    {
+      placeholder: "Buscar ve\xEDculos, placas...",
+      className: "pl-10 h-10 border-border/50 bg-sidebar text-xs",
+      value: searchQuery,
+      onChange: (e) => setSearchQuery(e.target.value)
+    }
+  )), /* @__PURE__ */ React.createElement(Button, { variant: "outline", size: "icon", className: "h-10 w-10" }, /* @__PURE__ */ React.createElement(Filter, { className: "h-4 w-4" })), /* @__PURE__ */ React.createElement(Button, { variant: "outline", size: "icon", className: "h-10 w-10" }, /* @__PURE__ */ React.createElement(Download, { className: "h-4 w-4" })))), /* @__PURE__ */ React.createElement("div", { className: "overflow-x-auto" }, /* @__PURE__ */ React.createElement(Table, null, /* @__PURE__ */ React.createElement(TableHeader, { className: "bg-accent/30" }, /* @__PURE__ */ React.createElement(TableRow, { className: "border-border/30 font-bold text-[10px] uppercase tracking-widest text-muted-foreground" }, /* @__PURE__ */ React.createElement(TableHead, { className: "px-6 h-12" }, "ID Ve\xEDculo"), /* @__PURE__ */ React.createElement(TableHead, { className: "h-12" }, "Modelo / Placa"), /* @__PURE__ */ React.createElement(TableHead, { className: "h-12" }, "Setor"), /* @__PURE__ */ React.createElement(TableHead, { className: "h-12" }, "Status"), /* @__PURE__ */ React.createElement(TableHead, { className: "text-right px-6 h-12" }, "A\xE7\xF5es"))), /* @__PURE__ */ React.createElement(TableBody, { className: "font-mono text-xs text-foreground divide-y divide-border/30" }, filteredVehicles.map((vehicle) => /* @__PURE__ */ React.createElement(TableRow, { key: vehicle.id, className: "border-border/30 hover:bg-accent/20 transition-all cursor-pointer group", onClick: () => openModal("details", vehicle) }, /* @__PURE__ */ React.createElement(TableCell, { className: "px-6 py-4 font-bold text-primary" }, "NEX-", vehicle.id.replace(/\D/g, "").padStart(3, "0")), /* @__PURE__ */ React.createElement(TableCell, { className: "py-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-sans font-bold text-sm" }, vehicle.vehicleModel), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-muted-foreground tracking-widest" }, vehicle.licensePlate))), /* @__PURE__ */ React.createElement(TableCell, { className: "py-4 text-[10px] font-sans font-medium text-muted-foreground" }, vehicle.sector), /* @__PURE__ */ React.createElement(TableCell, { className: "py-4" }, /* @__PURE__ */ React.createElement("span", { className: cn("inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[10px] font-bold uppercase tracking-tight", getStatusStyles(vehicle.status)) }, /* @__PURE__ */ React.createElement("span", { className: cn("w-1.5 h-1.5 rounded-full", vehicle.status === "Em Viagem" && "animate-pulse bg-primary", vehicle.status === "Dispon\xEDvel" && "bg-emerald-400", vehicle.status === "Manuten\xE7\xE3o" && "bg-destructive") }), vehicle.status)), /* @__PURE__ */ React.createElement(TableCell, { className: "text-right px-6 py-4 opacity-0 group-hover:opacity-100 transition-opacity" }, /* @__PURE__ */ React.createElement(Button, { variant: "ghost", size: "icon", className: "h-8 w-8", onClick: (e) => {
+    e.stopPropagation();
+    openModal("edit", vehicle);
+  } }, /* @__PURE__ */ React.createElement(Edit, { className: "h-3.5 w-3.5" })), /* @__PURE__ */ React.createElement(Button, { variant: "ghost", size: "icon", className: "h-8 w-8" }, /* @__PURE__ */ React.createElement(MoreVertical, { className: "h-3.5 w-3.5" })))))))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-6" }, /* @__PURE__ */ React.createElement(Card, { className: "border-border/50 bg-sidebar/50 rounded-xl p-6" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Zap, { className: "h-3.5 w-3.5 text-primary" }), " Motoristas Destaque"), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, ["J. Pereira", "M. Santos"].map((name, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-4 p-3 rounded-lg border border-transparent hover:border-border/50 hover:bg-accent/30 transition-all cursor-pointer" }, /* @__PURE__ */ React.createElement(Avatar, { className: "h-10 w-10 border-2 border-primary/20" }, /* @__PURE__ */ React.createElement(AvatarImage, { src: `https://i.pravatar.cc/100?u=${name}` }), /* @__PURE__ */ React.createElement(AvatarFallback, null, name[0])), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-hidden" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold truncate leading-none mb-1" }, name), /* @__PURE__ */ React.createElement("p", { className: "text-[9px] font-mono text-muted-foreground uppercase" }, 4.8 + i * 0.1, "/5.0 \u2022 ", 980 + i * 220, " Viagens")), /* @__PURE__ */ React.createElement(ChevronRight, { className: "h-4 w-4 text-primary opacity-50" }))))), /* @__PURE__ */ React.createElement(Card, { className: "bg-zinc-950 border-border/50 rounded-xl p-6 relative overflow-hidden flex-1 tui-scanline" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[10px] font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Activity, { className: "h-3.5 w-3.5" }), " Log de Atividade"), /* @__PURE__ */ React.createElement("div", { className: "font-mono text-[10px] text-muted-foreground flex flex-col gap-3" }, [
+    { time: "10:42", id: "NEX-108", msg: "Geocerca Z-04 detectada", type: "primary" },
+    { time: "10:38", id: "NEX-015", msg: "Manuten\xE7\xE3o #882 aberta", type: "destructive" },
+    { time: "10:15", id: "NEX-042", msg: "Viagem T-9912 conclu\xEDda", type: "emerald" },
+    { time: "09:55", id: "SYS", msg: "Update OTA v2.4 aplicado", type: "primary" }
+  ].map((log, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex gap-2 leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "text-primary/40 shrink-0" }, "[", log.time, "]"), /* @__PURE__ */ React.createElement("span", { className: cn("font-bold uppercase shrink-0", log.type === "primary" ? "text-primary" : log.type === "destructive" ? "text-destructive" : "text-emerald-400") }, log.id), /* @__PURE__ */ React.createElement("span", { className: "text-foreground/70" }, log.msg)))), /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-6 right-6" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-4 bg-primary animate-pulse" }))))), /* @__PURE__ */ React.createElement(Dialog, { open: !!activeModal, onOpenChange: () => openModal(null) }, /* @__PURE__ */ React.createElement(DialogContent, { className: "sm:max-w-2xl border-border/50 bg-sidebar overflow-hidden p-0" }, /* @__PURE__ */ React.createElement("div", { className: "h-1.5 w-full bg-primary" }), /* @__PURE__ */ React.createElement(ScrollArea, { className: "max-h-[80vh] p-8" }, /* @__PURE__ */ React.createElement(DialogHeader, { className: "mb-6" }, /* @__PURE__ */ React.createElement(DialogTitle, { className: "text-2xl font-black tracking-tight" }, activeModal === "register" ? "Novo Protocolo Veicular" : activeModal === "edit" ? "Atualizar Unidade" : "Detalhes de Telemetria"), /* @__PURE__ */ React.createElement(DialogDescription, { className: "text-xs font-mono uppercase tracking-widest text-primary/70" }, activeModal === "register" ? "Executando registro FSP-v3" : "Acessando par\xE2metros centrais")), /* @__PURE__ */ React.createElement("div", { className: "scanlines rounded-lg border border-border/50 p-6 bg-accent/10" }, activeModal === "maintenance" ? /* @__PURE__ */ React.createElement(RequestMaintenanceForm, { vehicle: selectedVehicle, onFormSubmit: () => openModal(null) }) : activeModal === "register" || activeModal === "edit" ? /* @__PURE__ */ React.createElement(RegisterVehicleForm, { onFormSubmit: handleFormSubmit, existingVehicle: selectedVehicle }) : /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-8" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1" }, "Modelo"), /* @__PURE__ */ React.createElement("p", { className: "text-lg font-bold" }, selectedVehicle?.vehicleModel)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1" }, "Placa"), /* @__PURE__ */ React.createElement("p", { className: "text-lg font-mono font-bold text-primary" }, selectedVehicle?.licensePlate)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1" }, "Setor Alocado"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold" }, selectedVehicle?.sector)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1" }, "Dist\xE2ncia Total"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-mono" }, selectedVehicle?.mileage.toLocaleString("pt-BR"), " KM"))), /* @__PURE__ */ React.createElement(Separator, { className: "bg-border/30" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-3" }, /* @__PURE__ */ React.createElement(Button, { variant: "outline", className: "text-xs uppercase font-bold", onClick: () => openModal("maintenance", selectedVehicle) }, "Abrir Manuten\xE7\xE3o"), /* @__PURE__ */ React.createElement(Button, { variant: "default", className: "bg-primary text-primary-foreground text-xs uppercase font-bold", onClick: () => openModal("edit", selectedVehicle) }, "Editar Unidade"))))))));
+}
+export {
+  VehiclesPage as default
+};
