@@ -106,6 +106,16 @@
             </svg>
           </button>
         </div>
+        <!-- PWA Install Badge -->
+        <div id="pwaInstallBadge" class="hidden mx-3 mt-1">
+          <button onclick="PWA.install()" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-400/10 hover:bg-blue-400/20 text-blue-400 transition-all duration-200 group">
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            <span class="text-[11px] font-medium">Instalar App</span>
+            <span class="ml-auto text-[8px] uppercase tracking-widest opacity-0 group-hover:opacity-40 transition-opacity">PWA</span>
+          </button>
+        </div>
       </div>
     </aside>
 
@@ -266,6 +276,26 @@
       if (bell) {
         bell.title = connected ? 'Notificações em tempo real' : 'Notificações offline';}
     });
+
+    // PWA Install Badge — mostrar quando navegador permite instalação
+    function updatePwaBadge() {
+      const badge = document.getElementById('pwaInstallBadge');
+      if (!badge) return;
+      // Mostrar badge se app é instalável E não está em modo standalone
+      if (PWA.state.installable && !window.matchMedia('(display-mode: standalone)').matches) {
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    // Inicializar badge e escutar mudanças de estado
+    if (window.PWA) {
+      // Primeira verificação (se beforeinstallprompt já disparou antes do DOM)
+      setTimeout(updatePwaBadge, 500);
+      // Escutar mudanças futuras
+      PWA.onStateChange(updatePwaBadge);
+    }
   </script>
 </body>
 </html>
