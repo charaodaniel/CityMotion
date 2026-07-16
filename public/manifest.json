@@ -1,19 +1,62 @@
 {
   "name": "CityMotion - Gestão Inteligente de Frota",
   "short_name": "CityMotion",
-  "description": "Sistema de Gestão Inteligente de Frota e Mobilidade Corporativa",
+  "description": "Sistema completo de Gestão Inteligente de Frota e Mobilidade Corporativa. Gerencie veículos, funcionários, viagens, manutenção e relatórios em tempo real.",
   "start_url": "/app.html#/dashboard",
   "display": "standalone",
   "background_color": "#09090b",
   "theme_color": "#93c5fd",
   "orientation": "any",
-  "categories": ["business", "transportation", "productivity"],
+  "categories": ["business", "transportation", "productivity", "utilities"],
   "lang": "pt-BR",
   "scope": "/",
+  "id": "/app.html",
+  "display_override": ["standalone", "window-controls-overlay"],
+  "edge_side_panel": { "preferred_width": 480 },
+  "launch_handler": {
+    "client_mode": ["navigate-new", "focus-existing"]
+  },
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "/icons/screenshot-wide.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "Dashboard da CityMotion com gráficos de frota"
+    },
+    {
+      "src": "/icons/screenshot-narrow.svg",
+      "sizes": "720x1280",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Visão móvel do painel CityMotion"
+    }
+  ],
   "icons": [
-    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%2309090b'/%3E%3Ctext x='96' y='112' text-anchor='middle' font-family='sans-serif' font-size='64' font-weight='bold' fill='%2393c5fd'%3ECM%3C/text%3E%3C/svg%3E", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='38' fill='%231a1a2e'/%3E%3Ctext x='96' y='112' text-anchor='middle' font-family='sans-serif' font-size='64' font-weight='bold' fill='%2393c5fd'%3ECM%3C/text%3E%3C/svg%3E", "sizes": "192x192", "type": "image/svg+xml", "purpose": "maskable" },
-    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%2309090b'/%3E%3Ctext x='256' y='300' text-anchor='middle' font-family='sans-serif' font-size='180' font-weight='bold' fill='%2393c5fd'%3ECM%3C/text%3E%3C/svg%3E", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='102' fill='%231a1a2e'/%3E%3Ctext x='256' y='300' text-anchor='middle' font-family='sans-serif' font-size='180' font-weight='bold' fill='%2393c5fd'%3ECM%3C/text%3E%3C/svg%3E", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
   ]
 }
