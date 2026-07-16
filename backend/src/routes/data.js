@@ -336,6 +336,8 @@ async function dataRoutes(fastify) {
   fastify.get("/api/analytics/telemetry", {
     schema: { description: "Dados de telemetria para gr\xE1ficos", tags: ["Analytics"] }
   }, async () => {
+    const engine = isPostgresEnabled() ? "PostgreSQL" : "SQLite";
+    console.log(`[Analytics] Telemetry requested (engine: ${engine})`);
     try {
       const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
       const monthExpr = isPostgresEnabled()
@@ -347,15 +349,19 @@ async function dataRoutes(fastify) {
         count: sql`COUNT(*)`.as("count")
       }).from(schema.refuelings).groupBy(sql`month_num`).orderBy(sql`month_num ASC`);
       if (!refuelingStats || refuelingStats.length === 0) {
+        console.log("[Analytics] Nenhum abastecimento encontrado no banco.");
         return [];
       }
-      return refuelingStats.map((r) => ({
+      const result = refuelingStats.map((r) => ({
         month: months[parseInt(r.month) - 1] || "???",
         cost: Number(r.totalSpent) || 0,
         volume: Number(r.count) || 0
       }));
+      console.log(`[Analytics] ${result.length} meses retornados:`, result.map(r => `${r.month}: R$ ${r.cost} / ${r.volume}L`).join(" | "));
+      return result;
     } catch (err) {
-      console.warn("[Analytics Fallback]", err.message);
+      console.error(`[Analytics Error] Falha ao consultar telemetria (${engine}):`, err.message);
+      if (err.stack) console.error("[Analytics Error] Stack:", err.stack.split("\n").slice(0, 4).join("\n"));
       return [];
     }
   });
