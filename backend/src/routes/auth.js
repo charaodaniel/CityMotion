@@ -7,6 +7,7 @@ import { createSupabaseClient } from "../supabase/client.js";
 import { loginSchema, forgotPasswordSchema, resetPasswordSchema } from "../schemas/index.js";
 import { sendPasswordResetEmail } from "../../services/emailService.js";
 import { sanitizeSector } from "../utils/sector.js";
+import { stripPassword } from "../utils/employee.js";
 async function authRoutes(fastify) {
   const db = getDb();
   const schema = getSchema();
@@ -72,13 +73,12 @@ async function authRoutes(fastify) {
             message: "ACESSO NEGADO: Este perfil de demonstra\xE7\xE3o s\xF3 pode ser acessado via Terminal NexusOS."
           });
         }
-        const { password: _2, ...userWithoutPassword2 } = employee;
         console.log(`[Auth] Login OK (Supabase): ${employee.name}`);
         return {
           token: authData.session?.access_token,
           refreshToken: authData.session?.refresh_token,
           user: {
-            ...userWithoutPassword2,
+            ...stripPassword(employee),
             sector: sanitizeSector(employee.sector)
           }
         };
@@ -118,9 +118,8 @@ async function authRoutes(fastify) {
       getEnv().JWT_SECRET,
       { expiresIn: "8h" }
     );
-    const { password: _, ...userWithoutPassword } = user;
     console.log(`[Auth] Login OK (JWT Manual): ${user.name} ${user.isDemo ? "(DEMO MODE)" : ""}`);
-    return { token, user: { ...userWithoutPassword, sector: sanitizeSector(user.sector) } };
+    return { token, user: { ...stripPassword(user), sector: sanitizeSector(user.sector) } };
   });
   fastify.post("/api/forgot-password", {
     schema: {

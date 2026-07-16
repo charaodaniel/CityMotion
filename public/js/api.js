@@ -40,61 +40,37 @@ const API = {
     window.location.href = '/index.html';
   },
 
-  /** Requisição GET */
-  async get(path) {
-    const res = await fetch(this.BASE + path, { headers: this.headers() });
-    if (res.status === 401 || res.status === 403) { this.logout(); throw new Error('Sessão expirada'); }
+  /** Handler centralizado de requisições HTTP */
+  async _request(method, path, body) {
+    const opts = { method, headers: this.headers() };
+    if (body !== undefined) opts.body = JSON.stringify(body);
+
+    const res = await fetch(this.BASE + path, opts);
+
+    if (res.status === 401 || res.status === 403) {
+      this.logout();
+      throw new Error('Sessão expirada');
+    }
+
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.message || `Erro ${res.status}`);
     }
+
     return res.json();
   },
+
+  /** Requisição GET */
+  get(path) { return this._request('GET', path); },
 
   /** Requisição POST */
-  async post(path, body) {
-    const res = await fetch(this.BASE + path, {
-      method: 'POST',
-      headers: this.headers(),
-      body: JSON.stringify(body),
-    });
-    if (res.status === 401 || res.status === 403) { this.logout(); throw new Error('Sessão expirada'); }
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.message || `Erro ${res.status}`);
-    }
-    return res.json();
-  },
+  post(path, body) { return this._request('POST', path, body); },
 
   /** Requisição PUT */
-  async put(path, body) {
-    const res = await fetch(this.BASE + path, {
-      method: 'PUT',
-      headers: this.headers(),
-      body: JSON.stringify(body),
-    });
-    if (res.status === 401 || res.status === 403) { this.logout(); throw new Error('Sessão expirada'); }
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.message || `Erro ${res.status}`);
-    }
-    return res.json();
-  },
+  put(path, body) { return this._request('PUT', path, body); },
 
   /** Requisição DELETE */
-  async del(path, body) {
-    const res = await fetch(this.BASE + path, {
-      method: 'DELETE',
-      headers: this.headers(),
-      body: JSON.stringify(body),
-    });
-    if (res.status === 401 || res.status === 403) { this.logout(); throw new Error('Sessão expirada'); }
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.message || `Erro ${res.status}`);
-    }
-    return res.json();
-  },
+  del(path, body) { return this._request('DELETE', path, body); },
 
   /** Sincronizar todos os dados */
   async syncAll() {
