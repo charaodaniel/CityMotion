@@ -11,10 +11,11 @@ import {
   createRequestSchema
 } from "../schemas/index.js";
 import { getIO } from "../plugins/websocket.js";
-import { getRlsClient } from "../supabase/rls-helper.js";
+import { getRlsClient, withRlsFallback } from "../supabase/rls-helper.js";
 import { createSupabaseAuthUser, isSupabaseEnabled } from "../supabase/client.js";
 import { sanitizeSector } from "../utils/sector.js";
-import { withRlsFallback } from "../supabase/rls-helper.js";
+import { stripPassword } from "../utils/employee.js";
+import { hasRole } from "../utils/role.js";
 
 function broadcastAll(event, data) {
   const io = getIO();
@@ -90,10 +91,10 @@ async function dataRoutes(fastify) {
       if (!results.messages) {
         results.messages = [];
       }
-      results.employees = results.employees?.map((emp) => {
-        const { password, ...rest } = emp;
-        return { ...rest, sector: sanitizeSector(emp.sector) };
-      }) || [];
+      results.employees = results.employees?.map((emp) => ({
+        ...stripPassword(emp),
+        sector: sanitizeSector(emp.sector)
+      })) || [];
       return results;
     } catch (err) {
       console.error("[Sync Error]:", err.message);
@@ -108,17 +109,17 @@ async function dataRoutes(fastify) {
       async (supabase) => {
         const { data, error } = await supabase.from("employees").select("*").order("name", { ascending: true });
         if (error) throw error;
-        return data.map((emp) => {
-          const { password, ...rest } = emp;
-          return { ...rest, sector: sanitizeSector(emp.sector) };
-        });
+        return data.map((emp) => ({
+          ...stripPassword(emp),
+          sector: sanitizeSector(emp.sector)
+        }));
       },
       async () => {
         const rows = await db.select().from(schema.employees).orderBy(schema.employees.name);
-        return rows.map((emp) => {
-          const { password, ...rest } = emp;
-          return { ...rest, sector: sanitizeSector(emp.sector) };
-        });
+        return rows.map((emp) => ({
+          ...stripPassword(emp),
+          sector: sanitizeSector(emp.sector)
+        }));
       }
     );
   });
@@ -131,7 +132,7 @@ async function dataRoutes(fastify) {
 
     // Inserir no banco local primeiro
     const result = await db.insert(schema.employees).values({ ...data, password: hashedPassword }).returning();
-    const { password, ...employee } = result[0];
+    const employee = stripPassword(result[0]);
 
     // Criar no Supabase Auth se estiver configurado
     let supabaseUserId = null;
@@ -177,7 +178,7 @@ async function dataRoutes(fastify) {
     if (!result.length) {
       return reply.status(404).send({ message: "Funcion\xE1rio n\xE3o encontrado." });
     }
-    const { password, ...employee } = result[0];
+    const employee = stripPassword(result[0]);
     broadcastAll("entity-update", { entity: "employees", action: "update", data: { ...employee, sector: sanitizeSector(employee.sector) } });
     return employee;
   });
@@ -186,7 +187,7 @@ async function dataRoutes(fastify) {
   }, async (request, reply) => {
     const { id } = request.params;
     const user = request.user;
-    if (user?.role === "Desenvolvedor Global" || user?.role === "root") {
+    if (hasRole(user, ['desenvolvedor', 'root'])) {
       await db.delete(schema.employees).where(eq(schema.employees.id, Number(id)));
       broadcastAll("entity-update", { entity: "employees", action: "delete", data: { id: Number(id) } });
     } else {

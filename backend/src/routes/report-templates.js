@@ -1,5 +1,21 @@
 import { eq } from "drizzle-orm";
 import { getDb, getSchema } from "../db/index.js";
+
+const DEFAULT_TEMPLATE = {
+  headerLogo: "",
+  headerLogoSecondary: "",
+  headerTitle: "CityMotion",
+  headerSubtitle: "Gest\xE3o Inteligente de Frotas",
+  headerExtra: "",
+  primaryColor: "#3b82f6",
+  secondaryColor: "#1e293b",
+  accentColor: "#10b981",
+  footerText: "CityMotion \u2014 Mobilidade, transpar\xEAncia e efici\xEAncia.",
+  footerExtra: "",
+  sectorName: "",
+  sectorDepartment: ""
+};
+
 async function reportTemplateRoutes(fastify) {
   const db = getDb();
   const schema = getSchema();
@@ -18,39 +34,9 @@ async function reportTemplateRoutes(fastify) {
       if (templates.length > 0) {
         return templates[0];
       }
-      return {
-        id: null,
-        organizationId: orgId,
-        headerLogo: "",
-        headerLogoSecondary: "",
-        headerTitle: "CityMotion",
-        headerSubtitle: "Gest\xE3o Inteligente de Frotas",
-        headerExtra: "",
-        primaryColor: "#3b82f6",
-        secondaryColor: "#1e293b",
-        accentColor: "#10b981",
-        footerText: "CityMotion \u2014 Mobilidade, transpar\xEAncia e efici\xEAncia.",
-        footerExtra: "",
-        sectorName: "",
-        sectorDepartment: ""
-      };
+      return { id: null, organizationId: orgId, ...DEFAULT_TEMPLATE };
     } catch (err) {
-      return {
-        id: null,
-        organizationId: orgId,
-        headerLogo: "",
-        headerLogoSecondary: "",
-        headerTitle: "CityMotion",
-        headerSubtitle: "Gest\xE3o Inteligente de Frotas",
-        headerExtra: "",
-        primaryColor: "#3b82f6",
-        secondaryColor: "#1e293b",
-        accentColor: "#10b981",
-        footerText: "CityMotion \u2014 Mobilidade, transpar\xEAncia e efici\xEAncia.",
-        footerExtra: "",
-        sectorName: "",
-        sectorDepartment: ""
-      };
+      return { id: null, organizationId: orgId, ...DEFAULT_TEMPLATE };
     }
   });
   fastify.put("/api/report-template", {

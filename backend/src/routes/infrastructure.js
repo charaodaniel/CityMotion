@@ -5,6 +5,7 @@ import { testDbSchema, saveConfigSchema, testSmtpSchema } from "../schemas/index
 import { sql, desc } from "drizzle-orm";
 import { getEnv } from "../config/env.js";
 import { esmDirname } from "../utils/path.js";
+import { hasInfraAccess } from "../utils/role.js";
 const __dirname = esmDirname(import.meta.url);
 const CONFIG_PATH = path.resolve(__dirname, "../../../.env");
 const NEXUS_CONFIG_PATH = path.resolve(__dirname, "../../../src/nexusbridge/config/nexus-settings.json");
@@ -57,11 +58,6 @@ function writeEnvConfig(updates) {
     console.error("[Infrastructure] Erro ao salvar .env:", e.message);
     return false;
   }
-}
-function hasInfraAccess(user) {
-  if (!user) return false;
-  const r = (user.role || "").toLowerCase();
-  return r.includes("desenvolvedor") || r.includes("dev") || r.includes("root") || r.includes("ti") || r.includes("infra") || r === "administrador";
 }
 async function infrastructureRoutes(fastify) {
   const db = getDb();
@@ -296,7 +292,7 @@ async function infrastructureRoutes(fastify) {
     schema: { description: "Reset completo do banco (requer ROOT)", tags: ["System"] }
   }, async (request, reply) => {
     const user = request.user;
-    if (!user || user.role !== "Desenvolvedor Global" && user.role !== "root") {
+    if (!user || !hasRole(user, ['desenvolvedor', 'root'])) {
       return reply.status(403).send({ message: "Apenas usu\xE1rios ROOT podem executar esta opera\xE7\xE3o." });
     }
     try {
