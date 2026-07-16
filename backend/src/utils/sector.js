@@ -14,8 +14,7 @@ function sanitizeSector(sector) {
   if (!sector) return [];
   if (Array.isArray(sector)) return sector;
   try {
-    const parsed = JSON.parse(sector);
-    return Array.isArray(parsed) ? parsed : [sector];
+    const parsed = JSON.parse(sector);      return Array.isArray(parsed) ? parsed : [parsed];
   } catch {
     return [sector];
   }
