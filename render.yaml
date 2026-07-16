@@ -32,7 +32,7 @@ services:
     plan: free
     branch: main
     buildCommand: npm run build:spa && cd backend && npm install --include=dev && cd ..
-    startCommand: cd backend && npx drizzle-kit push && node src/index.js
+    startCommand: cd backend && npx drizzle-kit migrate && node src/index.js
     healthCheckPath: /api/health
 
     # Para usar Docker em vez de build nativo, descomente:
