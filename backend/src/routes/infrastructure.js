@@ -3,7 +3,7 @@ import path from "path";
 import { getDb, getSchema } from "../db/index.js";
 import { testDbSchema, saveConfigSchema, testSmtpSchema } from "../schemas/index.js";
 import { sql, desc } from "drizzle-orm";
-import { getEnv } from "../config/env.js";
+import { getEnv, isPostgresEnabled } from "../config/env.js";
 import { esmDirname } from "../utils/path.js";
 import { hasInfraAccess } from "../utils/role.js";
 const __dirname = esmDirname(import.meta.url);
@@ -124,15 +124,18 @@ async function infrastructureRoutes(fastify) {
         };
       }
       if (type === "sqlite") {
-        const Database = await import("better-sqlite3").then((m) => m.default);
-        const dbPath = url || path.resolve(__dirname, "../../database/citymotion.db");
-        const testDb = new Database(dbPath);
-        const row = testDb.prepare("SELECT datetime('now') as time").get();
-        testDb.close();
+        // Usa Drizzle ORM (engine-agnostic) em vez de raw better-sqlite3
+        const timeExpr = isPostgresEnabled()
+          ? sql`SELECT NOW() as time, current_database() as db`
+          : sql`SELECT datetime('now') as time, 'sqlite' as db`;
+        const raw = await db.execute(timeExpr);
         return {
           success: true,
-          message: "Conex\xE3o SQLite estabelecida com sucesso.",
-          details: { serverTime: row?.time, path: dbPath }
+          message: "Conex\xE3o com banco de dados estabelecida com sucesso.",
+          details: {
+            serverTime: raw[0]?.time || raw.rows?.[0]?.time || raw?.time,
+            database: raw[0]?.db || raw.rows?.[0]?.db || "citymotion"
+          }
         };
       }
       if (type === "mongodb") {
