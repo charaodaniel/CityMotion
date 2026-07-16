@@ -6,9 +6,9 @@
  */
 import { renderHeader, renderStatsCards, renderCostChart, renderVolumeChart } from './modals.js';
 
-export default function ReportsPage(container, Store) {
-  // Dados de telemetria estáticos (mesmo do charts.json)
-  const telemetryData = [
+export default function ReportsPage(container, Store, API) {
+  // Dados de telemetria (fallback hardcoded se API falhar)
+  const FALLBACK_DATA = [
     { month: 'Janeiro', cost: 12400, volume: 186 },
     { month: 'Fevereiro', cost: 15300, volume: 305 },
     { month: 'Março', cost: 11200, volume: 237 },
@@ -16,8 +16,10 @@ export default function ReportsPage(container, Store) {
     { month: 'Maio', cost: 13100, volume: 209 },
     { month: 'Junho', cost: 14800, volume: 214 },
   ];
-  const maxCost = Math.max(...telemetryData.map(d => d.cost));
-  const maxVolume = Math.max(...telemetryData.map(d => d.volume));
+
+  let telemetryData = FALLBACK_DATA;
+  let maxCost = Math.max(...telemetryData.map(d => d.cost));
+  let maxVolume = Math.max(...telemetryData.map(d => d.volume));
 
   // ── Render ───────────────────────────────────────────────
   function render() {
@@ -37,9 +39,24 @@ export default function ReportsPage(container, Store) {
       </div>`;
   }
 
+  // ── Carregar telemetria da API ──────────────────────────
+  async function loadTelemetry() {
+    try {
+      const data = await API.get('/api/analytics/telemetry');
+      if (data && data.length > 0) {
+        telemetryData = data;
+        maxCost = Math.max(...data.map(d => d.cost));
+        maxVolume = Math.max(...data.map(d => d.volume));
+      }
+    } catch (err) {
+      console.warn('[Relatorios] API telemetry indisponível, usando dados estáticos:', err.message);
+    }
+    render();
+  }
+
   // ── Init ─────────────────────────────────────────────────
   const unsub = Store.on('schedules', render);
-  render();
+  loadTelemetry();
 
   return () => { unsub(); };
 }
