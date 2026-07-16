@@ -17,6 +17,7 @@ export default function MeusRelatoriosPage(container, Store, API) {
 
   // ── Helpers ──────────────────────────────────────────────
   function loadScript(src) {
+    if (window._loadScript) return window._loadScript(src);
     return new Promise((resolve, reject) => {
       if (document.querySelector(`script[src="${src}"]`)) return resolve();
       const s = document.createElement('script');
@@ -447,6 +448,10 @@ export default function MeusRelatoriosPage(container, Store, API) {
   import('/js/format-utils.js').then(mod => {
     window._formatDate = mod.formatDate;
     window._formatCurrency = mod.formatCurrency;
+  }).catch(() => {});
+
+  import('/js/dom-utils.js').then(mod => {
+    window._loadScript = mod.loadScript;
   }).catch(() => {});
 
   render();
