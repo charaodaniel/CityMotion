@@ -43,7 +43,6 @@
 | **💬 Chat** | Mensagens internas com filtro por setor | Todos |
 | **📈 Relatórios** | Estatísticas, gráficos de telemetria, exportação PDF | Admin, Gestor |
 | **📄 Meus Relatórios** | Histórico pessoal de viagens + exportação PDF para motoristas | Motorista |
-| **💬 Chat** | Mensagens internas em tempo real via WebSocket com indicador de digitação | Todos |
 | **⚙️ Configurações** | Operações (regras) + Infraestrutura (DB, CORS, SMTP) | Dev/Admin |
 | **🖥️ Terminal Dev** | Console TTY para diagnóstico | Dev |
 | **📱 PWA** | Instalável como app, service worker com cache offline, banner de instalação | Todos |
@@ -71,7 +70,6 @@
 
 | Camada | Tecnologia |
 | :--- | :--- |
-| **Frontend** | SPA HTML/JS/CSS + Tailwind + Chart.js + Lucide Icons |
 | **Frontend** | SPA HTML/JS/CSS modular (refatorado em módulos) + Tailwind + Lucide Icons |
 | **Backend** | Fastify + JavaScript (ESM) + Drizzle ORM |
 | **Autenticação** | JWT (jsonwebtoken) + Supabase Auth (dual mode) + Bcrypt |
@@ -81,7 +79,6 @@
 | **Banco Nuvem** | PostgreSQL — produção escalável |
 | **Container** | Docker multi-estágio + Docker Compose |
 | **Hospedagem** | Render Blueprint + deploy automático via GitHub |
-| **Banco Nuvem** | PostgreSQL gerenciado pelo Render (free tier) |
 | **Qualidade** | 189+ testes (Vitest + jsdom) |
 | **PWA** | Service Worker com cache, instalável, offline page |
 
