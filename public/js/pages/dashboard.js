@@ -2,10 +2,7 @@
  * CityMotion — Página: Dashboard
  * Visão geral da frota e operações
  */
-export default function DashboardPage(container, Store, API) {
-  const user = Store.get('user');
-  const userRole = Store.mapRole(user?.role);
-
+export default function DashboardPage(container, Store) {
   // Renderizar o HTML base
   container.innerHTML = `
     <div class="animate-fade-in space-y-6">

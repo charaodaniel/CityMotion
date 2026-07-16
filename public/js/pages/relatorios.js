@@ -2,7 +2,7 @@
  * CityMotion — Página: Relatórios (Inteligência & Analytics)
  * Stats cards, gráficos de barra e área em CSS puro
  */
-export default function ReportsPage(container, Store, API) {
+export default function ReportsPage(container, Store) {
   // Dados de telemetria estáticos (mesmo do charts.json)
   const telemetryData = [
     { month: 'Janeiro', cost: 12400, volume: 186 },
